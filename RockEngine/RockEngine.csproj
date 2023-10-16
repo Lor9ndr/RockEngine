@@ -1,0 +1,110 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SignAssembly>False</SignAssembly>
+    <Title>RockEngine</Title>
+    <IncludeSymbols>False</IncludeSymbols>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="C:\Users\Администратор\.nuget\packages\dearimguisharp\1.88.3\contentFiles\any\net5.0\build\net40\DearImguiSharp.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="runtimes\glfw3.dll" />
+    <None Remove="runtimes\libbulletc.dll" />
+    <None Remove="runtimes\win-x64\native\glfw3.dll" />
+    <None Remove="runtimes\win-x64\native\libbulletc.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="runtimes\win-x64\native\glfw3.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IsAssembly>true</IsAssembly>
+    </Content>
+    <Content Include="runtimes\win-x64\native\libbulletc.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IsAssembly>true</IsAssembly>
+    </Content>
+    <Content Include="runtimes\win-x86\native\glfw3.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IsAssembly>true</IsAssembly>
+    </Content>
+    <Content Include="runtimes\win-x86\native\libbulletc.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IsAssembly>true</IsAssembly>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FontAwesome.Constants" Version="1.4.7" />
+    <PackageReference Include="ImGui.NET" Version="1.89.9.2" />
+    <PackageReference Include="NativeFileDialogSharp" Version="0.5.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Ninject" Version="3.3.6" />
+    <PackageReference Include="SkiaSharp" Version="2.88.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BulletSharp">
+      <HintPath>refs\BulletSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Core">
+      <HintPath>refs\OpenTK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Graphics">
+      <HintPath>refs\OpenTK.Graphics.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Mathematics">
+      <HintPath>refs\OpenTK.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.Common">
+      <HintPath>refs\OpenTK.Windowing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.Desktop">
+      <HintPath>refs\OpenTK.Windowing.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.GraphicsLibraryFramework">
+      <HintPath>refs\OpenTK.Windowing.GraphicsLibraryFramework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Resources\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="C:\Users\Администратор\.nuget\packages\nativefiledialogsharp\0.5.0\contentFiles\any\netstandard2.0\nfd.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="C:\Users\Администратор\.nuget\packages\nativefiledialogsharp\0.5.0\contentFiles\any\netstandard2.0\nfd_x86.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Layout.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\BulletSharp.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Администратор\source\repos\TestEngine\RockEngine\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Администратор\source\repos\TestEngine\RockEngine\.editorconfig" />
+  </ItemGroup>
+
+</Project>
