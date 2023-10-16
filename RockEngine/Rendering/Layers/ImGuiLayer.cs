@@ -54,13 +54,18 @@ namespace RockEngine.Rendering.Layers
 
         private bool _projectWindowIsOpened;
 
+        private readonly DefaultEditorLayer _editorLayer;
+        private readonly DefaultGameLayer _gameLayer;
+
         public ImGuiLayer()
         {
             _controller = new ImGuiRenderer();
             _ = new ImGuiInput(Game.MainWindow);
 
-            _editorScreen = Game.LayerStack.GetLayer<DefaultEditorLayer>()!.Screen;
-            _gameScreen = Game.LayerStack.GetLayer<DefaultGameLayer>()!.Screen;
+            _editorLayer = Game.LayerStack.GetLayer<DefaultEditorLayer>()!;
+            _gameLayer = Game.LayerStack.GetLayer<DefaultGameLayer>()!;
+            _editorScreen = _editorLayer.Screen;
+            _gameScreen = _gameLayer.Screen;
 
             Config();
             SetupImGuiStyle();
@@ -85,7 +90,6 @@ namespace RockEngine.Rendering.Layers
         partial void AddComponentsWindow(GameObject gameObject);
 
         #endregion
-
 
         public override void OnRender()
         {
@@ -211,7 +215,6 @@ namespace RockEngine.Rendering.Layers
                 ImGui.PushFont(IconsFont);
                 ImGui.NextColumn();
 
-
                 if (EngineStateManager.GetCurrentStateKey() != "play")
                 {
                     if (ImGui.SmallButton(FA.PLAY))
@@ -267,6 +270,15 @@ namespace RockEngine.Rendering.Layers
                         SelectedGameObject = gameObject;
                     }
                 }
+                if(ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+                {
+                    if(SelectedGameObject is not null)
+                    {
+                        var camera = _editorLayer.DebugCamera.GetComponent<Camera>();
+                        camera?.LookAt(SelectedGameObject!);
+                        camera?.MoveToTarget(10f, SelectedGameObject!.Transform.Position);
+                    }
+                }
                 ImGui.End();
             }
         }
@@ -299,7 +311,6 @@ namespace RockEngine.Rendering.Layers
             bool isHovering = ImGui.IsMouseHoveringRect(rMin, rMax);
             IsMouseOnEditorScreen = IsMouseOnEditorScreen ? true: isHovering && ImGui.IsWindowFocused();
         }
-
 
         private void DrawGuizmo()
         {

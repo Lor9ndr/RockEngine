@@ -4,6 +4,7 @@ using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
 
 using RockEngine.Editor;
+using Ninject.Planning.Targets;
 
 namespace RockEngine.Engine.ECS.GameObjects
 {
@@ -133,8 +134,32 @@ namespace RockEngine.Engine.ECS.GameObjects
         public void LookAt(Vector3 eye, Vector3 target, Vector3 up)
         {
             Parent!.Transform.Position = eye;
-            Front = Vector3.Normalize(target - eye);
-            _up = Vector3.Normalize(Vector3.Cross(_right, Front));
+            _front = Vector3.Normalize(target - eye);
+            _up = up;
+        }
+
+        public void LookAt(GameObject gameObject)
+        {
+            LookAt(Parent.Transform.Position, gameObject.Transform.Position, Vector3.UnitY);
+        }
+
+        public void MoveTowardsTarget(float distance)
+        {
+            Vector3 direction = _front; // Use the front vector calculated in the LookAt function
+            Vector3 newPosition = Parent.Transform.Position + direction * distance;
+            Parent.Transform.Position = newPosition;
+        }
+
+       
+
+        public void MoveToTarget(float distance, Vector3 target)
+        {
+            Vector3 direction = Vector3.Normalize(target - Parent.Transform.Position);
+            float currentDistance = Vector3.Distance(target, Parent.Transform.Position);
+          
+            distance = Math.Min(distance, currentDistance - distance);
+            Vector3 newPosition = Parent.Transform.Position + direction * distance;
+            Parent.Transform.Position = newPosition;
         }
 
         public void OnStart()
