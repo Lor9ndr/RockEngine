@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine", "RockEngine\RockEngine.csproj", "{002C6A0C-F76D-4891-8154-F9996CE74AAE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockEngine.Tests", "RockEngine.Tests\RockEngine.Tests.csproj", "{584CF232-0851-4674-A5F3-55AA6742FF55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{002C6A0C-F76D-4891-8154-F9996CE74AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{002C6A0C-F76D-4891-8154-F9996CE74AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{002C6A0C-F76D-4891-8154-F9996CE74AAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{584CF232-0851-4674-A5F3-55AA6742FF55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{584CF232-0851-4674-A5F3-55AA6742FF55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{584CF232-0851-4674-A5F3-55AA6742FF55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{584CF232-0851-4674-A5F3-55AA6742FF55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

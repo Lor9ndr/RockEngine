@@ -20,8 +20,8 @@ namespace RockEngine.Engine.ECS
         [UI]
         public Vector3 Rotation
         {
-            get => RotationQuaternion.ToEulerAngles();
-            set => RotationQuaternion = Quaternion.FromEulerAngles(value);
+            get => RotationQuaternion.ToEulerAngles() * (180f / MathF.PI);
+            set => RotationQuaternion = Quaternion.FromEulerAngles(value * (MathF.PI / 180f));
         }
 
         public GameObject? Parent { get => _parent; set => _parent = value; }
@@ -35,18 +35,17 @@ namespace RockEngine.Engine.ECS
         private readonly HashSet<Transform> _childTransforms;
         private GameObject? _parent;
 
-        public void AddChildTransform(Transform t)
-        {
-            _childTransforms.Add(t);
-        }
-        public void RemoveChildTransform(Transform t)
-        {
-            _childTransforms.Remove(t);
-        }
-        public void ClearChildrenTransforms()
-        {
-            _childTransforms.Clear();
-        }
+        public void AddChildTransform(Transform t) 
+            => _childTransforms.Add(t);
+
+        public void RemoveChildTransform(Transform t) 
+            => _childTransforms.Remove(t);
+
+        public void ClearChildrenTransforms() 
+            => _childTransforms.Clear();
+
+        public HashSet<Transform> GetChildTransforms() 
+            => _childTransforms;
 
         public Transform()
         {
@@ -74,13 +73,13 @@ namespace RockEngine.Engine.ECS
             var t = Matrix4.CreateTranslation(Position);
             var r = Matrix4.CreateFromQuaternion(RotationQuaternion);
             var s = Matrix4.CreateScale(Scale);
-            return r * s * t;
+            return s * r * t;
         }
 
         public void Rotate(Vector3 axis, float angle)
         {
-            Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
-            Rotation = rotation * Rotation;
+            Quaternion rotation = Quaternion.FromAxisAngle(axis, MathHelper.DegreesToRadians(angle));
+            RotationQuaternion = rotation * RotationQuaternion;
         }
 
         public void OnStart()

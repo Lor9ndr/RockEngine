@@ -43,7 +43,7 @@ namespace RockEngine.Engine.ECS
         public MaterialComponent()
             : base(PathInfo.PROJECT_PATH, "Material", Guid.NewGuid(), AssetType.Material)
         {
-            Shader = AShaderProgram.AllShaders.First();
+            Shader = AShaderProgram.AllShaders.First().Value;
         }
 
         public void Render()

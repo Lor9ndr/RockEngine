@@ -14,7 +14,7 @@ namespace RockEngine.Engine.ECS.GameObjects
         public Texture ScreenTexture;
         private readonly FBORBO _screenFrameBuffer;
         private readonly Sprite _screenSprite;
-        private readonly VFShaderProgram _screenShader;
+        private readonly AShaderProgram _screenShader;
         private readonly RBO _screenRenderBuffer;
 
         private readonly Dictionary<TextureParameterName, int> _screenParameters =
@@ -44,10 +44,7 @@ namespace RockEngine.Engine.ECS.GameObjects
                 FramebufferAttachment = FramebufferAttachment.ColorAttachment0
             }).Setup();
 
-            _screenShader = new VFShaderProgram(
-                "ScreenShader",
-                new VertexShader("Resources\\Shaders\\Screen\\Screen.vert"),
-                new FragmentShader("Resources\\Shaders\\Screen\\Screen.frag"));
+            _screenShader = Resources.GetOrCreateShader(ShadersPaths.Lit2DShader);
 
             _screenRenderBuffer = new RBO(new RenderBufferSettings(RenderbufferStorage.Depth32fStencil8, RenderbufferTarget.Renderbuffer), Game.MainWindow.Size).Setup();
 
@@ -78,7 +75,7 @@ namespace RockEngine.Engine.ECS.GameObjects
         public void DisplayScreen()
         {
             _screenShader.Bind();
-            _screenShader.SetShaderData("Screen", 1);
+            _screenShader.SetShaderData("sampler", 1);
             _screenSprite.SpriteTexture.SetTextureUnit(1);
             _screenSprite.Render();
             _screenShader.Unbind();

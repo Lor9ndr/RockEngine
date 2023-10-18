@@ -10,7 +10,7 @@ namespace RockEngine.OpenGL.Textures
     public class Texture2D : Texture
     {
         internal long BitmapSize { get; set; }
-        internal SKBitmap Bitmap { get; set; }
+        internal SKBitmap? Bitmap { get; set; }
 
         public Texture2D(string assetPath, Guid id, string name, TextureSettings settings)
             : base(assetPath, id, name, settings)
@@ -71,7 +71,6 @@ namespace RockEngine.OpenGL.Textures
         /// <param name="path">path to file</param>
         /// <returns>Bitmap which is going to be uploaded to the GPU</returns>
         public static SKBitmap GetBitmap(string path) => SKBitmap.Decode(path);
-
 
         /// <summary>
         /// Decode a file to <see cref="SKBitmap"/> using stream

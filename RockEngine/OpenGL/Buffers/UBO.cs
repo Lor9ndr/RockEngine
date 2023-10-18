@@ -24,11 +24,11 @@ namespace RockEngine.OpenGL.Buffers
             GL.BindBufferRange(BufferRangeTarget.UniformBuffer, Settings.BindingPoint, Handle, nint.Zero, Settings.BufferSize);
             foreach (var shader in AShaderProgram.AllShaders)
             {
-                shader.Bind();
-                var index = GL.GetUniformBlockIndex(shader.Handle, Settings.BufferName);
+                shader.Value.Bind();
+                var index = GL.GetUniformBlockIndex(shader.Value.Handle, Settings.BufferName);
                 if (index != -1)
                 {
-                    GL.UniformBlockBinding(shader.Handle, index, Settings.BindingPoint);
+                    GL.UniformBlockBinding(shader.Value.Handle, index, Settings.BindingPoint);
                 }
             }
 

@@ -9,7 +9,7 @@ namespace RockEngine
     {
         public static Project? CurrentProject { get; set; }
 
-        public static Scene CurrentScene => Scene.CurrentScene;
+        public static Scene? CurrentScene => Scene.CurrentScene;
 
         [JsonIgnore]
         public IEnumerable<Scene> Scenes => AssetManager.Assets.OfType<Scene>();

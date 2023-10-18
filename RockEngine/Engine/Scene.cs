@@ -3,8 +3,6 @@
 using RockEngine.Assets;
 using RockEngine.Engine.ECS.GameObjects;
 
-using RockEngine.Engine.ECS;
-
 namespace RockEngine.Engine
 {
     public class Scene : BaseAsset, IDisposable
@@ -16,12 +14,11 @@ namespace RockEngine.Engine
 
         public static GameObject? MainCamera { get; private set; }
 
-
         /// <summary>
         /// List of game objects in the scene
         /// </summary>
         [JsonRequired]
-        private List<GameObject> _gameObjects;
+        private readonly List<GameObject> _gameObjects;
 
         #region Ctor
         public Scene(string name, string path, Guid id)
@@ -42,7 +39,7 @@ namespace RockEngine.Engine
         /// Method to change the current scene
         /// </summary>
         /// <param name="newScene">the new scene on which we are changing</param>
-        public static void ChangeScene(Scene newScene)
+        public static void ChangeScene(Scene? newScene)
         {
             CurrentScene = newScene;
 
@@ -139,14 +136,13 @@ namespace RockEngine.Engine
             }
         }
 
-
         public void Dispose()
         {
             foreach (var item in _gameObjects)
             {
                 item.Dispose();
             }
-            _gameObjects = null;
+            _gameObjects.Clear();
 
             GC.SuppressFinalize(this);
         }

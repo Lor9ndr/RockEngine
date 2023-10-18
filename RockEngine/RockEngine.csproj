@@ -99,12 +99,4 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\Администратор\source\repos\TestEngine\RockEngine\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="C:\Users\Администратор\source\repos\TestEngine\RockEngine\.editorconfig" />
-  </ItemGroup>
-
 </Project>

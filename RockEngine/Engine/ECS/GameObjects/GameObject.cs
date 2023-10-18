@@ -73,6 +73,7 @@ namespace RockEngine.Engine.ECS.GameObjects
             GameObjectID = ObjectID++;
             _components = new List<IComponent>();
             Children = new List<GameObject>();
+            Transform = new Transform();
         }
         #endregion
 

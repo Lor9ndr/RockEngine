@@ -4,7 +4,6 @@ using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
 
 using RockEngine.Editor;
-using Ninject.Planning.Targets;
 
 namespace RockEngine.Engine.ECS.GameObjects
 {

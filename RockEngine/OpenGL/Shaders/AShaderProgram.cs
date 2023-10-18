@@ -17,7 +17,7 @@ namespace RockEngine.OpenGL.Shaders
         /// <summary>
         /// Cache of the all available shader programs
         /// </summary>
-        public static readonly List<AShaderProgram> AllShaders = new List<AShaderProgram>();
+        public static readonly Dictionary<string, AShaderProgram> AllShaders = new Dictionary<string, AShaderProgram>();
 
         public Guid ID { get; set; }
         public string Name { get; set; }
@@ -51,10 +51,15 @@ namespace RockEngine.OpenGL.Shaders
         protected AShaderProgram(string name, params BaseShaderType[] baseShaders)
         {
             Validator.ThrowIfEmpty(baseShaders, "Can't create shader program withoud shaders");
+            
             Name = name;
             _shaders = baseShaders.ToList();
+            if(!AllShaders.TryAdd(this.Name, this))
+            {
+                throw new Exception($"Same shader with name:{this.Name} is already contains");
+            }
+
             Setup();
-            AllShaders.Add(this);
             _path = _shaders[0].GetFilePath();
         }
         public ISetuppable Setup()

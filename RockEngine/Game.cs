@@ -60,7 +60,6 @@ namespace RockEngine
             MainWindow.Run();
         }
 
-
         private void Load()
         {
             Physics = IoC.Get<PhysicsManager>();
@@ -95,13 +94,10 @@ namespace RockEngine
             scene.AddGameObject(floor);
             Scene.MainCamera.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
             Scene.MainCamera.GetComponent<Camera>()!.UpdateVectors();
-
-
-
+            
             scene.AddGameObject(new GameObject("Direct light", new DirectLight() { Intensity = 10, LightColor = new Vector3(1) }, new Transform(new Vector3(0), new Vector3(-1))));
             AssetManager.SaveAssetToFile(scene);
         }
-
 
         private void Update(FrameEventArgs args)
         {
@@ -134,13 +130,12 @@ namespace RockEngine
             DefaultShader.Unbind();
         }
 
-
         public void Dispose()
         {
             Scene.CurrentScene?.Dispose();
             foreach (var shader in AShaderProgram.AllShaders)
             {
-                shader.Dispose();
+                shader.Value.Dispose();
             }
             GC.SuppressFinalize(this);
             Physics.ExitPhysics();
