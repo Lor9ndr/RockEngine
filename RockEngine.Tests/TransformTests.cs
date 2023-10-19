@@ -1,6 +1,7 @@
 ﻿using OpenTK.Mathematics;
 
 using RockEngine.Engine.ECS;
+using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Tests
 {
@@ -13,6 +14,8 @@ namespace RockEngine.Tests
         public void Setup()
         {
             _transform = new Transform();
+            GameObject go = new GameObject();
+            go.AddComponent(_transform);
         }
 
         [Test]
