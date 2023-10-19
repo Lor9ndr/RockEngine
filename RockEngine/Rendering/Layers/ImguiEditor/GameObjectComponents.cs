@@ -56,8 +56,8 @@ namespace RockEngine.Rendering.Layers
                 ImGui.SameLine();
                 ImGui.Text(type.Name);
                 ImGui.SameLine();
-/*                var endPosX = winSizeX - 30;
-                ImGui.SetCursorPosX(endPosX);*/
+                var endPosX = winSizeX - 30;
+                ImGui.SetCursorPosX(endPosX);
 
                 if (ImguiHelper.FaIconButton($"{FA.BARS}##{type}"))
                 {

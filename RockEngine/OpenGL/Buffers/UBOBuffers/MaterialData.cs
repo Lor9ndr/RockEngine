@@ -1,8 +1,6 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-using RockEngine.OpenGL.Buffers;
-
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
@@ -13,28 +11,26 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
     [StructLayout(LayoutKind.Explicit, Pack = 1, Size = Size)]
     internal struct MaterialData : IUBOData<MaterialData>
     {
-
         [FieldOffset(0)]
-        public Vector3 AmbientColor;
+        public Vector3 AlbedoColor;
+
+        [FieldOffset(12)]
+        public float Metallic;
 
         [FieldOffset(16)]
-        public Vector3 DiffuseColor;
+        public float Roughness;
 
-        [FieldOffset(32)]
-        public Vector3 SpecularColor;
+        [FieldOffset(20)]
+        public float Ao;
 
-        [FieldOffset(44)]
-        public float Shininess;
-
-
-        public const int Size = 48;
+        public const int Size = 32;
         private static UBO<MaterialData> UBO => IUBOData<MaterialData>.UBO;
         public readonly string Name => nameof(MaterialData);
 
         /// <summary>
         /// Binding in the shader
         /// </summary>
-        public int BindingPoint => 3;
+        public readonly int BindingPoint => 3;
 
         public MaterialData()
         {
@@ -44,14 +40,35 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
             }
         }
 
-        public void SendData()
+        public readonly void SendData()
         {
             UBO.SendData(this);
         }
 
-        public void SendData<Tsub>([DisallowNull, NotNull] Tsub data, nint offset, int size)
+        public readonly void SendData<Tsub>([DisallowNull, NotNull] Tsub data, nint offset, int size)
         {
             UBO.SendData(data, offset, size);
         }
     }
 }
+
+
+/*
+ i am creating a self made 3d app using opentk and C#
+Please help me to generate C# code of ubo
+here is my example in shader
+layout (std140, binding = 3) uniform MaterialData
+{
+    vec3 albedo;
+    float metallic;
+    float roughness;
+    float ao;
+}materialData;
+And here is the code which i need to be like that generated, it is very important to be unique location for each ubo and also fieldoffset is must be calculated somehow 
+ 
+ 
+ 
+ 
+ 
+ 
+ */

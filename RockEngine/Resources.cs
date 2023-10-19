@@ -17,17 +17,7 @@ namespace RockEngine
         public static AShaderProgram GetOrCreateShader(ShaderPath path)
         {
             var shader = GetShader(path.Name);
-            if(shader is null)
-            {
-                if(!string.IsNullOrEmpty(path.Geometry))
-                {
-                    shader = new ShaderProgram(path.Name, new VertexShader(path.Vertex), new FragmentShader(path.Fragment), new GeometryShader(path.Geometry));
-                }
-                else
-                {
-                    shader = new ShaderProgram(path.Name, new VertexShader(path.Vertex), new FragmentShader(path.Fragment));
-                }
-            }
+            shader ??= new ShaderProgram(path.Name, path.SubShaders);
             return shader;
         }
     }

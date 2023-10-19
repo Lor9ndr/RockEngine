@@ -1,14 +1,21 @@
 ﻿using BulletSharp;
+using BulletSharp.Math;
 
+using RockEngine.Editor;
 using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Engine.ECS
 {
     internal sealed class EngineRigidBody : RigidBody, IComponent
     {
+
+        [UI]
+        public float Mass;
+
         public EngineRigidBody(RigidBodyConstructionInfo constructionInfo)
             : base(constructionInfo)
         {
+            Mass = 1;
         }
 
         public GameObject? Parent { get; set; }
@@ -17,7 +24,7 @@ namespace RockEngine.Engine.ECS
 
         public void OnDestroy()
         {
-            ActivationState = ActivationState.DisableSimulation;
+            
         }
 
         /// <summary>
@@ -25,9 +32,6 @@ namespace RockEngine.Engine.ECS
         /// </summary>
         public void OnStart()
         {
-            ActivationState = ActivationState.ActiveTag;
-            Activate();
-
         }
 
         public void OnUpdate()

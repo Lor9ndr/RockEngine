@@ -1,4 +1,9 @@
-﻿namespace RockEngine.Engine.EngineStates
+﻿using BulletSharp;
+using BulletSharp.Math;
+
+using RockEngine.Engine.ECS;
+
+namespace RockEngine.Engine.EngineStates
 {
     internal sealed class PlayEngineState : BaseEngineState
     {
@@ -8,7 +13,16 @@
         {
             foreach (var item in Scene.CurrentScene.GetGameObjects())
             {
-                item.OnStart();
+                foreach(var component in item.GetComponents())
+                {
+                    if(component is EngineRigidBody rb)
+                    {
+                        rb.ForceActivationState(ActivationState.ActiveTag);
+                        var inertia = rb.CollisionShape.CalculateLocalInertia(rb.Mass);
+                        rb.SetMassProps(rb.Mass, inertia);
+                    }
+                    component.OnStart();
+                }
             }
         }
 

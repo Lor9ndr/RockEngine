@@ -17,27 +17,27 @@ namespace RockEngine.Engine.ECS
 
         public int Order => 1;
 
-        [UI(isColor: true)] public Vector3 AmbientColor;
-        [UI(isColor: true)] public Vector3 SpecularColor;
-        [UI(isColor: true)] public Vector3 DiffuseColor;
-        [UI] public float Shininess;
+        [UI(isColor: true)] public Vector3 AlbedoColor;
+        [UI] public float Metallic;
+        [UI] public float Roughness;
+        [UI] public float Ao;
         public MaterialComponent(AShaderProgram shader, string path, string name, Guid id)
             : base(path, name, id, AssetType.Material)
         {
             Shader = shader;
-            Shininess = 32.0f;
-            AmbientColor = new Vector3(0.5f);
-            DiffuseColor = new Vector3(0.2f);
-            SpecularColor = new Vector3(1.0f);
+            AlbedoColor = new Vector3(0.5f, 1.0f, 1.0f);
+            Metallic = 1;
+            Roughness = 1;
+            Ao = 1;
         }
         public MaterialComponent(AShaderProgram shader, string path, string name)
            : base(path, name, Guid.NewGuid(), AssetType.Material)
         {
             Shader = shader;
-            Shininess = 32.0f;
-            AmbientColor = new Vector3(0.5f);
-            DiffuseColor = new Vector3(0.2f);
-            SpecularColor = new Vector3(1.0f);
+            AlbedoColor = new Vector3(0.5f, 1.0f, 1.0f);
+            Metallic = 1;
+            Roughness = 1;
+            Ao = 1;
 
         }
         public MaterialComponent()
@@ -52,10 +52,10 @@ namespace RockEngine.Engine.ECS
         public MaterialData GetUBOData()
             => new MaterialData()
             {
-                AmbientColor = AmbientColor,
-                SpecularColor = SpecularColor,
-                DiffuseColor = DiffuseColor,
-                Shininess = Shininess,
+                AlbedoColor = AlbedoColor,
+                Metallic = Metallic,
+                Ao = Ao,
+                Roughness = Roughness,
             };
 
         public void RenderOnEditorLayer()

@@ -5,12 +5,12 @@ using RockEngine.OpenGL;
 
 using RockEngine.Editor;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
+using BulletSharp;
 
 namespace RockEngine.Engine.ECS
 {
     public class Transform : IComponent, IRenderable
     {
-
         public Quaternion RotationQuaternion;
 
         [UI] public Vector3 Position;
@@ -73,7 +73,14 @@ namespace RockEngine.Engine.ECS
             var t = Matrix4.CreateTranslation(Position);
             var r = Matrix4.CreateFromQuaternion(RotationQuaternion);
             var s = Matrix4.CreateScale(Scale);
-            return s * r * t;
+            var rb = Parent.GetComponent<EngineRigidBody>();
+            var model = s * r * t;
+            if(rb is not null && rb.ActivationState == ActivationState.ActiveTag)
+            {
+                model *= (Matrix4)rb.WorldTransform;
+            }
+
+            return model;
         }
 
         public void Rotate(Vector3 axis, float angle)

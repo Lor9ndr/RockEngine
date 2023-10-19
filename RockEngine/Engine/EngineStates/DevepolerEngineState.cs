@@ -1,4 +1,6 @@
-﻿using RockEngine.Engine;
+﻿using BulletSharp;
+using BulletSharp.Math;
+
 using RockEngine.Engine.ECS;
 
 namespace RockEngine.Engine.EngineStates
@@ -13,9 +15,10 @@ namespace RockEngine.Engine.EngineStates
             {
                 foreach (var component in gameObject.GetComponents())
                 {
-                    if (component is EngineRigidBody)
+                    if(component is EngineRigidBody rb)
                     {
-                        continue;
+                        rb.ForceActivationState(ActivationState.DisableSimulation);
+                        rb.SetMassProps(0, new Vector3(0));
                     }
                     component.OnStart();
 

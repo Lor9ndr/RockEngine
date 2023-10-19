@@ -23,10 +23,10 @@ namespace RockEngine.Assets.AssetCreators
             writer.Write(mcomp.ID.ToString());
             writer.Write((int)mcomp.Type);
 
-            writer.Write(mcomp.Shininess);
-            _v3Converter.Write(mcomp.DiffuseColor, writer);
-            _v3Converter.Write(mcomp.AmbientColor, writer);
-            _v3Converter.Write(mcomp.SpecularColor, writer);
+            _v3Converter.Write(mcomp.AlbedoColor, writer);
+            writer.Write(mcomp.Ao);
+            writer.Write(mcomp.Metallic);
+            writer.Write(mcomp.Roughness);
             writer.Write(mcomp.Shader.ID.ToByteArray());
         }
 
@@ -39,10 +39,10 @@ namespace RockEngine.Assets.AssetCreators
             m.Name = reader.ReadString();
             m.ID = Guid.Parse(reader.ReadString());
             var x = (AssetType)reader.ReadInt32();
-            m.Shininess = reader.ReadSingle();
-            m.DiffuseColor = _v3Converter.Read(reader);
-            m.AmbientColor = _v3Converter.Read(reader);
-            m.SpecularColor = _v3Converter.Read(reader);
+            m.AlbedoColor = _v3Converter.Read(reader);
+            m.Ao = reader.ReadSingle();
+            m.Metallic = reader.ReadSingle();
+            m.Roughness = reader.ReadSingle();
             m.Shader = (AShaderProgram)AssetManager.GetAssetByID(new Guid(reader.ReadBytes(16)));
             return m;
         }

@@ -13,10 +13,10 @@ in VS_OUT {
 
 layout (std140, binding = 3) uniform MaterialData
 {
-    vec3 ambientColor;
-    vec3 diffuseColor;
-    vec3 specularColor;
-    float shininess;
+    vec3 albedo;
+    float metallic;
+    float roughness;
+    float ao;
 }materialData;
 
 layout (std140, binding = 4) uniform LightData
@@ -75,28 +75,29 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
 
 vec3 calculateDirectLight(vec3 fragPos, vec3 N, vec3 V, vec3 F0)
 {
-    vec3 L = normalize(-lightData.lightDirection);
-    vec3 viewDir = normalize(V);
-    vec3 reflectDir = reflect(-L, N);
-    vec3 H = normalize(viewDir + L); // Calculate the half vector
-    // Calculate the diffuse color using Lambert's law
-    float NdotL = max(dot(N, L), 0.0);
-    vec3 diffuse = NdotL * materialData.diffuseColor;
+    vec3 L = normalize(lightData.lightPosition - fragPos);
+    vec3 H = normalize(V + L);
+    float distance    = length(lightData.lightPosition - fragPos);
+    float attenuation = 1.0 / (distance * distance);
+    vec3 radiance     = lightData.lightColor * attenuation * lightData.intensity;        
+    
+    // cook-torrance brdf
+    float NDF = DistributionGGX(N, H, materialData.roughness);        
+    float G   = GeometrySmith(N, V, L, materialData.roughness);      
+    vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+    
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - materialData.metallic;	  
+    
+    vec3 numerator    = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+    vec3 specular     = numerator / denominator;  
+        
+    // add to outgoing radiance Lo
+    float NdotL = max(dot(N, L), 0.0);                
 
-    // Calculate the specular color using the Cook-Torrance model
-    float roughness = 1.0 - materialData.shininess; // Inverse of shininess is roughness
-    vec3 F = fresnelSchlick(max(dot(N, viewDir), 0.0), F0);
-    float D = DistributionGGX(N, H, roughness);
-    float G = GeometrySmith(N, viewDir, L, roughness);
-    vec3 specular = (D * G * F) / (4.0 * max(dot(N, viewDir), 0.0) * max(dot(N, L), 0.0));
-
-    // Calculate the ambient color
-    vec3 ambient = materialData.ambientColor;
-
-    // Combine the ambient, diffuse, and specular colors
-    vec3 color = (ambient + diffuse + specular) * lightData.lightColor * lightData.intensity;
-
-    return color;
+    return (kD * materialData.albedo / PI + specular) * radiance * NdotL;
 }
 
 
@@ -105,9 +106,16 @@ void main()
     vec3 N = normalize(fs_in.Normal);
     vec3 V = normalize(fs_in.ViewPos - fs_in.FragPos);
     
-    vec3 color = vec3(0);
-    color += calculateDirectLight(fs_in.FragPos, N, V, vec3(0.04)); // Example F0 value
+    vec3 F0 = vec3(0.04); 
+    F0 = mix(F0, materialData.albedo, materialData.metallic);
+    vec3 Lo = calculateDirectLight(fs_in.FragPos, N, V, F0);
     
+    vec3 ambient = vec3(0.03) * materialData.albedo * materialData.ao;
+    vec3 color = ambient + Lo;
+	
+    color = color / (color + vec3(1.0));
+    color = pow(color, vec3(1.0/2.2));  
+   
     FragColor = vec4(color, 1.0);
 }
 

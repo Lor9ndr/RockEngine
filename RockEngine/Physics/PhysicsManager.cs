@@ -86,7 +86,7 @@ namespace RockEngine.Physics
 
             RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             EngineRigidBody body = new EngineRigidBody(rbInfo);
-
+            body.Mass = mass;
             World.AddRigidBody(body);
 
             return body;

@@ -40,10 +40,10 @@ namespace RockEngine
             MainWindow.RenderFrame += Render;
             MainWindow.UpdateFrame += Update;
             MainWindow.Load += Load;
-            MainWindow.KeyDown += _mainWindow_KeyDown;
+            MainWindow.KeyDown += MainWindow_KeyDown;
         }
 
-        private void _mainWindow_KeyDown(KeyboardKeyEventArgs obj)
+        private void MainWindow_KeyDown(KeyboardKeyEventArgs obj)
         {
             if (obj.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.M)
             {
@@ -84,18 +84,20 @@ namespace RockEngine
             for (int i = -25; i < 25; i++)
             {
                 var testTransform = new Transform(new Vector3(i, i, i));
-                var testGameObject = new GameObject("TestGameObject", testTransform, testMesh, material, Physics.LocalCreateRigidBody(10, testTransform.GetModelMatrix(), new BoxShape(testTransform.Scale)));
+                var testGameObject = new GameObject("TestGameObject", testTransform, testMesh, material);
+                testGameObject.AddComponent(Physics.LocalCreateRigidBody(1, testTransform.GetModelMatrix(), new BoxShape(testTransform.Scale)));
                 scene.AddGameObject(testGameObject);
             }
             scene.AddGameObject(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
 
             var floor = new GameObject("Floor", testMesh, AssetManager.CreateMaterialAsset(DefaultShader, PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor"));
             floor.Transform.Scale = new Vector3(100, 1, 100);
+            floor.AddComponent(Physics.LocalCreateRigidBody(0, floor.Transform.GetModelMatrix(), new BoxShape(floor.Transform.Scale)));
             scene.AddGameObject(floor);
-            Scene.MainCamera.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
+            Scene.MainCamera!.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
             Scene.MainCamera.GetComponent<Camera>()!.UpdateVectors();
             
-            scene.AddGameObject(new GameObject("Direct light", new DirectLight() { Intensity = 10, LightColor = new Vector3(1) }, new Transform(new Vector3(0), new Vector3(-1))));
+            scene.AddGameObject(new GameObject("Direct light", new DirectLight() { Intensity = 100_000, LightColor = new Vector3(1) }, new Transform(new Vector3(0,50,0), new Vector3(-1))));
             AssetManager.SaveAssetToFile(scene);
         }
 
