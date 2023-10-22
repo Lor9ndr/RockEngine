@@ -75,9 +75,9 @@ namespace RockEngine.Engine.ECS
             var s = Matrix4.CreateScale(Scale);
             var rb = Parent.GetComponent<EngineRigidBody>();
             var model = s * r * t;
-            if(rb is not null && rb.ActivationState == ActivationState.ActiveTag)
+            if(rb is not null && rb.ActivationState != ActivationState.DisableSimulation)
             {
-                model *= (Matrix4)rb.WorldTransform;
+                model *= ((Matrix4)rb.WorldTransform).ClearScale();
             }
 
             return model;
@@ -91,6 +91,11 @@ namespace RockEngine.Engine.ECS
 
         public void OnStart()
         {
+            var rb = Parent.GetComponent<EngineRigidBody>(); 
+            if(rb is not null && rb.ActivationState != ActivationState.DisableSimulation)
+            {
+                rb.WorldTransform = _model;
+            }
         }
 
         public void OnUpdate()
@@ -104,12 +109,12 @@ namespace RockEngine.Engine.ECS
 
         public void Render()
         {
-            new TransformData(_model).SendData();
+            new TransformData() { Model = _model}.SendData();
         }
 
         public void RenderOnEditorLayer()
         {
-            new TransformData(_model).SendData();
+            new TransformData { Model = _model }.SendData();
         }
     }
 }

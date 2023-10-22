@@ -125,7 +125,7 @@ namespace RockEngine.Engine.ECS
                 if (HasIndices)
                 {
                     _ebo!.Bind();
-                    GL.DrawElementsInstanced(PrimitiveType.Triangles, Indices!.Length, DrawElementsType.UnsignedInt, 0, InstanceCount);
+                    GL.DrawElementsInstanced(PrimitiveType.Triangles, Indices!.Length, DrawElementsType.UnsignedInt, IntPtr.Zero, InstanceCount);
                 }
                 else
                 {
@@ -160,7 +160,7 @@ namespace RockEngine.Engine.ECS
                 _modelBuffer!.Bind();
                 SetInstancedAttributes();
             }
-            if (_mappedBuffer == nint.Zero)
+            if (_mappedBuffer == IntPtr.Zero)
             {
                 _modelBuffer.MapBuffer(BufferAccessMask.MapPersistentBit | BufferAccessMask.MapWriteBit, out _mappedBuffer);
             }
@@ -175,7 +175,7 @@ namespace RockEngine.Engine.ECS
                              .Bind()
                              .MapBuffer(BufferAccessMask.MapPersistentBit | BufferAccessMask.MapWriteBit, out _mappedBuffer);
 
-            GL.VertexArrayVertexBuffer(_vao!.Handle, VAO.INSTANCE_MODELS_ATTRIBUTE, _modelBuffer.Handle, 0, sizeof(float) * 4 * 4);
+            GL.VertexArrayVertexBuffer(_vao!.Handle, VAO.INSTANCE_MODELS_ATTRIBUTE, _modelBuffer.Handle, IntPtr.Zero, sizeof(float) * 4 * 4);
         }
 
         private void SetInstancedAttributes()

@@ -17,9 +17,10 @@ namespace RockEngine.Engine.EngineStates
                 {
                     if(component is EngineRigidBody rb)
                     {
+                        rb.ActivationState = ActivationState.ActiveTag;
+                        rb.CollisionFlags &= ~CollisionFlags.None;
                         rb.ForceActivationState(ActivationState.ActiveTag);
-                        var inertia = rb.CollisionShape.CalculateLocalInertia(rb.Mass);
-                        rb.SetMassProps(rb.Mass, inertia);
+
                     }
                     component.OnStart();
                 }
@@ -32,6 +33,13 @@ namespace RockEngine.Engine.EngineStates
             {
                 foreach (var component in go.GetComponents())
                 {
+                    if(component is EngineRigidBody rb)
+                    { // Disable physics for the rigidbody
+                        rb.ActivationState = ActivationState.DisableSimulation;
+                        rb.CollisionFlags |= CollisionFlags.None;
+                        rb.ForceActivationState(ActivationState.DisableSimulation);
+
+                    }
                     component.OnDestroy();
                 }
             }

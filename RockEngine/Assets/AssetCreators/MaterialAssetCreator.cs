@@ -27,7 +27,6 @@ namespace RockEngine.Assets.AssetCreators
             writer.Write(mcomp.Ao);
             writer.Write(mcomp.Metallic);
             writer.Write(mcomp.Roughness);
-            writer.Write(mcomp.Shader.ID.ToByteArray());
         }
 
         public override MaterialComponent Load(string path)
@@ -43,7 +42,6 @@ namespace RockEngine.Assets.AssetCreators
             m.Ao = reader.ReadSingle();
             m.Metallic = reader.ReadSingle();
             m.Roughness = reader.ReadSingle();
-            m.Shader = (AShaderProgram)AssetManager.GetAssetByID(new Guid(reader.ReadBytes(16)));
             return m;
         }
     }

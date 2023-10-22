@@ -41,7 +41,6 @@
       <IsAssembly>true</IsAssembly>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="BulletSharp.x64" Version="0.12.0" />
     <PackageReference Include="FontAwesome.Constants" Version="1.4.7" />
@@ -77,10 +76,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\**">
+    <None Update="Resources\Fonts\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  
+    <ItemGroup>
+      <AdditionalFiles Include="Resources\Shaders\**">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </AdditionalFiles>
+    </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RockEngine.Generator\RockEngine.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <Content Update="C:\Users\Администратор\.nuget\packages\nativefiledialogsharp\0.5.0\contentFiles\any\netstandard2.0\nfd.dll">

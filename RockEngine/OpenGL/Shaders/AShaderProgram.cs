@@ -68,7 +68,6 @@ namespace RockEngine.OpenGL.Shaders
             return this;
         }
 
-
         /// <summary>
         /// Привязка шейдера, после привязки до тех пор пока не будет привязан другой шейдер или не отвязан данный (<see cref="Unbind"/>) 
         /// Все Uniform и тп будут отправляться в привязанный шейдер
@@ -99,7 +98,6 @@ namespace RockEngine.OpenGL.Shaders
             return this;
         }
 
-
         /// <summary>
         /// Получение индекс расположения по названию переменной
         /// Например, в шейдере можно указать строго заданные места переменных, с помощью location(x)... где x - индекс расположения переменной
@@ -110,7 +108,6 @@ namespace RockEngine.OpenGL.Shaders
         public int GetAttribLocation(string attribName) => GL.GetAttribLocation(Handle, attribName);
 
         public void ResetShader() => Setup(false);
-
 
         /// <summary>
         /// Отправка в шейдер булевую переменную
@@ -155,7 +152,6 @@ namespace RockEngine.OpenGL.Shaders
         /// <param name="y">координата Y</param>
         /// <param name="z">координата Z</param>
         public AShaderProgram SetShaderData(int location, float x, float y, float z) => SetShaderData(location, new Vector3(x, y, z));
-
 
         /// <summary>
         /// Отправка в шейдер целочисленную переменную 
@@ -219,7 +215,6 @@ namespace RockEngine.OpenGL.Shaders
             GL.Uniform1(GetUniformLocation(name), data ? 1 : 0);
             return this;
         }
-
 
         public AShaderProgram SetShaderData(string name, Color4 data) => SetShaderData(name, new Vector4(data.R, data.G, data.B, data.A));
 
@@ -427,7 +422,6 @@ namespace RockEngine.OpenGL.Shaders
                     item.Dispose();
                 }
             }
-
 
             SetLabel();
             // The shader is now ready to go, but first, we're going to cache all the shader uniform locations.

@@ -18,7 +18,7 @@ using RockEngine.Assets.JsonConverters;
 
 namespace RockEngine.Assets
 {
-    internal static class AssetManager
+    public static class AssetManager
     {
         private const string EXTENSION_NAME = ".asset";
 
@@ -115,9 +115,9 @@ namespace RockEngine.Assets
             }
         }
 
-        public static MaterialComponent CreateMaterialAsset(AShaderProgram shader, string path, string name = "Material")
+        public static MaterialComponent CreateMaterialAsset(string path, string name = "Material")
         {
-            var asset = new MaterialComponent(shader, path, name);
+            var asset = new MaterialComponent(path, name);
             Assets.Add(asset);
             SaveAssetToFile(asset);
             return asset;
@@ -191,6 +191,12 @@ namespace RockEngine.Assets
                 Directory.CreateDirectory(asset.Path);
             }
             return result;
+        }
+
+        public static Project CreateProject(string name, string assetPath, Guid id)
+        {
+            Project p = new Project(name, assetPath, id);
+            return p;
         }
     }
 }

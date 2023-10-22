@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace RockEngine
 {
-    internal sealed class Project : BaseAsset, IDisposable
+    public sealed class Project : BaseAsset, IDisposable
     {
         public static Project? CurrentProject { get; set; }
 

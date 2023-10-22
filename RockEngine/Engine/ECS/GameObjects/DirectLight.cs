@@ -21,10 +21,10 @@ namespace RockEngine.Engine.ECS.GameObjects
         {
             return new LightData()
             {
-                LightColor = LightColor,
-                LightPosition = Parent.Transform.Position,
-                LightDirection = Parent.Transform.Rotation,
-                Intensity = Intensity
+                lightColor = LightColor,
+                lightPosition = Parent.Transform.Position,
+                lightDirection = Parent.Transform.Rotation,
+                intensity = Intensity
             };
         }
 

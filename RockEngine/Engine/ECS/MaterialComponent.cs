@@ -10,10 +10,9 @@ using RockEngine.Editor;
 
 namespace RockEngine.Engine.ECS
 {
-    internal sealed class MaterialComponent : BaseAsset, IComponentRenderable<MaterialData>
+    public sealed class MaterialComponent : BaseAsset, IComponentRenderable<MaterialData>
     {
         public GameObject? Parent { get; set; }
-        public AShaderProgram Shader { get; set; }
 
         public int Order => 1;
 
@@ -21,29 +20,26 @@ namespace RockEngine.Engine.ECS
         [UI] public float Metallic;
         [UI] public float Roughness;
         [UI] public float Ao;
-        public MaterialComponent(AShaderProgram shader, string path, string name, Guid id)
+        public MaterialComponent( string path, string name, Guid id)
             : base(path, name, id, AssetType.Material)
         {
-            Shader = shader;
             AlbedoColor = new Vector3(0.5f, 1.0f, 1.0f);
             Metallic = 1;
             Roughness = 1;
-            Ao = 1;
+            Ao = 0;
         }
-        public MaterialComponent(AShaderProgram shader, string path, string name)
+        public MaterialComponent( string path, string name)
            : base(path, name, Guid.NewGuid(), AssetType.Material)
         {
-            Shader = shader;
             AlbedoColor = new Vector3(0.5f, 1.0f, 1.0f);
             Metallic = 1;
             Roughness = 1;
-            Ao = 1;
+            Ao = 0;
 
         }
         public MaterialComponent()
             : base(PathInfo.PROJECT_PATH, "Material", Guid.NewGuid(), AssetType.Material)
         {
-            Shader = AShaderProgram.AllShaders.First().Value;
         }
 
         public void Render()
@@ -52,10 +48,10 @@ namespace RockEngine.Engine.ECS
         public MaterialData GetUBOData()
             => new MaterialData()
             {
-                AlbedoColor = AlbedoColor,
-                Metallic = Metallic,
-                Ao = Ao,
-                Roughness = Roughness,
+                albedo = AlbedoColor,
+                metallic = Metallic,
+                ao = Ao,
+                roughness = Roughness,
             };
 
         public void RenderOnEditorLayer()

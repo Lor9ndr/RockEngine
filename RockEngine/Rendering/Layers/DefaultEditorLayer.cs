@@ -127,8 +127,8 @@ namespace RockEngine.Rendering.Layers
                 GameObject? gameObject = gameObjects[i];
                 PickingData pd = new PickingData()
                 {
-                    ObjectIndex = gameObject.GameObjectID - 1,
-                    DrawIndex = 1,
+                    gObjectIndex = gameObject.GameObjectID - 1,
+                    gDrawIndex = 1,
                 };
                 pd.SendData();
                 gameObject.RenderOnEditorLayer();

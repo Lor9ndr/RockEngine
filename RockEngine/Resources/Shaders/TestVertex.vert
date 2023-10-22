@@ -13,9 +13,9 @@ layout (std140, binding = 1) uniform TransformData
 
 layout (std140, binding = 2) uniform CameraData
 {
-    mat4 view;
-    mat4 projection;
-    vec3 viewPos;
+    mat4 View;
+    mat4 Projection;
+    vec3 ViewPos;
 }cameraData;
 
 out VS_OUT {
@@ -32,7 +32,7 @@ void main()
     vs_out.FragPos = vec3(transformData.Model * vec4(aPos, 1.0));
     vs_out.Normal = mat3(transpose(inverse(transformData.Model))) * aNormal;
     vs_out.TexCoords = aTexCoords;
-    vs_out.ViewPos = cameraData.viewPos;
+    vs_out.ViewPos = cameraData.ViewPos;
     
-    gl_Position = cameraData.projection * cameraData.view * transformData.Model * vec4(aPos,1.0);
+    gl_Position = cameraData.Projection * cameraData.View * transformData.Model * vec4(aPos,1.0);
 }

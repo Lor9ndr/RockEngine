@@ -1,7 +1,6 @@
 ﻿
 using OpenMath = OpenTK.Mathematics;
 using System.Numerics;
-using System.Reflection;
 using RockEngine.Utils;
 using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
@@ -9,17 +8,12 @@ using System.Runtime.InteropServices;
 using FontAwesome.Constants;
 //using ImGuizmoNET;
 using NativeFileDialogSharp;
-using RockEngine.OpenGL;
-using RockEngine.Rendering.Layers;
 using RockEngine.Engine.ECS.GameObjects;
-using RockEngine;
 using RockEngine.Engine;
 using RockEngine.Rendering.Layers.ImguiEditor;
 using RockEngine.Inputs;
-using RockEngine.Utils;
 using RockEngine.Engine.EngineStates;
 using RockEngine.Rendering.imgui;
-using RockEngine.DI;
 using RockEngine.Assets;
 
 namespace RockEngine.Rendering.Layers

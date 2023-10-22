@@ -31,7 +31,7 @@ namespace RockEngine.Physics
             World.StepSimulation(elapsedTime);
         }
 
-        public void ExitPhysics()
+        private void ExitPhysics()
         {
             //remove/dispose constraints
             int i;
@@ -65,10 +65,7 @@ namespace RockEngine.Physics
 
             World.Dispose();
             broadphase.Dispose();
-            if (dispatcher != null)
-            {
-                dispatcher.Dispose();
-            }
+            dispatcher?.Dispose();
             collisionConf.Dispose();
         }
 
@@ -76,7 +73,7 @@ namespace RockEngine.Physics
         {
             bool isDynamic = mass != 0.0f;
 
-            BulletSharp.Math.Vector3 localInertia = Vector3.Zero;
+            BulletSharp.Math.Vector3 localInertia = new(0);
             if (isDynamic)
             {
                 shape.CalculateLocalInertia(mass, out localInertia);
@@ -86,6 +83,9 @@ namespace RockEngine.Physics
 
             RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             EngineRigidBody body = new EngineRigidBody(rbInfo);
+            body.ActivationState = ActivationState.ActiveTag;
+            body.CollisionFlags &= ~CollisionFlags.None;
+            body.ForceActivationState(ActivationState.ActiveTag);
             body.Mass = mass;
             World.AddRigidBody(body);
 

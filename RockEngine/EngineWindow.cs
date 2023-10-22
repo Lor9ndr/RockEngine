@@ -52,9 +52,9 @@ namespace RockEngine
         {
             base.OnLoad();
 
-            GL.DebugMessageCallback(Logger.DebugProcCallback, nint.Zero);
-            GL.Khr.DebugMessageCallback(Logger.DebugMessageDelegate, nint.Zero);
-            GL.Arb.DebugMessageCallback(Logger.DebugMessageDelegateARB, nint.Zero);
+            GL.DebugMessageCallback(Logger.DebugProcCallback, IntPtr.Zero);
+            GL.Khr.DebugMessageCallback(Logger.DebugMessageDelegate, IntPtr.Zero);
+            GL.Arb.DebugMessageCallback(Logger.DebugMessageDelegateARB, IntPtr.Zero);
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DebugOutputSynchronous);
         }
