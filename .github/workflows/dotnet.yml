@@ -21,8 +21,6 @@ jobs:
         dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
-    - name: Generate code with SourceGenerator
-      run: dotnet build -c Release --no-restore --source-generators
     - name: Build
       run: dotnet build -c Release --no-restore
    
