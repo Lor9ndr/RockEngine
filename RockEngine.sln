@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine", "RockEngine\Ro
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Tests", "RockEngine.Tests\RockEngine.Tests.csproj", "{584CF232-0851-4674-A5F3-55AA6742FF55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockEngine.Generator", "RockEngine.Generator\RockEngine.Generator.csproj", "{6DB765B9-560F-4B39-BA93-CA5CC15279B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Generator", "RockEngine.Generator\RockEngine.Generator.csproj", "{6DB765B9-560F-4B39-BA93-CA5CC15279B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

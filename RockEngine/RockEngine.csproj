@@ -13,10 +13,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="C:\Users\Администратор\.nuget\packages\dearimguisharp\1.88.3\contentFiles\any\net5.0\build\net40\DearImguiSharp.targets" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove="runtimes\glfw3.dll" />
     <None Remove="runtimes\libbulletc.dll" />
     <None Remove="runtimes\win-x64\native\glfw3.dll" />
@@ -88,17 +84,7 @@
     </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RockEngine.Generator\RockEngine.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <Content Update="C:\Users\Администратор\.nuget\packages\nativefiledialogsharp\0.5.0\contentFiles\any\netstandard2.0\nfd.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="C:\Users\Администратор\.nuget\packages\nativefiledialogsharp\0.5.0\contentFiles\any\netstandard2.0\nfd_x86.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\RockEngine.Generator\RockEngine.Generator.csproj" OutputItemType="Analyzer"/>
   </ItemGroup>
 
   <ItemGroup>
