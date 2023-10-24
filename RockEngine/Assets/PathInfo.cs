@@ -12,7 +12,7 @@
         public const string RESOURCES = "Resources";
         public const string SHADERS = "Shaders";
         public const string PICKING = "Picking";
-        public const string DEBUG = "Debug";
+        public const string DEBUG = "Dbg";
         public const string SCREEN = "Screen";
         public const string SELECTED_OBJECT = "SelectedObject";
     }

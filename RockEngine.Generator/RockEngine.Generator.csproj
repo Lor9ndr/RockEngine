@@ -8,6 +8,7 @@
     <IsRoslynComponent>true</IsRoslynComponent>
     <LangVersion>latest</LangVersion>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\RockEngine\Resources\Shaders\**">
-    </AdditionalFiles>
+    <AdditionalFiles Include="..\RockEngine\Resources\Shaders\**"/>
   </ItemGroup>
 </Project>
