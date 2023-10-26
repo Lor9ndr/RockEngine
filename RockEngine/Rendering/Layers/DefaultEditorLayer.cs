@@ -46,9 +46,9 @@ namespace RockEngine.Rendering.Layers
         }
 
         public override void OnRender()
-        {
-            DebugCamera.Update();
-            DebugCamera.Render();
+        { 
+            DebugCamera.UpdateOnDevelpmentState();
+            DebugCamera.RenderOnEditorLayer();
             var gameObjects = Scene.CurrentScene?.GetGameObjects();
             PickingObjectPass(gameObjects);
 

@@ -18,7 +18,6 @@ using RockEngine.Utils;
 using System.Buffers;
 
 using RockEngine.Engine.ECS;
-using RockEngine.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine
 {
@@ -85,13 +84,13 @@ namespace RockEngine
             for (int i = -25; i < 25; i++)
             {
                 var testTransform = new Transform(new Vector3(i, i, i));
-                var testGameObject = new GameObject("TestGameObject", testTransform, testMesh, material);
+                var testGameObject = new GameObject("TestGameObject", testTransform, new MeshComponent(testMesh), new MaterialComponent(material));
                 testGameObject.AddComponent(Physics.LocalCreateRigidBody(100, testTransform.GetModelMatrix().ClearScale(), new BoxShape(testTransform.Scale)));
                 scene.AddGameObject(testGameObject);
             }
             scene.AddGameObject(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
 
-            var floor = new GameObject("Floor", testMesh, AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor"));
+            var floor = new GameObject("Floor", new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
             floor.Transform.Scale = new Vector3(100, 1, 100);
             floor.AddComponent(Physics.LocalCreateRigidBody(0, floor.Transform.GetModelMatrix(), new BoxShape(floor.Transform.Scale/2)));
             scene.AddGameObject(floor);

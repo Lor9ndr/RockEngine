@@ -18,8 +18,6 @@ namespace RockEngine.Rendering.Layers
 {
     public partial class ImGuiLayer
     {
-        private bool _componentsWindowIsOpened;
-        private bool _componentContextMenuOpened;
         private string? _gameObjectName;
 
         private readonly Dictionary<Type, FieldInfo[]> cachedFields = new Dictionary<Type, FieldInfo[]>();
@@ -62,7 +60,6 @@ namespace RockEngine.Rendering.Layers
                 if (ImguiHelper.FaIconButton($"{FA.BARS}##{type}"))
                 {
                     ImGui.CloseCurrentPopup();
-                    _componentContextMenuOpened = true;
                     ImGui.OpenPopup($"ComponentContextMenu##{type}");
 
                 }
@@ -137,7 +134,7 @@ namespace RockEngine.Rendering.Layers
             ImGui.Separator();
         }
 
-        private void ContextMenuComponents(Type type, IComponent component)
+        private static void ContextMenuComponents(Type type, IComponent component)
         {
             if (ImGui.BeginPopupContextItem($"ComponentContextMenu##{type}"))
             {
@@ -162,7 +159,6 @@ namespace RockEngine.Rendering.Layers
             {
                 ImGui.CloseCurrentPopup();
                 ImGui.OpenPopup("Components");
-                _componentsWindowIsOpened = true;
             }
             if (ImGui.BeginPopup("Components"))
             {

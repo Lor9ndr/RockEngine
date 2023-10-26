@@ -41,7 +41,7 @@ namespace RockEngine.Engine.EngineStates
         {
             foreach (var item in Scene.CurrentScene?.GetGameObjects())
             {
-                item.Update();
+                item.UpdateOnDevelpmentState();
             }
         }
     }

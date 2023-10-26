@@ -78,7 +78,7 @@ namespace RockEngine.Assets
                 }
                 else if (baseAsset.Type == AssetType.Material)
                 {
-                    Assets.Add(LoadAssetFromFile<MaterialComponent>(asset));
+                    Assets.Add(LoadAssetFromFile<Material>(asset));
                 }
                 else if (baseAsset.Type == AssetType.Mesh)
                 {
@@ -96,7 +96,7 @@ namespace RockEngine.Assets
 
             foreach (var meshPath in meshes)
             {
-                Assets.Add(LoadAssetFromFile<MeshComponent>(meshPath));
+                Assets.Add(LoadAssetFromFile<Mesh>(meshPath));
             }
 
             // Load scenes
@@ -115,15 +115,15 @@ namespace RockEngine.Assets
             }
         }
 
-        public static MaterialComponent CreateMaterialAsset(string path, string name = "Material")
+        public static Material CreateMaterialAsset(string path, string name = "Material")
         {
-            var asset = new MaterialComponent(path, name);
+            var asset = new Material(path, name, Guid.NewGuid());
             Assets.Add(asset);
             SaveAssetToFile(asset);
             return asset;
         }
 
-        public static MeshComponent CreateMesh(ref int[] indices, ref Vertex3D[] vertices, string name = "Mesh", string path = "", Guid id = default)
+        public static Mesh CreateMesh(ref int[] indices, ref Vertex3D[] vertices, string name = "Mesh", string path = "", Guid id = default)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -133,13 +133,13 @@ namespace RockEngine.Assets
             {
                 id = Guid.NewGuid();
             }
-            var asset = new MeshComponent(ref vertices, ref indices, name, path, id);
+            var asset = new Mesh(ref vertices, ref indices, name, path, id);
             Assets.Add(asset);
             SaveAssetToFile(asset);
             return asset;
         }
 
-        public static MeshComponent CreateMesh(ref Vertex3D[] vertices, string name = "Mesh", string path = "", Guid id = default)
+        public static Mesh CreateMesh(ref Vertex3D[] vertices, string name = "Mesh", string path = "", Guid id = default)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -149,7 +149,7 @@ namespace RockEngine.Assets
             {
                 id = Guid.NewGuid();
             }
-            var asset = new MeshComponent(ref vertices, name, path, id);
+            var asset = new Mesh(ref vertices, name, path, id);
             Assets.Add(asset);
             SaveAssetToFile(asset);
             return asset;
@@ -163,7 +163,7 @@ namespace RockEngine.Assets
             return asset;
         }
 
-        public static T LoadAssetFromFile<T>(string filePath)
+        public static T LoadAssetFromFile<T>(string filePath) where T:BaseAsset
         {
             string json = File.ReadAllText(filePath);
             var obj = JsonConvert.DeserializeObject<T>(json, _jsonSettings);

@@ -78,34 +78,41 @@ namespace RockEngine.Engine.ECS.GameObjects
         }
         public override void OnUpdate()
         {
-            if (Input.IsKeyDown(Keys.W))
+            base.OnUpdate();
+            if(Input.IsKeyDown(Keys.W))
             {
                 ChangePosition(Front * CameraSpeed * Time.DeltaTime); // Front
             }
-            if (Input.IsKeyDown(Keys.S))
+            if(Input.IsKeyDown(Keys.S))
             {
                 ChangePosition(-Front * CameraSpeed * Time.DeltaTime); // Front
             }
-            if (Input.IsKeyDown(Keys.A))
+            if(Input.IsKeyDown(Keys.A))
             {
                 ChangePosition(-Right * CameraSpeed * Time.DeltaTime); // Front
             }
-            if (Input.IsKeyDown(Keys.D))
+            if(Input.IsKeyDown(Keys.D))
             {
                 ChangePosition(Right * CameraSpeed * Time.DeltaTime); // Front
             }
-            if (Input.IsKeyDown(Keys.Space))
+            if(Input.IsKeyDown(Keys.Space))
             {
                 ChangePosition(Up * CameraSpeed * Time.DeltaTime); // Front
             }
-            if (Input.IsKeyDown(Keys.LeftShift))
+            if(Input.IsKeyDown(Keys.LeftShift))
             {
                 ChangePosition(-Up * CameraSpeed * Time.DeltaTime); // Front
             }
         }
+
+        public override void OnUpdateDevelepmentState()
+        {
+            //base.OnUpdateDevelepmentState();
+            OnUpdate();
+        }
         public override void RenderOnEditorLayer()
         {
-            base.RenderOnEditorLayer();
+            base.Render();
         }
     }
 }

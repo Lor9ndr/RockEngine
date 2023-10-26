@@ -90,5 +90,9 @@ namespace RockEngine.Engine.ECS
         {
             Dispose();
         }
+
+        public void OnUpdateDevelepmentState()
+        {
+        }
     }
 }

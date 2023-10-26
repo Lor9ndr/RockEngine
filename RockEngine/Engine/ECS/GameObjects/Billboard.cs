@@ -71,5 +71,10 @@ namespace RockEngine.Engine.ECS.GameObjects
         {
             throw new NotImplementedException();
         }
+
+        public void OnUpdateDevelepmentState()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

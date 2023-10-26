@@ -9,9 +9,12 @@ using RockEngine.OpenGL.Vertices;
 
 namespace RockEngine.Assets.JsonConverters
 {
-    internal sealed class MeshComponentJsonConverter : JsonConverter<MeshComponent>
+    internal sealed class MeshComponentJsonConverter : JsonConverter<Mesh>
     {
-        public override MeshComponent? ReadJson(JsonReader reader, Type objectType, MeshComponent? existingValue, bool hasExistingValue, JsonSerializer serializer)
+        private const string POSITION_FLAG = "ps";
+        private const string NORMAL_FLAG = "nml";
+        private const string TEXCOORDS_FLAG = "tx";
+        public override Mesh? ReadJson(JsonReader reader, Type objectType, Mesh? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             // Load the JSON object
             JObject jsonObject = JObject.Load(reader);
@@ -23,19 +26,19 @@ namespace RockEngine.Assets.JsonConverters
 
             JArray verticesArray = (JArray)jsonObject["Vertices"];
 
-            Vertex3D[] vertices = verticesArray.Select(v => new Vertex3D(v["Position"].ToObject<Vector3>(), v["Normal"].ToObject<Vector3>(), v["TexCoords"].ToObject<Vector2>())).ToArray();
+            Vertex3D[] vertices = verticesArray.Select(v => new Vertex3D(v[POSITION_FLAG].ToObject<Vector3>(), v[NORMAL_FLAG].ToObject<Vector3>(), v[TEXCOORDS_FLAG].ToObject<Vector2>())).ToArray();
             var indices = jsonObject.GetValue("Indices")?.ToObject<int[]>();
             bool hasIndices = indices is not null;
             if (hasIndices)
             {
-                return new MeshComponent(ref vertices, ref indices, name, path, id);
+                return new Mesh(ref vertices, ref indices, name, path, id);
             }
             else
             {
-                return new MeshComponent(ref vertices, name, path, id);
+                return new Mesh(ref vertices, name, path, id);
             }
         }
-        public override void WriteJson(JsonWriter writer, MeshComponent? value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, Mesh? value, JsonSerializer serializer)
         {
             if (value is null)
             {
@@ -54,9 +57,9 @@ namespace RockEngine.Assets.JsonConverters
             foreach (var vertex in value.Vertices)
             {
                 JObject vertexObject = new JObject();
-                vertexObject["Position"] = JToken.FromObject(vertex.Position, serializer);
-                vertexObject["Normal"] = JToken.FromObject(vertex.Normal, serializer);
-                vertexObject["TexCoords"] = JToken.FromObject(vertex.TexCoords, serializer);
+                vertexObject[POSITION_FLAG] = JToken.FromObject(vertex.Position, serializer);
+                vertexObject[NORMAL_FLAG] = JToken.FromObject(vertex.Normal, serializer);
+                vertexObject[TEXCOORDS_FLAG] = JToken.FromObject(vertex.TexCoords, serializer);
                 verticesArray.Add(vertexObject);
             }
             jsonObject["Vertices"] = verticesArray;

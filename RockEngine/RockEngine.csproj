@@ -10,6 +10,7 @@
     <Title>RockEngine</Title>
     <IncludeSymbols>False</IncludeSymbols>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <legacyCorruptedStateExceptionsPolicy>True</legacyCorruptedStateExceptionsPolicy>
   </PropertyGroup>
 
   <ItemGroup>

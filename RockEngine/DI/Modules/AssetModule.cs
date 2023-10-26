@@ -3,13 +3,9 @@
 using OpenTK.Mathematics;
 
 using RockEngine.Assets;
-using RockEngine.Assets.AssetCreators;
 using RockEngine.Assets.Converters;
-using RockEngine.Engine;
-using RockEngine.Engine.ECS;
 using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.OpenGL.Settings;
-using RockEngine.OpenGL.Textures;
 
 namespace RockEngine.DI.Modules
 {
@@ -22,12 +18,7 @@ namespace RockEngine.DI.Modules
             Kernel.Bind<IConverter<GameObject>>().To<GameObjectConverter>();
             Kernel.Bind<IConverter<Vector3>>().To<Vector3Converter>();
 
-            Kernel.Bind<IAssetCreator<BaseAsset>>().To<BaseAssetCreator>();
-            Kernel.Bind<IAssetCreator<Project>>().To<ProjectAssetCreator>();
-            Kernel.Bind<IAssetCreator<Scene>>().To<SceneAssetCreator>();
-            Kernel.Bind<IAssetCreator<Texture>>().To<TextureAssetCreator>();
-            Kernel.Bind<IAssetCreator<Texture2D>>().To<Texture2DAssetCreator>();
-            Kernel.Bind<IAssetCreator<MaterialComponent>>().To<MaterialAssetCreator>();
+           
         }
     }
 }

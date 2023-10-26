@@ -1,7 +1,6 @@
 ﻿using RockEngine.Assets;
 using RockEngine.OpenGL.Vertices;
 using RockEngine.OpenGL.Textures;
-using RockEngine.Engine.ECS;
 using RockEngine.OpenGL.Settings;
 
 namespace RockEngine.Tests
@@ -37,7 +36,7 @@ namespace RockEngine.Tests
 
             // Assert
             Assert.That(asset, Is.Not.Null);
-            Assert.That(asset, Is.InstanceOf<MaterialComponent>());
+            Assert.That(asset, Is.InstanceOf<Material>());
             Assert.That(asset.Name, Is.EqualTo("Material"));
             Assert.That(asset.Path, Is.EqualTo(TestAssetsPath));
             Assert.That(asset.ID, Is.Not.EqualTo(default(Guid)));
@@ -57,7 +56,7 @@ namespace RockEngine.Tests
 
             // Assert
             Assert.That(asset, Is.Not.Null);
-            Assert.That(asset, Is.InstanceOf<MeshComponent>());
+            Assert.That(asset, Is.InstanceOf<Mesh>());
             Assert.That(asset.Name, Is.EqualTo("Mesh"));
             Assert.That(asset.Path, Is.EqualTo(TestAssetsPath));
             Assert.That(asset.ID, Is.Not.EqualTo(default(Guid)));
@@ -92,21 +91,19 @@ namespace RockEngine.Tests
         {
             // Arrange
             var filePath = Path.Combine(TestAssetsPath, "Material.asset");
-            var assetToSave = new MaterialComponent(TestAssetsPath, "Material");
+            var assetToSave = new Material(TestAssetsPath, "Material", Guid.NewGuid());
             AssetManager.SaveAssetToFile(filePath, assetToSave);
 
             // Act
-            var loadedAsset = AssetManager.LoadAssetFromFile<MaterialComponent>(filePath);
+            var loadedAsset = AssetManager.LoadAssetFromFile<Material>(filePath);
 
             // Assert
             Assert.That(loadedAsset, Is.Not.Null);
-            Assert.That(loadedAsset, Is.InstanceOf<MaterialComponent>());
+            Assert.That(loadedAsset, Is.InstanceOf<Material>());
             Assert.That(loadedAsset.Name, Is.EqualTo("Material"));
             Assert.That(loadedAsset.Path, Is.EqualTo(TestAssetsPath));
             Assert.That(loadedAsset.ID, Is.EqualTo(assetToSave.ID));
-            Assert.That(loadedAsset.Ao, Is.EqualTo(assetToSave.Ao));
-            Assert.That(loadedAsset.Metallic, Is.EqualTo(assetToSave.Metallic));
-            Assert.That(loadedAsset.AlbedoColor, Is.EqualTo(assetToSave.AlbedoColor));
+           
         }
 
         [Test]
@@ -114,21 +111,18 @@ namespace RockEngine.Tests
         {
             // Arrange
             var filePath = Path.Combine(TestAssetsPath, "Material.asset");
-            var assetToSave = new MaterialComponent(TestAssetsPath, "Material");
+            var assetToSave = new Material(TestAssetsPath, "Material", Guid.NewGuid());
             AssetManager.SaveAssetToFile(filePath, assetToSave);
 
             // Act
-            var loadedAsset = AssetManager.LoadAssetFromFile<MaterialComponent>(filePath);
+            var loadedAsset = AssetManager.LoadAssetFromFile<Material>(filePath);
 
             // Assert
             Assert.That(loadedAsset, Is.Not.Null);
-            Assert.That(loadedAsset, Is.InstanceOf<MaterialComponent>());
+            Assert.That(loadedAsset, Is.InstanceOf<Material>());
             Assert.That(loadedAsset.Name, Is.EqualTo("Material"));
             Assert.That(loadedAsset.Path, Is.EqualTo(TestAssetsPath));
             Assert.That(loadedAsset.ID, Is.EqualTo(assetToSave.ID));
-            Assert.That(loadedAsset.Ao, Is.EqualTo(assetToSave.Ao));
-            Assert.That(loadedAsset.Metallic, Is.EqualTo(assetToSave.Metallic));
-            Assert.That(loadedAsset.AlbedoColor, Is.EqualTo(assetToSave.AlbedoColor));
         }
 
         [Test]
@@ -136,7 +130,7 @@ namespace RockEngine.Tests
         {
             // Arrange
             var filePath = Path.Combine(TestAssetsPath, "Material.asset");
-            var assetToSave = new MaterialComponent(TestAssetsPath, "Material");
+            var assetToSave = new Material(TestAssetsPath, "Material", Guid.NewGuid());
 
             // Act
             AssetManager.SaveAssetToFile(filePath, assetToSave);
@@ -151,7 +145,7 @@ namespace RockEngine.Tests
         public void GetFilePath_ShouldReturnCorrectFilePath()
         {
             // Arrange
-            var asset = new MaterialComponent(TestAssetsPath, "Material");
+            var asset = new Material(TestAssetsPath, "Material", Guid.NewGuid());
 
             // Act
             var filePath = AssetManager.GetFilePath(asset);

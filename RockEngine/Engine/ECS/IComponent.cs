@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 
 using RockEngine.Engine.ECS.GameObjects;
-using RockEngine.OpenGL;
-using RockEngine.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.Engine.ECS
 {
@@ -21,10 +19,8 @@ namespace RockEngine.Engine.ECS
 
         void OnUpdate();
 
+        void OnUpdateDevelepmentState();
+
         void OnDestroy();
-    }
-    public interface IComponentRenderable<T> : IComponent, IRenderable where T : struct, IUBOData<T>
-    {
-        T GetUBOData();
     }
 }

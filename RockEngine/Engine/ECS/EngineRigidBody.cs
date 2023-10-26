@@ -36,5 +36,9 @@ namespace RockEngine.Engine.ECS
         public void OnUpdate()
         {
         }
+
+        public void OnUpdateDevelepmentState()
+        {
+        }
     }
 }

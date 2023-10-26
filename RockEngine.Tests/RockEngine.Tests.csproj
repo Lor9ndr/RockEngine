@@ -28,6 +28,9 @@
     <Reference Include="OpenTK.Mathematics">
       <HintPath>..\RockEngine\runtimes\OpenTK.Mathematics.dll</HintPath>
     </Reference>
+    <Reference Include="OpenTK.Windowing.GraphicsLibraryFramework">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Windowing.GraphicsLibraryFramework.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

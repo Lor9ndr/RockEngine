@@ -75,6 +75,7 @@ namespace RockEngine.Engine.ECS.GameObjects
             Children = new List<GameObject>();
             Transform = new Transform();
         }
+
         #endregion
 
         /// <summary>
@@ -120,6 +121,18 @@ namespace RockEngine.Engine.ECS.GameObjects
             {
                 IComponent? item = _components[i];
                 item.OnUpdate();
+            }
+        }
+
+        /// <summary>
+        /// Update components of the gameobject
+        /// </summary>
+        public virtual void UpdateOnDevelpmentState()
+        {
+            for(int i = 0; i < _components.Count; i++)
+            {
+                IComponent? item = _components[i];
+                item.OnUpdateDevelepmentState();
             }
         }
 

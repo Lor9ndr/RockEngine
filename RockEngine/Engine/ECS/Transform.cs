@@ -11,6 +11,8 @@ namespace RockEngine.Engine.ECS
 {
     public class Transform : IComponent, IRenderable
     {
+        private TransformData _transformData;
+
         public Quaternion RotationQuaternion;
 
         [UI] public Vector3 Position;
@@ -25,8 +27,6 @@ namespace RockEngine.Engine.ECS
         }
 
         public GameObject? Parent { get => _parent; set => _parent = value; }
-
-        private Matrix4 _model;
 
         public int Order => 0;
 
@@ -94,13 +94,15 @@ namespace RockEngine.Engine.ECS
             var rb = Parent.GetComponent<EngineRigidBody>(); 
             if(rb is not null && rb.ActivationState != ActivationState.DisableSimulation)
             {
-                rb.WorldTransform = _model;
+                rb.WorldTransform = _transformData.Model;
             }
         }
 
         public void OnUpdate()
         {
-            _model = GetModelMatrix();
+            _transformData = new TransformData();
+
+            _transformData.Model = GetModelMatrix();
         }
 
         public void OnDestroy()
@@ -109,12 +111,19 @@ namespace RockEngine.Engine.ECS
 
         public void Render()
         {
-            new TransformData() { Model = _model}.SendData();
+            _transformData.SendData();
         }
 
         public void RenderOnEditorLayer()
         {
-            new TransformData { Model = _model }.SendData();
+            _transformData.SendData();
+        }
+
+        public void OnUpdateDevelepmentState()
+        {
+            _transformData = new TransformData();
+
+            _transformData.Model = GetModelMatrix();
         }
     }
 }

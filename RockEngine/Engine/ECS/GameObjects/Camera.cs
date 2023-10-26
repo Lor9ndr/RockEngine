@@ -9,6 +9,7 @@ namespace RockEngine.Engine.ECS.GameObjects
 {
     internal class Camera : IComponent, IRenderable
     {
+        protected CameraData _cameraData;
         public const int MAX_FOV = 120;
 
         protected float _fov = MathHelper.PiOver2;
@@ -86,19 +87,11 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public Camera(float aspectRatio)
         {
+            _cameraData = new CameraData();
             AspectRatio = aspectRatio;
             UpdateVectors();
         }
 
-        public CameraData GetCameraData()
-        {
-            return new CameraData()
-            {
-                View = GetViewMatrix(),
-                Projection = GetProjectionMatrix(),
-                ViewPos = Parent!.Transform.Position
-            };
-        }
         // Get the projection matrix using the same method we have used up until this point
         public Matrix4 GetProjectionMatrix() => Matrix4.CreatePerspectiveFieldOfView(_fov, AspectRatio, Near, Far);
 
@@ -107,12 +100,13 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public void Render()
         {
-            GetCameraData().SendData();
+            _cameraData.SendData();
             Parent.Transform.ShouldBeUpdated = false;
         }
 
         public virtual void RenderOnEditorLayer()
         {
+            //Render();
         }
 
         public void UpdateVectors()
@@ -167,10 +161,20 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public virtual void OnUpdate()
         {
+            _cameraData.Projection = GetProjectionMatrix();
+            _cameraData.View = GetViewMatrix();
+            _cameraData.ViewPos = Parent.Transform.Position;
         }
 
         public void OnDestroy()
         {
+        }
+
+        public virtual void OnUpdateDevelepmentState()
+        {
+            _cameraData.Projection = GetProjectionMatrix();
+            _cameraData.View = GetViewMatrix();
+            _cameraData.ViewPos = Parent.Transform.Position;
         }
     }
 }
