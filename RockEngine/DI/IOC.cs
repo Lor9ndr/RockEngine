@@ -19,6 +19,12 @@ namespace RockEngine.DI
         {
             return _kernel.Get<T>();
         }
+
+        public static IEnumerable<T> GetAll<T>()
+        {
+            return _kernel.GetAll<T>();
+        }
+
         public static object Get(Type t)
         {
             return _kernel.Get(t);

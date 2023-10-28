@@ -4,9 +4,9 @@ using ImGuiNET;
 
 using RockEngine.Assets;
 using RockEngine.Editor;
+using RockEngine.Editor.ImguiEditor;
 using RockEngine.Engine.ECS;
 using RockEngine.Engine.ECS.GameObjects;
-using RockEngine.Rendering.Layers.ImguiEditor;
 
 using System.Numerics;
 using System.Reflection;
@@ -16,7 +16,7 @@ using OpenMath = OpenTK.Mathematics;
 
 namespace RockEngine.Rendering.Layers
 {
-    public partial class ImGuiLayer
+    public partial class ImGuiRenderer
     {
         private string? _gameObjectName;
 
@@ -109,6 +109,28 @@ namespace RockEngine.Rendering.Layers
                 if (attribute != null)
                 {
                     ProcessGameObjectComponentFields(component, field, attribute);
+                }
+                else
+                {
+                    // Check if the field is of type BaseAsset
+                    if(field.FieldType == typeof(BaseAsset))
+                    {
+                        // Display a drag and drop area for the asset
+                        if(ImGui.BeginDragDropTarget())
+                        {
+                            var payload = ImGui.AcceptDragDropPayload("ASSET_PAYLOAD");
+                            if(payload.Data != IntPtr.Zero)
+                            {
+                                // Retrieve the dragged asset from the payload
+                                var draggedAsset = (BaseAsset)payload.Data;
+
+                                // Set the field value to the dragged asset
+                                field.SetValue(component, draggedAsset);
+                            }
+
+                            ImGui.EndDragDropTarget();
+                        }
+                    }
                 }
             }
         }

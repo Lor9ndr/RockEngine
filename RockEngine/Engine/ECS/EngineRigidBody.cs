@@ -5,7 +5,7 @@ using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Engine.ECS
 {
-    internal sealed class EngineRigidBody : RigidBody, IComponent
+    public sealed class EngineRigidBody : RigidBody, IComponent
     {
 
         [UI]

@@ -3,14 +3,17 @@ using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Rendering.Layers
 {
-    internal sealed class DefaultGameLayer : ALayer, IDisposable
+    public sealed class DefaultGameLayer : ALayer, IDisposable
     {
-        public override int Order => 10;
+        public override int Order => 0;
+
+        public override Layer Layer => Layer.Default;
+
         public CameraTexture Screen;
 
         public DefaultGameLayer()
         {
-            Screen = new CameraTexture();
+            Screen = new CameraTexture(new OpenTK.Mathematics.Vector2i(1280, 720));
         }
 
         public override void OnRender()

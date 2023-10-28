@@ -7,7 +7,7 @@ using RockEngine.OpenGL.Textures;
 
 namespace RockEngine.OpenGL
 {
-    internal sealed class PickingTexture : IDisposable
+    public sealed class PickingTexture : IDisposable
     {
         private Vector2i _size;
         private FBO _fbo;
@@ -22,9 +22,9 @@ namespace RockEngine.OpenGL
 
             public PixelInfo()
             {
-                ObjectID = 0;
-                DrawID = 0;
-                PrimID = 0;
+                ObjectID = 0.0f;
+                DrawID = 0.0f;
+                PrimID = 0.0f;
             }
         };
 
@@ -47,7 +47,7 @@ namespace RockEngine.OpenGL
             _depthTexture = new Texture(_size, new TextureSettings()
             {
                 TextureTarget = TextureTarget.Texture2D,
-                SizedInternalFormat = SizedInternalFormat.DepthComponent32,
+                SizedInternalFormat = SizedInternalFormat.DepthComponent32f,
                 PixelType = PixelType.Float,
                 FramebufferAttachment = FramebufferAttachment.DepthAttachment
             });
@@ -56,6 +56,7 @@ namespace RockEngine.OpenGL
                 .Setup().SetLabel().Bind();
             GL.ReadBuffer(ReadBufferMode.None);
             GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+            _fbo.CheckBuffer();
             _fbo.Unbind();
 
         }
@@ -82,7 +83,6 @@ namespace RockEngine.OpenGL
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, IGLObject.EMPTY_HANDLE);
             return pixel;
         }
-
 
         public void CheckSize(Vector2i size)
         {

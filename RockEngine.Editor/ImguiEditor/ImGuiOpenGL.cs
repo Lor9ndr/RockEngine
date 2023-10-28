@@ -1,29 +1,21 @@
 ﻿using ImGuiNET;
 using OpenTK.Mathematics;
-
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-
-using RockEngine.Rendering.Layers.ImguiEditor;
 using OpenTK.Graphics.OpenGL4;
 using RockEngine.OpenGL.Textures;
 using RockEngine.OpenGL.Buffers;
 
-namespace RockEngine.Rendering.imgui
+namespace RockEngine.Editor.ImguiEditor
 {
-    public class ImGuiRenderer : IDisposable
+    public class ImGuiOpenGL : IDisposable
     {
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public ImGuiRenderer()
+        public ImGuiOpenGL()
         {
             AssureContextCreated();
 
@@ -39,7 +31,7 @@ namespace RockEngine.Rendering.imgui
         private static void AssureContextCreated()
         {
             nint context = ImGui.GetCurrentContext();
-            if (context == nint.Zero)
+            if(context == nint.Zero)
             {
                 context = ImGui.CreateContext();
                 ImGui.SetCurrentContext(context);
@@ -51,7 +43,7 @@ namespace RockEngine.Rendering.imgui
         /// </summary>
         /// <param name="fontData">TTF file read into a byte array</param>
         /// <param name="sizePixels">Intented size in pixels. Bigger means bigger texture is created.</param>
-        public void LoadFontTTF(byte[] fontData, float sizePixels)
+        public void LoadFontTTF(byte[ ] fontData, float sizePixels)
         {
             var fonts = ImGui.GetIO().Fonts;
             fonts.Clear(); // replace existing fonts
@@ -108,7 +100,7 @@ namespace RockEngine.Rendering.imgui
             GL.CompileShader(shader);
 
             GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
-            if (success == 0)
+            if(success == 0)
             {
                 string info = GL.GetShaderInfoLog(shader);
                 Debug.WriteLine($"GL.CompileShader for shader '{name}' [{type}] had info log:\n{info}");
@@ -130,7 +122,7 @@ namespace RockEngine.Rendering.imgui
             GL.LinkProgram(program);
 
             GL.GetProgram(program, GetProgramParameterName.LinkStatus, out int success);
-            if (success == 0)
+            if(success == 0)
             {
                 string info = GL.GetProgramInfoLog(program);
                 Debug.WriteLine($"GL.LinkProgram had info log [{name}]:\n{info}");
@@ -242,7 +234,7 @@ void main()
 
         private void RenderImDrawData(ImDrawDataPtr draw_data)
         {
-            if (0 == draw_data.CmdListsCount)
+            if(0 == draw_data.CmdListsCount)
             {
                 return;
             }
@@ -250,12 +242,12 @@ void main()
             vertexArray.Bind();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _indexBuffer);
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBuffer);
-            for (int i = 0; i < draw_data.CmdListsCount; i++)
+            for(int i = 0; i < draw_data.CmdListsCount; i++)
             {
                 ImDrawListPtr cmd_list = draw_data.CmdLists[i];
 
                 int vertexSize = cmd_list.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>();
-                if (vertexSize > _vertexBufferSize)
+                if(vertexSize > _vertexBufferSize)
                 {
                     int newSize = (int)Math.Max(_vertexBufferSize * 1.5f, vertexSize);
 
@@ -265,7 +257,7 @@ void main()
                 }
 
                 int indexSize = cmd_list.IdxBuffer.Size * sizeof(ushort);
-                if (indexSize > _indexBufferSize)
+                if(indexSize > _indexBufferSize)
                 {
                     int newSize = (int)Math.Max(_indexBufferSize * 1.5f, indexSize);
                     GL.BufferData(BufferTarget.ElementArrayBuffer, newSize, nint.Zero, BufferUsageHint.DynamicDraw);
@@ -291,16 +283,16 @@ void main()
             GL.Disable(EnableCap.DepthTest);
 
             // Render command lists
-            for (int n = 0; n < draw_data.CmdListsCount; n++)
+            for(int n = 0; n < draw_data.CmdListsCount; n++)
             {
                 ImDrawListPtr cmd_list = draw_data.CmdLists[n];
                 GL.BufferSubData(BufferTarget.ArrayBuffer, nint.Zero, cmd_list.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>(), cmd_list.VtxBuffer.Data);
                 GL.BufferSubData(BufferTarget.ElementArrayBuffer, nint.Zero, cmd_list.IdxBuffer.Size * sizeof(ushort), cmd_list.IdxBuffer.Data);
 
-                for (int cmd_i = 0; cmd_i < cmd_list.CmdBuffer.Size; cmd_i++)
+                for(int cmd_i = 0; cmd_i < cmd_list.CmdBuffer.Size; cmd_i++)
                 {
                     ImDrawCmdPtr pcmd = cmd_list.CmdBuffer[cmd_i];
-                    if (pcmd.UserCallback != nint.Zero)
+                    if(pcmd.UserCallback != nint.Zero)
                     {
                         throw new NotImplementedException();
                     }
@@ -312,7 +304,7 @@ void main()
                         var clip = pcmd.ClipRect;
                         GL.Scissor((int)clip.X, (int)io.DisplaySize.Y - (int)clip.W, (int)(clip.Z - clip.X), (int)(clip.W - clip.Y));
 
-                        if ((io.BackendFlags & ImGuiBackendFlags.RendererHasVtxOffset) != 0)
+                        if((io.BackendFlags & ImGuiBackendFlags.RendererHasVtxOffset) != 0)
                         {
                             GL.DrawElementsBaseVertex(PrimitiveType.Triangles, (int)pcmd.ElemCount, DrawElementsType.UnsignedShort, (nint)(pcmd.IdxOffset * sizeof(ushort)), (int)pcmd.VtxOffset);
                         }

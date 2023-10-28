@@ -2,7 +2,7 @@
 
 namespace RockEngine.Engine.EngineStates
 {
-    internal static class EngineStateManager
+    public static class EngineStateManager
     {
         private static BaseEngineState? _baseEngineState;
         public static Dictionary<string, BaseEngineState> _states = new Dictionary<string, BaseEngineState>();

@@ -1,7 +1,7 @@
 ﻿namespace RockEngine.Editor
 {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-    internal sealed class UIAttribute : Attribute
+    public sealed class UIAttribute : Attribute
     {
         public const string UNKNOWN = "##UNKNOWN";
         public string Alias { get; set; }

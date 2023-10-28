@@ -26,6 +26,10 @@ namespace RockEngine.Engine.ECS
         public MaterialComponent(Material material)
         {
             Material = material;
+            AlbedoColor = new Vector3(0.7f);
+            Metallic = 1.0f;
+            Roughness = 1.0f;
+            Ao = 1.0f;
             MaterialData = new MaterialData();
         }
 

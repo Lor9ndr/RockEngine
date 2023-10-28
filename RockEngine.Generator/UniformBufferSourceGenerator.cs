@@ -234,7 +234,7 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
                 string type = string.Empty;
                 if(item.Type == "vec3")
                 {
-                    offset += 12;
+                    offset += 16;
                     type = "Vector3";
                 }
                 else if(item.Type == "float")

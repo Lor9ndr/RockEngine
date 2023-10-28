@@ -1,18 +1,15 @@
-﻿
-using RockEngine.DI;
-
-using RockEngine;
+﻿using RockEngine.DI;
 using RockEngine.Utils;
+using RockEngine.Editor;
 
 AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-IoC.Setup();
-string name = "Engine";
+string name = "RockEngineEditor";
 if(args.Length > 0)
 {
     name = args[0];
 }
-var window = new Game(name);
+var window = new Editor(name);
 
 window.Start();
 window.Dispose();

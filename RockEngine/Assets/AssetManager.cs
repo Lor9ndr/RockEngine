@@ -3,16 +3,10 @@
 using OpenTK.Mathematics;
 
 using RockEngine.Engine;
-using RockEngine.Engine.ECS;
 using RockEngine.OpenGL.Settings;
-using RockEngine.OpenGL.Shaders;
 using RockEngine.OpenGL.Textures;
 using RockEngine.OpenGL.Vertices;
 using RockEngine.Utils;
-
-using SkiaSharp;
-
-using System.IO;
 
 using RockEngine.Assets.JsonConverters;
 
@@ -20,7 +14,7 @@ namespace RockEngine.Assets
 {
     public static class AssetManager
     {
-        private const string EXTENSION_NAME = ".asset";
+        public const string EXTENSION_NAME = ".asset";
 
         public static List<IAsset> Assets = new List<IAsset>();
         private static readonly JsonConverter[ ] _converters = new JsonConverter[ ]
@@ -44,7 +38,6 @@ namespace RockEngine.Assets
             PreserveReferencesHandling = PreserveReferencesHandling.All,
             TypeNameHandling = TypeNameHandling.Objects
         };
-
 
         public static IAsset? GetAssetByID(Guid id)
         {
@@ -181,6 +174,10 @@ namespace RockEngine.Assets
         }
         public static string GetFilePath(IAsset asset)
         {
+            if(asset is null)
+            {
+                return string.Empty;
+            }
             if (string.IsNullOrEmpty(asset.Path))
             {
                 asset.Path = PathInfo.PROJECT_ASSETS_PATH;
@@ -196,7 +193,22 @@ namespace RockEngine.Assets
         public static Project CreateProject(string name, string assetPath, Guid id)
         {
             Project p = new Project(name, assetPath, id);
+            SaveAssetToFile(p);
+            Assets.Add(p);
             return p;
+        }
+
+        public static IAsset? GetAssetByPath(string fullName)
+        {
+            return Assets.FirstOrDefault(s=> Path.GetFullPath(GetFilePath(s)) == Path.GetFullPath(fullName));
+        }
+
+        public static Scene CreateScene(string name, string assetPath, Guid id)
+        {
+            Scene scene = new Scene(name, assetPath, id);
+            SaveAssetToFile(scene);
+            Assets.Add(scene);
+            return scene;
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace RockEngine.OpenGL.Shaders
 {
-    internal sealed class FragmentShader : BaseShaderType
+    public sealed class FragmentShader : BaseShaderType
     {
         public override ShaderType Type => ShaderType.FragmentShader;
         public FragmentShader(string path) : base(path)

@@ -2,14 +2,16 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RockEngine.Inputs;
 using RockEngine.Utils;
 
 using RockEngine.Rendering.Layers;
+using RockEngine.Engine.ECS.GameObjects;
+using RockEngine.Inputs;
+using RockEngine.Engine;
 
-namespace RockEngine.Engine.ECS.GameObjects
+namespace RockEngine.Editor.GameObjects
 {
-    internal sealed class DebugCamera : Camera
+    public sealed class DebugCamera : Camera
     {
         public const int MAX_CAM_SPEED = 150;
 
@@ -25,7 +27,7 @@ namespace RockEngine.Engine.ECS.GameObjects
             set
             {
                 _canMove = value;
-                _window.Cursor = _canMove && ImGuiLayer.IsMouseOnEditorScreen ? MouseCursor.Hand : MouseCursor.Default;
+                _window.Cursor = _canMove && ImGuiRenderer.IsMouseOnEditorScreen ? MouseCursor.Hand : MouseCursor.Default;
             }
         }
         public DebugCamera(float aspectRatio, EngineWindow window) : base(aspectRatio)
@@ -62,7 +64,7 @@ namespace RockEngine.Engine.ECS.GameObjects
         }
         private void ChangePosition(Vector3 offset)
         {
-            if (CanMove && ImGuiLayer.IsMouseOnEditorScreen)
+            if(CanMove && ImGuiRenderer.IsMouseOnEditorScreen)
             {
                 Parent!.Transform.Position += offset;
             }
@@ -70,7 +72,7 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         private void Window_MouseMove(MouseMoveEventArgs mouse)
         {
-            if (CanMove && ImGuiLayer.IsMouseOnEditorScreen)
+            if(CanMove && ImGuiRenderer.IsMouseOnEditorScreen)
             {
                 Yaw += mouse.DeltaX * Sensitivity;
                 Pitch -= mouse.DeltaY * Sensitivity;

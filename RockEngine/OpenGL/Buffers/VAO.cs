@@ -4,7 +4,7 @@ using RockEngine.Utils;
 
 namespace RockEngine.OpenGL.Buffers
 {
-    internal sealed class VAO : ASetuppableGLObject
+    public sealed class VAO : ASetuppableGLObject
     {
         public const int INSTANCE_MODELS_ATTRIBUTE = 10;
 

@@ -1,13 +1,15 @@
 ﻿using OpenTK.Windowing.GraphicsLibraryFramework;
 
 using RockEngine;
+using RockEngine.Utils;
 
 namespace RockEngine.Inputs
 {
-    internal static class Input
+    public static class Input
     {
-        internal static KeyboardState KeyboardState { get => Game.MainWindow.KeyboardState; }
-        internal static MouseState MouseState { get => Game.MainWindow.MouseState; }
+        private static readonly EngineWindow _window = WindowManager.GetMainWindow();
+        public static KeyboardState KeyboardState { get => _window.KeyboardState; }
+        public static MouseState MouseState { get => _window.MouseState; }
 
         public static bool IsKeyDown(Keys key)
         {

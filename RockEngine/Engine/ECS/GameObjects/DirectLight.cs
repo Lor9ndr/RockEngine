@@ -7,7 +7,7 @@ using RockEngine.OpenGL;
 
 namespace RockEngine.Engine.ECS.GameObjects
 {
-    internal sealed class DirectLight : IComponent, IRenderable
+    public sealed class DirectLight : IComponent, IRenderable
     {
         private LightData _lightData;
 

@@ -1,13 +1,12 @@
 ﻿using BulletSharp;
-using BulletSharp.Math;
 
 using RockEngine.Engine.ECS;
 
 namespace RockEngine.Engine.EngineStates
 {
-    internal sealed class PlayEngineState : BaseEngineState
+    public sealed class PlayEngineState : BaseEngineState
     {
-        internal override string Key => "play";
+        public override string Key => "play";
 
         public override void OnEnterState()
         {

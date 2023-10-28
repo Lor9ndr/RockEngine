@@ -10,24 +10,33 @@ using RockEngine.OpenGL.Buffers.UBOBuffers;
 using RockEngine.OpenGL.Shaders;
 
 using RockEngine.Engine.ECS;
+using RockEngine.Rendering.Layers;
+using RockEngine.Editor.GameObjects;
+using RockEngine.Utils;
 
-namespace RockEngine.Rendering.Layers
+namespace RockEngine.Editor.Layers
 {
-    internal sealed class DefaultEditorLayer : ALayer, IDisposable
+    public sealed class DefaultEditorLayer : ALayer, IDisposable
     {
+        private readonly EngineWindow _window;
         public CameraTexture Screen;
         public PickingTexture PickingTexture;
+
+        public override Layer Layer => Layer.Editor;
 
         public GameObject DebugCamera;
 
         private readonly VFShaderProgram PickingShader;
         private readonly VFShaderProgram SelectingShader;
-        public override int Order => 9;
+        private readonly ImGuiRenderer _imguiLayer;
+
+        public override int Order => 1;
 
         public DefaultEditorLayer()
         {
-            Screen = new CameraTexture();
-            PickingTexture = new PickingTexture(Game.MainWindow.Size);
+            _window = WindowManager.GetMainWindow();
+            Screen = new CameraTexture(WindowManager.GetMainWindow().Size);
+            PickingTexture = new PickingTexture(WindowManager.GetMainWindow().Size);
 
             var basePicking = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.PICKING);
             var baseDebug = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.SELECTED_OBJECT);
@@ -40,13 +49,14 @@ namespace RockEngine.Rendering.Layers
                 new VertexShader(Path.Combine(baseDebug, "Selected.vert")),
                 new FragmentShader(Path.Combine(baseDebug, "Selected.frag")));
 
-            var camera = new DebugCamera(Game.MainWindow.Size.X / (float)Game.MainWindow.Size.Y, Game.MainWindow);
+            var camera = new DebugCamera(_window.Size.X / (float)_window.Size.Y, _window);
             DebugCamera = new GameObject("DebugCamera", camera, new Transform(new Vector3(0, 10, 0)));
             camera.LookAt(new Vector3(15), new Vector3(0), Vector3.UnitY);
+            _imguiLayer = new ImGuiRenderer(this);
         }
 
         public override void OnRender()
-        { 
+        {
             DebugCamera.UpdateOnDevelpmentState();
             DebugCamera.RenderOnEditorLayer();
             var gameObjects = Scene.CurrentScene?.GetGameObjects();
@@ -55,20 +65,21 @@ namespace RockEngine.Rendering.Layers
             MainRenderPass();
 
             GettingObjectFromPicked(gameObjects);
+            _imguiLayer.OnRender();
         }
 
         private void GettingObjectFromPicked(List<GameObject> gameObjects)
         {
-            if (Input.IsButtonPressed(MouseButton.Left) &&
-                ImGuiLayer.IsMouseOnEditorScreen)
+            if(Input.IsButtonPressed(MouseButton.Left) &&
+                ImGuiRenderer.IsMouseOnEditorScreen)
             {
-                PickingTexture.PixelInfo pi = PickingTexture.ReadPixel((int)ImGuiLayer.EditorScreenMousePos.X, (int)ImGuiLayer.EditorScreenMousePos.Y);
+                PickingTexture.PixelInfo pi = PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y);
 
-                if (pi.PrimID != 0 && pi.ObjectID < gameObjects.Count)
+                if(pi.PrimID != 0 )
                 {
-                    var selected = gameObjects.FirstOrDefault(s => s.GameObjectID == pi.ObjectID);
-                    Game.LayerStack.GetLayer<ImGuiLayer>().SelectedGameObject = selected;
-
+                    var objID = (uint)pi.ObjectID;
+                    var selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
+                    _imguiLayer.SelectedGameObject = selected;
                 }
             }
         }
@@ -76,8 +87,8 @@ namespace RockEngine.Rendering.Layers
         private void MainRenderPass()
         {
             Screen.BeginRenderToScreen();
-            var selected = Game.LayerStack.GetLayer<ImGuiLayer>()!.SelectedGameObject;
-            if (selected != null)
+            var selected = _imguiLayer.SelectedGameObject;
+            if(selected != null)
             {
                 GL.Clear(ClearBufferMask.StencilBufferBit);
                 selected.IsActive = false;
@@ -91,7 +102,7 @@ namespace RockEngine.Rendering.Layers
 
         private void OutlineSelectedGameObject(GameObject? selected)
         {
-            if (selected == null)
+            if(selected == null)
             {
                 return;
             }
@@ -122,13 +133,13 @@ namespace RockEngine.Rendering.Layers
             PickingTexture.BeginWrite();
             GL.Viewport(0, 0, Screen.ScreenTexture.Size.X, Screen.ScreenTexture.Size.Y);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            for (int i = 0; i < gameObjects?.Count; i++)
+            for(int i = 0; i < gameObjects?.Count; i++)
             {
                 GameObject? gameObject = gameObjects[i];
                 PickingData pd = new PickingData()
                 {
-                    gObjectIndex = gameObject.GameObjectID - 1,
-                    gDrawIndex = 1,
+                    gObjectIndex = gameObject.GameObjectID,
+                    gDrawIndex = 0,
                 };
                 pd.SendData();
                 gameObject.RenderOnEditorLayer();

@@ -1,4 +1,6 @@
-﻿namespace RockEngine.Assets
+﻿using System.Runtime.InteropServices;
+
+namespace RockEngine.Assets
 {
     public class BaseAsset : AAsset
     {
@@ -12,6 +14,12 @@
             : base()
         {
 
+        }
+
+        public static explicit operator BaseAsset(nint v)
+        {
+            BaseAsset baseAsset = Marshal.PtrToStructure<BaseAsset>(v);
+            return baseAsset;
         }
     }
 }

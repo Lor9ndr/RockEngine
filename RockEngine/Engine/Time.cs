@@ -1,8 +1,10 @@
-﻿namespace RockEngine.Engine
+﻿using RockEngine.Utils;
+
+namespace RockEngine.Engine
 {
-    internal static class Time
+    public static class Time
     {
-        public static float DeltaTime => Game.MainWindow.DeltaTime;
-        public static float RenderTime => (float)Game.MainWindow.Time;
+        public static float DeltaTime => WindowManager.GetMainWindow().DeltaTime;
+        public static float RenderTime => (float)WindowManager.GetMainWindow().Time;
     }
 }

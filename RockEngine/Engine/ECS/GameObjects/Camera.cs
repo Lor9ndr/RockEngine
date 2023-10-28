@@ -7,7 +7,7 @@ using RockEngine.Editor;
 
 namespace RockEngine.Engine.ECS.GameObjects
 {
-    internal class Camera : IComponent, IRenderable
+    public class Camera : IComponent, IRenderable
     {
         protected CameraData _cameraData;
         public const int MAX_FOV = 120;

@@ -6,7 +6,7 @@ using RockEngine.Engine.ECS;
 
 namespace RockEngine.Physics
 {
-    internal sealed class PhysicsManager : IDisposable
+    public sealed class PhysicsManager : IDisposable
     {
         public DiscreteDynamicsWorld World { get; set; }
 
@@ -83,9 +83,6 @@ namespace RockEngine.Physics
 
             RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             EngineRigidBody body = new EngineRigidBody(rbInfo);
-            body.ActivationState = ActivationState.ActiveTag;
-            body.CollisionFlags &= ~CollisionFlags.None;
-            body.ForceActivationState(ActivationState.ActiveTag);
             body.Mass = mass;
             World.AddRigidBody(body);
 

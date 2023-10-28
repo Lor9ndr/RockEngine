@@ -1,18 +1,21 @@
-﻿using System.Collections;
+﻿using RockEngine.DI;
+using RockEngine.Engine;
+
+using System.Collections;
 
 namespace RockEngine.Rendering.Layers
 {
-    internal sealed class LayerStack : IEnumerable<ALayer>
+    public sealed class Layers : IEnumerable<ALayer>
     {
         private List<ALayer> _layers;
+        public static Layer CurrentLayer;
 
-        public LayerStack()
+        public Layers()
         {
-            _layers = new List<ALayer>();
+            _layers = IoC.GetAll<ALayer>().ToList();
         }
         public void AddLayer(ALayer layer)
         {
-
             _layers.Add(layer);
             _layers = _layers.OrderBy(s => s.Order).ToList();
         }
@@ -25,6 +28,7 @@ namespace RockEngine.Rendering.Layers
         {
             foreach (var item in _layers)
             {
+                CurrentLayer = item.Layer;
                 item.OnRender();
             }
         }

@@ -128,7 +128,6 @@ namespace RockEngine.OpenGL.Textures
             }
             _size = size;
 
-
             return this;
         }
 

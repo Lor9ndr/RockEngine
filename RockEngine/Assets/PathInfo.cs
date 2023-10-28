@@ -1,6 +1,6 @@
 ﻿namespace RockEngine.Assets
 {
-    internal static class PathInfo
+    public static class PathInfo
     {
         public static string ENGINE_DIRECTORY => Directory.GetCurrentDirectory();
         public static string PROJECT_PATH => Project.CurrentProject.Path;

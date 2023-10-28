@@ -9,7 +9,7 @@ using RockEngine.OpenGL.Vertices;
 
 namespace RockEngine.Engine.ECS.GameObjects
 {
-    internal sealed class CameraTexture : IDisposable
+    public sealed class CameraTexture : IDisposable
     {
         public Texture ScreenTexture;
         private readonly FBORBO _screenFrameBuffer;
@@ -36,9 +36,9 @@ namespace RockEngine.Engine.ECS.GameObjects
                     new Vertex2D(new Vector2( 1.0f, -1.0f), new Vector2(1.0f, 0.0f)),
                     new Vertex2D(new Vector2( 1.0f,  1.0f), new Vector2(1.0f, 1.0f))
            };
-        public CameraTexture()
+        public CameraTexture(Vector2i size)
         {
-            ScreenTexture = new Texture(Game.MainWindow.Size, TextureSettings.DefaultSettings with
+            ScreenTexture = new Texture(size, TextureSettings.DefaultSettings with
             {
                 TextureParameters = _screenParameters,
                 FramebufferAttachment = FramebufferAttachment.ColorAttachment0
@@ -46,10 +46,10 @@ namespace RockEngine.Engine.ECS.GameObjects
 
             _screenShader = Resources.GetOrCreateShader(ShadersPaths.Lit2DShader);
 
-            _screenRenderBuffer = new RBO(new RenderBufferSettings(RenderbufferStorage.Depth32fStencil8, RenderbufferTarget.Renderbuffer), Game.MainWindow.Size).Setup();
+            _screenRenderBuffer = new RBO(new RenderBufferSettings(RenderbufferStorage.Depth32fStencil8, RenderbufferTarget.Renderbuffer), size).Setup();
 
             _screenFrameBuffer = ((FBORBO)new FBORBO(new FrameBufferRenderBufferSettings(FramebufferAttachment.DepthStencilAttachment, FramebufferTarget.Framebuffer),
-                                            Game.MainWindow.Size,
+                                            size,
                                             _screenRenderBuffer,
                                             ScreenTexture).Setup()).SetLabel();
 

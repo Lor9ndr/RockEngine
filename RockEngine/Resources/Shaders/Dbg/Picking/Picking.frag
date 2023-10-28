@@ -9,9 +9,9 @@ layout (std140, binding = 5) uniform PickingData
 }pickingData;
 
 
-out vec4 FragColor;
+out vec3 FragColor;
 
 void main()
 {
-    FragColor = vec4(float(pickingData.gObjectIndex), float(pickingData.gDrawIndex), float(gl_PrimitiveID + 1),1);
+     FragColor = vec3(float(pickingData.gObjectIndex), float(pickingData.gDrawIndex),float(gl_PrimitiveID + 1));
 } 

@@ -9,6 +9,8 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         private List<IComponent> _components;
 
+        public Layer Layer = Layer.Default;
+
         public bool IsActive = true;
 
         private static uint ObjectID;

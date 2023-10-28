@@ -5,9 +5,9 @@ using RockEngine.Engine.ECS;
 
 namespace RockEngine.Engine.EngineStates
 {
-    internal sealed class DevepolerEngineState : BaseEngineState
+    public sealed class DevepolerEngineState : BaseEngineState
     {
-        internal override string Key => "dev";
+        public override string Key => "dev";
 
         public override void OnEnterState()
         {

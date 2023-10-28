@@ -9,6 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Tests", "RockEng
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Generator", "RockEngine.Generator\RockEngine.Generator.csproj", "{6DB765B9-560F-4B39-BA93-CA5CC15279B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockEngine.Editor", "RockEngine.Editor\RockEngine.Editor.csproj", "{01B03E00-1DDA-4785-A5FD-28C0F13241D3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{002C6A0C-F76D-4891-8154-F9996CE74AAE} = {002C6A0C-F76D-4891-8154-F9996CE74AAE}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +32,10 @@ Global
 		{6DB765B9-560F-4B39-BA93-CA5CC15279B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DB765B9-560F-4B39-BA93-CA5CC15279B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DB765B9-560F-4B39-BA93-CA5CC15279B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01B03E00-1DDA-4785-A5FD-28C0F13241D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01B03E00-1DDA-4785-A5FD-28C0F13241D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01B03E00-1DDA-4785-A5FD-28C0F13241D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01B03E00-1DDA-4785-A5FD-28C0F13241D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
