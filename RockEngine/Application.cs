@@ -33,16 +33,7 @@ namespace RockEngine
 
         public void Start()
         {
-            try
-            {
                 MainWindow.Run();
-            }
-            catch(Exception e)
-            {
-                var message = e.Message + "\n" + e.StackTrace;
-                Logger.AddError(message);
-                Console.WriteLine(message);
-            }
         }
 
         protected abstract void Load();

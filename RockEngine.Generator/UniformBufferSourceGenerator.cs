@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace RockEngine.Generator
 {
-    [Generator]
+    //[Generator]
     public class UniformBufferSourceGenerator : ISourceGenerator
     {
         public void Initialize(GeneratorInitializationContext context)
@@ -21,7 +21,7 @@ namespace RockEngine.Generator
 
         public void Execute(GeneratorExecutionContext context)
         {
-            HashSet<string> addedFiles = new HashSet<string>();
+           /* HashSet<string> addedFiles = new HashSet<string>();
             foreach(AdditionalText file in context.AdditionalFiles.Where(s => s.Path.EndsWith(".vert") || s.Path.EndsWith(".frag")))
             {
                 SourceText? fileContent = file.GetText();
@@ -51,7 +51,7 @@ namespace RockEngine.Generator
                     context.AddSource(fileName, SourceText.From(generatedCode, Encoding.UTF8));
                 }
             }
-            addedFiles.Clear();
+            addedFiles.Clear();*/
         }
 
         private List<UBO> GetUbos(string file)

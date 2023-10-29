@@ -160,7 +160,7 @@ namespace RockEngine.Rendering.Layers
                 var mousePos = ImGui.GetMousePos();
                 var padding = ImGui.GetStyle().WindowPadding;
                 var winPos = ImGui.GetWindowPos();
-                EditorScreenMousePos = new Vector2(mousePos.X - winPos.X - padding.X, mousePos.Y - winPos.Y - padding.Y -1) ;
+                EditorScreenMousePos = mousePos - winPos - padding;
                 ImGui.End();
             }
         }

@@ -63,5 +63,23 @@ namespace RockEngine.Engine.ECS.GameObjects
         {
             OnUpdate();
         }
+
+        public object GetState()
+        {
+            return new DirectLightState()
+            {
+                Intensity = Intensity,
+                LightColor = LightColor,
+                _lightData = _lightData,
+            };
+        }
+
+        public void SetState(object state)
+        {
+            var dlstate = (DirectLightState)state;
+            Intensity = dlstate.Intensity;
+            LightColor = dlstate.LightColor;
+            _lightData = dlstate._lightData;
+        }
     }
 }

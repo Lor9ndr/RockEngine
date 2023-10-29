@@ -16,6 +16,8 @@ namespace RockEngine.Engine.ECS
 
         public int Order => 0;
 
+     
+
         public void OnDestroy()
         {
         }
@@ -29,6 +31,13 @@ namespace RockEngine.Engine.ECS
         }
 
         public void OnUpdateDevelepmentState()
+        {
+        }
+        public object GetState()
+        {
+            return new object();
+        }
+        public void SetState(object state)
         {
         }
     }

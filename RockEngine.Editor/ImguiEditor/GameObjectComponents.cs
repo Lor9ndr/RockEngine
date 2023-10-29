@@ -7,6 +7,7 @@ using RockEngine.Editor;
 using RockEngine.Editor.ImguiEditor;
 using RockEngine.Engine.ECS;
 using RockEngine.Engine.ECS.GameObjects;
+using RockEngine.Engine.EngineStates;
 
 using System.Numerics;
 using System.Reflection;
@@ -19,6 +20,8 @@ namespace RockEngine.Rendering.Layers
     public partial class ImGuiRenderer
     {
         private string? _gameObjectName;
+
+        private bool _componentChanged;
 
         private readonly Dictionary<Type, FieldInfo[]> cachedFields = new Dictionary<Type, FieldInfo[]>();
         private readonly Dictionary<Type, PropertyInfo[]> cachedProperties = new Dictionary<Type, PropertyInfo[]>();
@@ -46,8 +49,9 @@ namespace RockEngine.Rendering.Layers
         {
             var winSizeX = ImGui.GetWindowWidth();
 
-            foreach (var component in gameObject.GetComponents()!)
+            foreach(var component in gameObject.GetComponents()!)
             {
+                //EngineStateManager.SaveState(gameObject, component);
                 var type = component.GetType();
 
                 ImguiHelper.FaIconText(typeIcons[type]);
@@ -68,6 +72,11 @@ namespace RockEngine.Rendering.Layers
                 DrawFields(component, type);
                 
                 DrawProperties(component, type);
+
+                if(_componentChanged)
+                {
+                    //EngineStateManager.Undo();
+                }
 
                 ImGui.Separator();
             }
@@ -201,7 +210,7 @@ namespace RockEngine.Rendering.Layers
                 ImGui.EndPopup();
             }
         }
-        private static void ProcessGameObjectComponentFields(IComponent component, FieldInfo field, UIAttribute attribute)
+        private void ProcessGameObjectComponentFields(IComponent component, FieldInfo field, UIAttribute attribute)
         {
             var value = field.GetValue(component);
 
@@ -222,6 +231,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.ColorEdit3(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                        _componentChanged = true;
                     }
                 }
                 else
@@ -229,6 +239,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.DragFloat3(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                        _componentChanged = true;
                     }
                 }
             }
@@ -240,6 +251,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.ColorEdit4(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                        _componentChanged = true;
                     }
                 }
                 else
@@ -247,6 +259,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.DragFloat4(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                        _componentChanged = true;
                     }
                 }
             }
@@ -255,6 +268,7 @@ namespace RockEngine.Rendering.Layers
                 if (ImGui.DragFloat(alias, ref valueF, 0.1f))
                 {
                     field.SetValue(component, valueF);
+                    _componentChanged = true;
                 }
             }
             else if (value is int number)
@@ -262,6 +276,7 @@ namespace RockEngine.Rendering.Layers
                 if (ImGui.DragInt(alias, ref number))
                 {
                     field.SetValue(component, number);
+                    _componentChanged = true;
                 }
             }
             else if (value is Enum)
@@ -274,11 +289,12 @@ namespace RockEngine.Rendering.Layers
                 if (ImGui.Combo(alias, ref selectedIndex, names, names.Length))
                 {
                     field.SetValue(component, values.GetValue(selectedIndex));
+                    _componentChanged = true;
                 }
             }
         }
 
-        private static void ProcessGameObjectComponentProperties(IComponent component, PropertyInfo field, UIAttribute attribute)
+        private void ProcessGameObjectComponentProperties(IComponent component, PropertyInfo field, UIAttribute attribute)
         {
             var value = field.GetValue(component);
 
@@ -295,6 +311,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.ColorEdit3(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                        _componentChanged = true;
                     }
                 }
                 else
@@ -302,6 +319,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.DragFloat3(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                        _componentChanged = true;
                     }
                 }
             }
@@ -313,6 +331,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.ColorEdit4(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                        _componentChanged = true;
                     }
                 }
                 else
@@ -320,6 +339,7 @@ namespace RockEngine.Rendering.Layers
                     if (ImGui.DragFloat4(alias, ref realValue))
                     {
                         field.SetValue(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                        _componentChanged = true;
                     }
                 }
             }
@@ -328,6 +348,7 @@ namespace RockEngine.Rendering.Layers
                 if (ImGui.DragFloat(alias, ref valueF, 0.1f))
                 {
                     field.SetValue(component, valueF);
+                     _componentChanged = true;
                 }
             }
             else if (value is int number)
@@ -335,6 +356,7 @@ namespace RockEngine.Rendering.Layers
                 if (ImGui.DragInt(alias, ref number))
                 {
                     field.SetValue(component, number);
+                     _componentChanged = true;
                 }
             }
             else if (value is Enum)
@@ -347,6 +369,7 @@ namespace RockEngine.Rendering.Layers
                 if (ImGui.Combo(alias, ref selectedIndex, names, names.Length))
                 {
                     field.SetValue(component, values.GetValue(selectedIndex));
+                     _componentChanged = true;
                 }
             }
         }

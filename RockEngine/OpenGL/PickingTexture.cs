@@ -47,7 +47,7 @@ namespace RockEngine.OpenGL
             _depthTexture = new Texture(_size, new TextureSettings()
             {
                 TextureTarget = TextureTarget.Texture2D,
-                SizedInternalFormat = SizedInternalFormat.DepthComponent32f,
+                SizedInternalFormat = SizedInternalFormat.DepthComponent16,
                 PixelType = PixelType.Float,
                 FramebufferAttachment = FramebufferAttachment.DepthAttachment
             });
@@ -89,9 +89,7 @@ namespace RockEngine.OpenGL
             if (size != _size)
             {
                 _size = size;
-                _fbo.Resize(size);
-
-                Setup();
+                _fbo.Resize(_size);
             }
         }
 

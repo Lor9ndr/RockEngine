@@ -176,5 +176,31 @@ namespace RockEngine.Engine.ECS.GameObjects
             _cameraData.View = GetViewMatrix();
             _cameraData.ViewPos = Parent.Transform.Position;
         }
+
+        public object GetState()
+        {
+            return new CameraState()
+            {
+                _cameraData = _cameraData,
+                _fov = _fov,
+                _front = _front,
+                _pitch = _pitch,
+                _right = _right,
+                _up = _up,
+                _yaw = _yaw
+            };
+        }
+
+        public void SetState(object state)
+        {
+            CameraState cs = (CameraState)state;
+            _cameraData = cs._cameraData;
+            _fov = cs._fov;
+            _front = cs._front;
+            _pitch = cs._pitch;
+            _yaw = cs._yaw;
+            _right = cs._right;
+            _up = cs._up;
+        }
     }
 }

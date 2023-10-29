@@ -17,8 +17,11 @@ namespace RockEngine.Engine.EngineStates
                 {
                     if(component is EngineRigidBody rb)
                     {
+                        rb.CollisionShape.CalculateLocalInertia(0, out var inertia);
+                        rb.AngularVelocity = new Vector3(0);
+                        rb.LinearVelocity = new Vector3(0);
+                        rb.SetMassProps(0, inertia);
                         rb.ForceActivationState(ActivationState.DisableSimulation);
-                        rb.SetMassProps(0, new Vector3(0));
                     }
                     component.OnStart();
 

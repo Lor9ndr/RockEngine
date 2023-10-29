@@ -94,5 +94,19 @@ namespace RockEngine.Engine.ECS
         public void OnUpdateDevelepmentState()
         {
         }
+
+        public object GetState()
+        {
+            return new SpriteState()
+            {
+                SpriteTexture = SpriteTexture
+            };
+        }
+
+        public void SetState(object state)
+        {
+            SpriteState sp = (SpriteState)state;
+            SpriteTexture = sp.SpriteTexture;
+        }
     }
 }

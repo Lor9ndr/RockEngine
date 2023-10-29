@@ -7,9 +7,11 @@ namespace RockEngine.Engine.ECS
 {
     public sealed class EngineRigidBody : RigidBody, IComponent
     {
-
         [UI]
         public float Mass;
+
+        [UI]
+        public ActivationState State { get=>this.ActivationState; set=> this.ActivationState = value; }
 
         public EngineRigidBody(RigidBodyConstructionInfo constructionInfo)
             : base(constructionInfo)
@@ -39,6 +41,17 @@ namespace RockEngine.Engine.ECS
 
         public void OnUpdateDevelepmentState()
         {
+        }
+
+        public object GetState()
+        {
+            return new EngineRigidBodyState() { Mass = Mass };
+        }
+
+        public void SetState(object state)
+        {
+            var rb = (EngineRigidBodyState)state;
+            Mass = rb.Mass;
         }
     }
 }

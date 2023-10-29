@@ -81,14 +81,11 @@ namespace RockEngine.OpenGL.Textures
              };*/
         }
 
-
-
         public virtual Texture SetTextureUnit(int unit)
         {
             GL.BindTextureUnit(unit, Handle);
             return this;
         }
-
 
         public override Texture SetLabel()
         {

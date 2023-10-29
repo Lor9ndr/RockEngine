@@ -57,5 +57,18 @@ namespace RockEngine.Engine.ECS
         {
             Mesh.RenderOnEditorLayer();
         }
+
+        public object GetState()
+        {
+            return new MeshComponentState()
+            {
+                Mesh = Mesh
+            };
+        }
+
+        public void SetState(object state)
+        {
+            Mesh = ((MeshComponentState)state).Mesh;
+        }
     }
 }

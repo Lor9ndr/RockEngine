@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+
 using RockEngine.Assets;
 using RockEngine.Engine;
 using RockEngine.Engine.ECS.GameObjects;
@@ -8,7 +9,6 @@ using RockEngine.Inputs;
 using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
 using RockEngine.OpenGL.Shaders;
-
 using RockEngine.Engine.ECS;
 using RockEngine.Rendering.Layers;
 using RockEngine.Editor.GameObjects;
@@ -65,6 +65,7 @@ namespace RockEngine.Editor.Layers
             MainRenderPass();
 
             GettingObjectFromPicked(gameObjects);
+
             _imguiLayer.OnRender();
         }
 
@@ -75,12 +76,13 @@ namespace RockEngine.Editor.Layers
             {
                 PickingTexture.PixelInfo pi = PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y);
 
-                if(pi.PrimID != 0 )
+                if((uint)pi.PrimID != 0 )
                 {
                     var objID = (uint)pi.ObjectID;
                     var selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
                     _imguiLayer.SelectedGameObject = selected;
                 }
+                Console.WriteLine($"CLICKED ON: Primitive: {(uint)pi.PrimID}, ObjectID: {(uint)pi.ObjectID}, DrawIndex{(uint)pi.DrawID}");
             }
         }
 

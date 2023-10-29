@@ -63,5 +63,28 @@ namespace RockEngine.Engine.ECS
             MaterialData.roughness = Roughness;
             MaterialData.ao = Ao;
         }
+
+        public object GetState()
+        {
+            return new MaterialComponentState()
+            {
+                AlbedoColor = AlbedoColor,
+                Ao = Ao,
+                Material = Material,
+                Metallic = Metallic,
+                Roughness = Roughness,
+            };
+        }
+
+        public void SetState(object state)
+        {
+            var ms = (MaterialComponentState)state;
+            
+            AlbedoColor = ms.AlbedoColor;
+            Ao = ms.Ao;
+            Material = ms.Material;
+            Roughness = ms.Roughness;
+            Metallic = ms.Metallic;
+        }
     }
 }

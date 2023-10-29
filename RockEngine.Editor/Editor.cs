@@ -13,6 +13,8 @@ using RockEngine.Rendering.Layers;
 using RockEngine.Physics;
 using OpenTK.Graphics.OpenGL4;
 using RockEngine.Editor.Layers;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using RockEngine.Inputs;
 
 namespace RockEngine.Editor
 {
@@ -29,13 +31,21 @@ namespace RockEngine.Editor
 
         private void MainWindow_KeyDown(KeyboardKeyEventArgs obj)
         {
-            if(obj.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.M)
+            if(obj.Key == Keys.M)
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
             }
-            else if(obj.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.N)
+            else if(obj.Key == Keys.N)
             {
                 GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            }
+            if(Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyDown(Keys.Z))
+            {
+                EngineStateManager.Undo();
+            }
+            if(Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyDown(Keys.Y))
+            {
+                EngineStateManager.Redo();
             }
         }
 
@@ -68,7 +78,7 @@ namespace RockEngine.Editor
 
             var floor = new GameObject("Floor", new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
             floor.Transform.Scale = new Vector3(100, 1, 100);
-            floor.AddComponent(Physics.LocalCreateRigidBody(0, floor.Transform.GetModelMatrix(), new BoxShape(floor.Transform.Scale / 2)));
+            floor.AddComponent(Physics.LocalCreateRigidBody(0, floor.Transform.GetModelMatrix(), new BoxShape(floor.Transform.Scale)));
             scene.AddGameObject(floor);
             Scene.MainCamera!.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
             Scene.MainCamera.GetComponent<Camera>()!.UpdateVectors();

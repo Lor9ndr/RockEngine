@@ -36,8 +36,6 @@ namespace RockEngine.OpenGL.Textures
             _settings = settings;
         }
 
-
-
         public abstract IGLObject Bind();
         public abstract IGLObject Unbind();
         public abstract ISetuppable Setup();

@@ -5,7 +5,6 @@ using RockEngine.OpenGL;
 
 using RockEngine.Editor;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
-using BulletSharp;
 
 namespace RockEngine.Engine.ECS
 {
@@ -32,7 +31,7 @@ namespace RockEngine.Engine.ECS
 
         internal bool ShouldBeUpdated = true;
 
-        private readonly HashSet<Transform> _childTransforms;
+        private HashSet<Transform> _childTransforms;
         private GameObject? _parent;
 
         public void AddChildTransform(Transform t) 
@@ -75,9 +74,10 @@ namespace RockEngine.Engine.ECS
             var s = Matrix4.CreateScale(Scale);
             var rb = Parent.GetComponent<EngineRigidBody>();
             var model = s * r * t;
-            if(rb is not null && rb.ActivationState != ActivationState.DisableSimulation)
+            if(rb is not null)
             {
-                model *= ((Matrix4)rb.WorldTransform).ClearScale();
+
+                model = (Matrix4)rb.WorldTransform; // Apply rigidbody's rotation and translation
             }
 
             return model;
@@ -92,7 +92,7 @@ namespace RockEngine.Engine.ECS
         public void OnStart()
         {
             var rb = Parent.GetComponent<EngineRigidBody>(); 
-            if(rb is not null && rb.ActivationState != ActivationState.DisableSimulation)
+            if(rb is not null)
             {
                 rb.WorldTransform = _transformData.Model;
             }
@@ -124,6 +124,31 @@ namespace RockEngine.Engine.ECS
             _transformData = new TransformData();
 
             _transformData.Model = GetModelMatrix();
+        }
+
+        public object GetState()
+        {
+            return new TransformState()
+            {
+                Position = Position,
+                RotationQuaternion = RotationQuaternion,
+                Scale = Scale,
+                _childTransforms = _childTransforms,
+                _parent = _parent,
+                _transformData = _transformData
+            };
+        }
+
+        public void SetState(object state)
+        {
+            TransformState ts = (TransformState)state;
+            Position = ts.Position;
+            Scale = ts.Scale;
+            RotationQuaternion = ts.RotationQuaternion;
+            Scale = ts.Scale;
+            _childTransforms = ts._childTransforms;
+            _parent = ts._parent;
+            _transformData = ts._transformData;
         }
     }
 }
