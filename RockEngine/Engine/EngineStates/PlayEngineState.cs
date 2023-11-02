@@ -16,10 +16,13 @@ namespace RockEngine.Engine.EngineStates
                 {
                     if(component is EngineRigidBody rb)
                     {
+                        if(rb.Mass != 0 )
+                        {
+                            rb.CollisionShape.CalculateLocalInertia(rb.Mass, out var inertia);
+                            rb.SetMassProps(rb.Mass, inertia);
+                        }
+                        
                         rb.ForceActivationState(ActivationState.ActiveTag);
-                        rb.CollisionShape.CalculateLocalInertia(rb.Mass, out var inertia);
-                        rb.SetMassProps(rb.Mass, inertia);
-                        rb.ApplyGravity();
                     }
                     component.OnStart();
                 }

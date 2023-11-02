@@ -173,15 +173,6 @@ namespace RockEngine.Engine.ECS.GameObjects
                 }
                 Transform = tr;
             }
-            /* if (component is MeshComponent mc)
-             {
-                 if (Scene.CurrentScene.GetGameObjects().Any(s=>s.GetComponent<MeshComponent>() == mc))
-                 {
-                     mc.InstanceCount++;
-                 }
-                 mc.Transforms.Add(Transform);
-
-             }*/
             component.Parent = this;
             _components.Add(component);
             _components = _components.OrderBy(s => s.Order).ToList();

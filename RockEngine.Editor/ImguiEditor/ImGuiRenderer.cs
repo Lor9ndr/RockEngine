@@ -115,7 +115,6 @@ namespace RockEngine.Rendering.Layers
 
             ImGui.DockSpace(dockID, Vector2.Zero, ImGuiDockNodeFlags.PassthruCentralNode);
             DisplayAssetFolders();
-            
 
             SelectProjectWindow();
 
@@ -127,6 +126,11 @@ namespace RockEngine.Rendering.Layers
             }
 
             _controller.Render(_window.Size);
+        }
+
+        public void AddGameObjectContextWindow()
+        {
+
         }
 
         private void SelectProjectWindow()
@@ -273,7 +277,7 @@ namespace RockEngine.Rendering.Layers
                         SelectedGameObject = gameObject;
                     }
                 }
-                if(ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left) && IsMouseOnEditorScreen)
+                if(ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                 {
                     if(SelectedGameObject is not null)
                     {
@@ -344,7 +348,6 @@ namespace RockEngine.Rendering.Layers
 
             }*/
         }
-
 
         private static void SetupImGuiStyle()
         {

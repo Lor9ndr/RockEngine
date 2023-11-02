@@ -28,9 +28,7 @@ namespace RockEngine.Engine.ECS
             
         }
 
-        /// <summary>
-        /// This function activates RigidBody on 
-        /// </summary>
+       
         public void OnStart()
         {
         }

@@ -15,11 +15,5 @@ namespace RockEngine.Assets
         {
 
         }
-
-        public static explicit operator BaseAsset(nint v)
-        {
-            BaseAsset baseAsset = Marshal.PtrToStructure<BaseAsset>(v);
-            return baseAsset;
-        }
     }
 }

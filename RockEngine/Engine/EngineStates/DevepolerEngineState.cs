@@ -1,6 +1,5 @@
 ﻿using BulletSharp;
 using BulletSharp.Math;
-
 using RockEngine.Engine.ECS;
 
 namespace RockEngine.Engine.EngineStates
@@ -17,10 +16,14 @@ namespace RockEngine.Engine.EngineStates
                 {
                     if(component is EngineRigidBody rb)
                     {
-                        rb.CollisionShape.CalculateLocalInertia(0, out var inertia);
+                        if(rb.Mass != 0)
+                        {
+                            rb.CollisionShape.CalculateLocalInertia(0, out var inertia);
+                            rb.SetMassProps(0, inertia);
+
+                        }
                         rb.AngularVelocity = new Vector3(0);
                         rb.LinearVelocity = new Vector3(0);
-                        rb.SetMassProps(0, inertia);
                         rb.ForceActivationState(ActivationState.DisableSimulation);
                     }
                     component.OnStart();

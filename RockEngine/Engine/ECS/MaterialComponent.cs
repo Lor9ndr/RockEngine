@@ -1,10 +1,7 @@
-﻿using OpenTK.Mathematics;
-
-using RockEngine.Assets;
+﻿using RockEngine.Assets;
 
 using RockEngine.Engine.ECS.GameObjects;
 
-using RockEngine.Editor;
 using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
 
@@ -17,19 +14,12 @@ namespace RockEngine.Engine.ECS
         public GameObject? Parent { get; set; }
 
         public int Order => 1;
-
-        [UI(isColor: true)] public Vector3 AlbedoColor;
-        [UI] public float Metallic;
-        [UI] public float Roughness;
-        [UI] public float Ao;
+       
 
         public MaterialComponent(Material material)
         {
             Material = material;
-            AlbedoColor = new Vector3(0.7f);
-            Metallic = 1.0f;
-            Roughness = 1.0f;
-            Ao = 1.0f;
+           
             MaterialData = new MaterialData();
         }
 
@@ -46,10 +36,10 @@ namespace RockEngine.Engine.ECS
 
         public void OnUpdate()
         {
-            MaterialData.albedo = AlbedoColor;
-            MaterialData.metallic = Metallic;
-            MaterialData.roughness = Roughness;
-            MaterialData.ao = Ao;
+            MaterialData.albedo = Material.AlbedoColor;
+            MaterialData.metallic = Material.Metallic;
+            MaterialData.roughness = Material.Roughness;
+            MaterialData.ao = Material.Ao;
         }
 
         public void OnDestroy()
@@ -58,33 +48,24 @@ namespace RockEngine.Engine.ECS
 
         public void OnUpdateDevelepmentState()
         {
-            MaterialData.albedo = AlbedoColor;
-            MaterialData.metallic = Metallic;
-            MaterialData.roughness = Roughness;
-            MaterialData.ao = Ao;
+            MaterialData.albedo = Material.AlbedoColor;
+            MaterialData.metallic = Material.Metallic;
+            MaterialData.roughness = Material.Roughness;
+            MaterialData.ao = Material.Ao;
         }
 
         public object GetState()
         {
             return new MaterialComponentState()
             {
-                AlbedoColor = AlbedoColor,
-                Ao = Ao,
                 Material = Material,
-                Metallic = Metallic,
-                Roughness = Roughness,
             };
         }
 
         public void SetState(object state)
         {
             var ms = (MaterialComponentState)state;
-            
-            AlbedoColor = ms.AlbedoColor;
-            Ao = ms.Ao;
             Material = ms.Material;
-            Roughness = ms.Roughness;
-            Metallic = ms.Metallic;
         }
     }
 }

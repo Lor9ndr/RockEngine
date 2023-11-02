@@ -50,7 +50,7 @@ namespace RockEngine.Engine.ECS
         {
             _childTransforms = new HashSet<Transform>();
             Position = Vector3.Zero;
-            Rotation = Vector3.Zero;
+            RotationQuaternion = Quaternion.Identity;
             Scale = Vector3.One;
         }
 
@@ -69,16 +69,20 @@ namespace RockEngine.Engine.ECS
 
         public Matrix4 GetModelMatrix()
         {
+            Matrix4 model;
+            var rb = Parent.GetComponent<EngineRigidBody>();
+            if(rb is not null)
+            {
+                var rbModel = (Matrix4)rb.WorldTransform;
+                Position = rbModel.ExtractTranslation();
+                RotationQuaternion = rbModel.ExtractRotation();
+            }
+
             var t = Matrix4.CreateTranslation(Position);
             var r = Matrix4.CreateFromQuaternion(RotationQuaternion);
             var s = Matrix4.CreateScale(Scale);
-            var rb = Parent.GetComponent<EngineRigidBody>();
-            var model = s * r * t;
-            if(rb is not null)
-            {
 
-                model = (Matrix4)rb.WorldTransform; // Apply rigidbody's rotation and translation
-            }
+            model = s * r * t;
 
             return model;
         }

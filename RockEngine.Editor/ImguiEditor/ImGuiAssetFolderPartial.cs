@@ -4,6 +4,7 @@ using ImGuiNET;
 
 using RockEngine.Assets;
 using RockEngine.Editor.ImguiEditor;
+using RockEngine.Editor.ImguiEditor.DragDrop;
 using RockEngine.Utils;
 
 using System.Runtime.InteropServices;
@@ -12,6 +13,8 @@ namespace RockEngine.Rendering.Layers
 {
     public partial class ImGuiRenderer
     {
+        private const string SELECTED_ASSET_PAYLOAD = "SELECTED_ASSET_PAYLOAD";
+
         private IAsset _selectedAsset;
         private string _currentFileSelected;
         private string selectedFolder;
@@ -59,7 +62,8 @@ namespace RockEngine.Rendering.Layers
                     {
                         if(_selectedAsset != null)
                         {
-                            ImGui.SetDragDropPayload("SELECTED_ASSET_PAYLOAD", _selectedAsset.ID.ToIntPtr(), (uint)Marshal.SizeOf<Guid>());
+                            DragDropAsset dd = new DragDropAsset(_selectedAsset.ID, _selectedAsset.Type);
+                            ImGui.SetDragDropPayload(SELECTED_ASSET_PAYLOAD, dd.ToIntPtr(DragDropAsset.Size), (uint)DragDropAsset.Size);
                             ImguiHelper.FaIconText(FA.FILE);
 
                         }
@@ -88,13 +92,13 @@ namespace RockEngine.Rendering.Layers
             
             if(ImGui.BeginDragDropTarget())
             {
-                var payload = ImGui.AcceptDragDropPayload("SELECTED_ASSET_PAYLOAD", ImGuiDragDropFlags.AcceptPeekOnly);
+                var payload = ImGui.AcceptDragDropPayload(SELECTED_ASSET_PAYLOAD, ImGuiDragDropFlags.AcceptPeekOnly);
                 unsafe
                 {
                     if((nint)payload.NativePtr != nint.Zero && payload.Data != IntPtr.Zero)
                     {
-                        var assetID = Marshal.PtrToStructure<Guid>(payload.Data);
-                        var asset = AssetManager.GetAssetByID(assetID);
+                        var assetID = payload.Data.FromIntPtr<DragDropAsset>();
+                        var asset = AssetManager.GetAssetByID(assetID.ID);
                         if(asset != null && payload.Delivery)
                         {
                             GuiAssetFolderManager.MoveAsset(asset, directory.FullName);
