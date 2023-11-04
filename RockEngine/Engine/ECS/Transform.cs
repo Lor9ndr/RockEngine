@@ -71,18 +71,19 @@ namespace RockEngine.Engine.ECS
         {
             Matrix4 model;
             var rb = Parent.GetComponent<EngineRigidBody>();
-            if(rb is not null)
-            {
-                var rbModel = (Matrix4)rb.WorldTransform;
-                Position = rbModel.ExtractTranslation();
-                RotationQuaternion = rbModel.ExtractRotation();
-            }
-
             var t = Matrix4.CreateTranslation(Position);
             var r = Matrix4.CreateFromQuaternion(RotationQuaternion);
             var s = Matrix4.CreateScale(Scale);
-
-            model = s * r * t;
+            if(rb is not null && rb.ActivationState != BulletSharp.ActivationState.DisableSimulation)
+            {
+                model = (Matrix4)rb.WorldTransform;
+                Position = model.ExtractTranslation();
+                RotationQuaternion = model.ExtractRotation();
+            }
+            else
+            {
+                model = s * r * t;
+            }
 
             return model;
         }

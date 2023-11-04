@@ -13,6 +13,8 @@ using RockEngine.Engine.ECS;
 using RockEngine.Rendering.Layers;
 using RockEngine.Editor.GameObjects;
 using RockEngine.Utils;
+using RockEngine.DI;
+using RockEngine.Physics;
 
 namespace RockEngine.Editor.Layers
 {
@@ -25,7 +27,7 @@ namespace RockEngine.Editor.Layers
         public override Layer Layer => Layer.Editor;
 
         public GameObject DebugCamera;
-
+        private readonly PhysicsManager _physicsManager;
         private readonly VFShaderProgram PickingShader;
         private readonly VFShaderProgram SelectingShader;
         private readonly ImGuiRenderer _imguiLayer;
@@ -43,7 +45,7 @@ namespace RockEngine.Editor.Layers
 
             PickingShader = new VFShaderProgram("PickingShader",
                 new VertexShader(Path.Combine(basePicking, "Picking.vert")),
-                new FragmentShader(Path.Combine(basePicking, "Picking.frag")));
+              new FragmentShader(Path.Combine(basePicking, "Picking.frag")));
 
             SelectingShader = new VFShaderProgram("SelectingObjectShader",
                 new VertexShader(Path.Combine(baseDebug, "Selected.vert")),
@@ -52,7 +54,9 @@ namespace RockEngine.Editor.Layers
             var camera = new DebugCamera(_window.Size.X / (float)_window.Size.Y, _window);
             DebugCamera = new GameObject("DebugCamera", camera, new Transform(new Vector3(0, 10, 0)));
             camera.LookAt(new Vector3(15), new Vector3(0), Vector3.UnitY);
-            _imguiLayer = new ImGuiRenderer(this);
+            _physicsManager = IoC.Get<PhysicsManager>();
+            _physicsManager.SetDebugRender(camera);
+            _imguiLayer = new ImGuiRenderer(this, _physicsManager);
         }
 
         public override void OnRender()
@@ -65,11 +69,10 @@ namespace RockEngine.Editor.Layers
             MainRenderPass();
 
             GettingObjectFromPicked(gameObjects);
-
             _imguiLayer.OnRender();
         }
 
-        private void GettingObjectFromPicked(List<GameObject> gameObjects)
+        private void GettingObjectFromPicked(IEnumerable<GameObject> gameObjects)
         {
             if(Input.IsButtonPressed(MouseButton.Left) &&
                 ImGuiRenderer.IsMouseOnEditorScreen)
@@ -99,6 +102,12 @@ namespace RockEngine.Editor.Layers
 
             OutlineSelectedGameObject(selected);
 
+            _physicsManager.World.DebugDrawer.DebugMode = BulletSharp.DebugDrawModes.DrawFastWireframe;
+            if(EditorSettings.DrawCollisions)
+            {
+                _physicsManager.DebugRenderer.DebugRender();
+            }
+
             Screen.EndRenderToScreen();
         }
 
@@ -127,7 +136,7 @@ namespace RockEngine.Editor.Layers
             GL.Enable(EnableCap.DepthTest);
         }
 
-        private void PickingObjectPass(List<GameObject> gameObjects)
+        private void PickingObjectPass(IEnumerable<GameObject> gameObjects)
         {
             PickingTexture.CheckSize(Screen.ScreenTexture.Size);
 
@@ -135,9 +144,9 @@ namespace RockEngine.Editor.Layers
             PickingTexture.BeginWrite();
             GL.Viewport(0, 0, Screen.ScreenTexture.Size.X, Screen.ScreenTexture.Size.Y);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            for(int i = 0; i < gameObjects?.Count; i++)
+            for(int i = 0; i < gameObjects?.Count(); i++)
             {
-                GameObject? gameObject = gameObjects[i];
+                GameObject? gameObject = gameObjects.ElementAt(i);
                 PickingData pd = new PickingData()
                 {
                     gObjectIndex = gameObject.GameObjectID,

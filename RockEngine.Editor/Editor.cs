@@ -54,26 +54,34 @@ namespace RockEngine.Editor
             Physics = IoC.Get<PhysicsManager>();
             AssetManager.CreateProject("Lor9nEngine", "C:\\Users\\Администратор\\Desktop\\LEProject", Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"));
             Scene scene = AssetManager.CreateScene("Test scene", "C:\\Users\\Администратор\\Desktop\\LEProject\\Assets\\Scenes", Guid.Parse("36CC1F73-C5E7-4D83-8448-855306097C1C"));
-            EngineStateManager.RegisterStates(new DevepolerEngineState(), new PlayEngineState());
 
             Scene.ChangeScene(scene);
-
-            Layers.AddLayer(new DefaultGameLayer());
-            Layers.AddLayer(new DefaultEditorLayer());
 
             DefaultShader = new VFShaderProgram("TestShaderVert", new VertexShader("Resources/Shaders/TestVertex.vert"), new FragmentShader("Resources/Shaders/TestFragment.frag"));
             var material = AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
             var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
 
-            var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), default, new Vector3(100,1,100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
-            floor.AddComponent(Physics.LocalCreateRigidBody(0, floor.Transform.GetModelMatrix(), new BoxShape(floor.Transform.Scale)));
+            var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100,1,100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
+            floor.AddComponent(
+                Physics.LocalCreateRigidBody(0,
+                    floor.Transform.GetModelMatrix(), 
+                    new BoxShape(100)));
             scene.AddGameObject(floor);
 
             for(int i = 0; i < 5; i++)
             {
                 var testTransform = new Transform(new Vector3(i, i, i));
-                var testGameObject = new GameObject("TestGameObject", testTransform, new MeshComponent(testMesh), new MaterialComponent(material));
-                testGameObject.AddComponent(Physics.LocalCreateRigidBody(1, testTransform.GetModelMatrix().ClearScale(), new BoxShape(testTransform.Scale)));
+                var testGameObject = new GameObject(
+                    "TestGameObject", 
+                    testTransform,
+                    new MeshComponent(testMesh), 
+                    new MaterialComponent(material));
+
+                testGameObject.AddComponent(
+                    Physics.LocalCreateRigidBody(1, 
+                    testTransform.GetModelMatrix().ClearScale(),
+                    new BoxShape(testTransform.Scale))
+                    );
                 scene.AddGameObject(testGameObject);
             }
             scene.AddGameObject(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
@@ -87,11 +95,25 @@ namespace RockEngine.Editor
                         new DirectLight(new Vector3(1), 100_000),
                         new Transform(new Vector3(0, 50, 0), new Vector3(-1))));
 
+            EngineStateManager.RegisterStates(new DevepolerEngineState(), new PlayEngineState());
+            Layers.AddLayer(new DefaultGameLayer());
+            Layers.AddLayer(new DefaultEditorLayer());
             AssetManager.SaveAssetToFile(scene);
         }
 
         protected override void Update(FrameEventArgs args)
         {
+            if(EditorSettings.DrawCollisions)
+            {
+                foreach(var item in Scene.CurrentScene.GetGameObjects())
+                {
+                    var rb = item.GetComponent<EngineRigidBody>();
+                    if(rb is not null)
+                    {
+                        Physics.World.DebugDrawObject(rb.WorldTransform, rb.CollisionShape, Vector3.UnitX);
+                    }
+                }
+            }
             Physics.Update(Time.DeltaTime);
             EngineStateManager.UpdateState();
         }

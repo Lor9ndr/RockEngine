@@ -28,6 +28,20 @@ namespace RockEngine.OpenGL.Vertices
             Normal = new Vector3(normalx, normaly, normalz);
             TexCoords = new Vector2(texCoordx, texCoordy);
         }
+
+        public Vertex3D(Vector3 position)
+        {
+            Position = position;
+            Normal = Vector3.Zero;
+            TexCoords = Vector2.Zero;
+        }
+        public Vertex3D(Vector3 position, Vector3 normal)
+        {
+            Position = position;
+            Normal = normal;
+            TexCoords = Vector2.Zero;
+        }
+
         public Vertex3D()
         {
         }

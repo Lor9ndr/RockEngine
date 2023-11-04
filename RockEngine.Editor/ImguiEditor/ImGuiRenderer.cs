@@ -16,6 +16,8 @@ using RockEngine.Assets;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using RockEngine.Editor.ImguiEditor;
 using RockEngine.Editor.Layers;
+using RockEngine.Physics;
+using RockEngine.Editor;
 
 namespace RockEngine.Rendering.Layers
 {
@@ -39,6 +41,7 @@ namespace RockEngine.Rendering.Layers
             "Resources\\Fonts\\Roboto-Regular.ttf",
             "Resources\\Fonts\\InclusiveSans-Regular.ttf"
         };
+        public bool DrawCollisions;
 
         #endregion
 
@@ -47,12 +50,12 @@ namespace RockEngine.Rendering.Layers
         private ImFontPtr Mainfont;
 
         private bool _projectWindowIsOpened;
-
         private readonly DefaultEditorLayer _editorLayer;
         private readonly DefaultGameLayer _gameLayer;
+        private readonly PhysicsManager _physicsManager;
         protected readonly EngineWindow _window;
 
-        public ImGuiRenderer(DefaultEditorLayer editorLayer)
+        public ImGuiRenderer(DefaultEditorLayer editorLayer, PhysicsManager physics)
         {
             _window = WindowManager.GetMainWindow();
             _controller = new ImGuiOpenGL();
@@ -240,6 +243,11 @@ namespace RockEngine.Rendering.Layers
 
                 ImGui.PopFont();
 
+                ImGui.NextColumn();
+                if(ImGui.RadioButton("Draw collisions", EditorSettings.DrawCollisions))
+                {
+                    EditorSettings.DrawCollisions = !EditorSettings.DrawCollisions;
+                }
                 ImGui.NextColumn();
 
                 ImGui.EndMainMenuBar();

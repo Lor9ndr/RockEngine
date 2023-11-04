@@ -98,9 +98,12 @@ namespace RockEngine.Engine
         /// Method to get all game objects in the scene
         /// </summary>
         /// <returns>List of gameobjects</returns>
-        public List<GameObject> GetGameObjects()
+        public IEnumerable<GameObject> GetGameObjects()
         {
-            return _gameObjects;
+            foreach(var item in _gameObjects)
+            {
+                yield return item;
+            }
         }
 
         public void Render()

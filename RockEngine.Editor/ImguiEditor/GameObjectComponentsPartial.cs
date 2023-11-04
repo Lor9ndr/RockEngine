@@ -306,142 +306,160 @@ namespace RockEngine.Rendering.Layers
                 alias += $"##{asset.ID}";
             }
             var fieldSetter = CreateFieldSetter(field);
-            if(value is OpenMath.Vector3 v3)
+            switch(value)
             {
-                var realValue = new Vector3(v3.X, v3.Y, v3.Z);
-                if (attribute.IsColor)
-                {
-                    if (ImGui.ColorEdit3(alias, ref realValue))
+                case OpenMath.Vector3 v3:
                     {
-                        fieldSetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
-                    }
-                }
-                else
-                {
-                    if (ImGui.DragFloat3(alias, ref realValue))
-                    {
-                        fieldSetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
-                    }
-                }
-            }
-            else if (value is OpenMath.Vector4 v4)
-            {
-                var realValue = new Vector4(v4.X, v4.Y, v4.Z, v4.W);
-                if (attribute.IsColor)
-                {
-                    if (ImGui.ColorEdit4(alias, ref realValue))
-                    {
-                        fieldSetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
-                    }
-                }
-                else
-                {
-                    if (ImGui.DragFloat4(alias, ref realValue))
-                    {
-                        fieldSetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
-                    }
-                }
-            }
-            else if (value is float valueF)
-            {
-                if (ImGui.DragFloat(alias, ref valueF, 0.1f))
-                {
-                    fieldSetter(component, valueF);
-                }
-            }
-            else if (value is int number)
-            {
-                if (ImGui.DragInt(alias, ref number))
-                {
-                    fieldSetter(component, number);
-                }
-            }
-            else if (value is Enum)
-            {
-                var type = value.GetType();
-                var names = Enum.GetNames(type);
-                var values = Enum.GetValues(type);
-                var selectedIndex = Array.IndexOf(values, value);
+                        var realValue = new Vector3(v3.X, v3.Y, v3.Z);
+                        if(attribute.IsColor)
+                        {
+                            if(ImGui.ColorEdit3(alias, ref realValue))
+                            {
+                                fieldSetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                            }
+                        }
+                        else
+                        {
+                            if(ImGui.DragFloat3(alias, ref realValue))
+                            {
+                                fieldSetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                            }
+                        }
 
-                if (ImGui.Combo(alias, ref selectedIndex, names, names.Length))
-                {
-                    fieldSetter(component, values.GetValue(selectedIndex));
-                }
+                        break;
+                    }
+
+                case OpenMath.Vector4 v4:
+                    {
+                        var realValue = new Vector4(v4.X, v4.Y, v4.Z, v4.W);
+                        if(attribute.IsColor)
+                        {
+                            if(ImGui.ColorEdit4(alias, ref realValue))
+                            {
+                                fieldSetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                            }
+                        }
+                        else
+                        {
+                            if(ImGui.DragFloat4(alias, ref realValue))
+                            {
+                                fieldSetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                            }
+                        }
+
+                        break;
+                    }
+
+                case float valueF:
+                    if(ImGui.DragFloat(alias, ref valueF, 0.1f))
+                    {
+                        fieldSetter(component, valueF);
+                    }
+                    break;
+                case int number:
+                    if(ImGui.DragInt(alias, ref number))
+                    {
+                        fieldSetter(component, number);
+                    }
+                    break;
+                case Enum:
+                    {
+                        var type = value.GetType();
+                        var names = Enum.GetNames(type);
+                        var values = Enum.GetValues(type);
+                        var selectedIndex = Array.IndexOf(values, value);
+
+                        if(ImGui.Combo(alias, ref selectedIndex, names, names.Length))
+                        {
+                            fieldSetter(component, values.GetValue(selectedIndex));
+                        }
+
+                        break;
+                    }
             }
         }
 
         private void ProcessGameObjectComponentProperties(IComponent component, PropertyInfo property, UIAttribute attribute)
         {
             var propertyGetter = CreatePropertyGetter(property);
-            var value = propertyGetter(component);
             var propertySetter = CreatePropertySetter(property);
+            var value = propertyGetter(component);
 
             var alias = attribute.Alias;
             if (alias == UIAttribute.UNKNOWN)
             {
                 alias = ProcessAlias(property.Name);
             }
-            if (value is OpenMath.Vector3 v3)
+            switch(value)
             {
-                var realValue = new Vector3(v3.X, v3.Y, v3.Z);
-                if (attribute.IsColor)
-                {
-                    if (ImGui.ColorEdit3(alias, ref realValue))
+                case OpenMath.Vector3 v3:
                     {
-                        propertySetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
-                    }
-                }
-                else
-                {
-                    if (ImGui.DragFloat3(alias, ref realValue))
-                    {
-                        propertySetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
-                    }
-                }
-            }
-            else if (value is OpenMath.Vector4 v4)
-            {
-                var realValue = new Vector4(v4.X, v4.Y, v4.Z, v4.W);
-                if (attribute.IsColor)
-                {
-                    if (ImGui.ColorEdit4(alias, ref realValue))
-                    {
-                        propertySetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
-                    }
-                }
-                else
-                {
-                    if (ImGui.DragFloat4(alias, ref realValue))
-                    {
-                        propertySetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
-                    }
-                }
-            }
-            else if (value is float valueF)
-            {
-                if (ImGui.DragFloat(alias, ref valueF, 0.1f))
-                {
-                    propertySetter(component, valueF);
-                }
-            }
-            else if (value is int number)
-            {
-                if (ImGui.DragInt(alias, ref number))
-                {
-                    propertySetter(component, number);
-                }
-            }
-            else if (value is Enum)
-            {
-                var type = value.GetType();
-                var names = Enum.GetNames(type);
-                var values = Enum.GetValues(type);
-                var selectedIndex = Array.IndexOf(values, value);
+                        var realValue = new Vector3(v3.X, v3.Y, v3.Z);
+                        if(attribute.IsColor)
+                        {
+                            if(ImGui.ColorEdit3(alias, ref realValue))
+                            {
+                                propertySetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                            }
+                        }
+                        else
+                        {
+                            if(ImGui.DragFloat3(alias, ref realValue))
+                            {
+                                propertySetter(component, new OpenMath.Vector3(realValue.X, realValue.Y, realValue.Z));
+                            }
+                        }
 
-                if (ImGui.Combo(alias, ref selectedIndex, names, names.Length))
-                {
-                    propertySetter(component, values.GetValue(selectedIndex));
-                }
+                        break;
+                    }
+
+                case OpenMath.Vector4 v4:
+                    {
+                        var realValue = new Vector4(v4.X, v4.Y, v4.Z, v4.W);
+                        if(attribute.IsColor)
+                        {
+                            if(ImGui.ColorEdit4(alias, ref realValue))
+                            {
+                                propertySetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                            }
+                        }
+                        else
+                        {
+                            if(ImGui.DragFloat4(alias, ref realValue))
+                            {
+                                propertySetter(component, new OpenMath.Vector4(realValue.X, realValue.Y, realValue.Z, realValue.W));
+                            }
+                        }
+
+                        break;
+                    }
+
+                case float valueF:
+                    if(ImGui.DragFloat(alias, ref valueF, 0.1f))
+                    {
+                        propertySetter(component, valueF);
+                    }
+                    break;
+                case int number:
+                    if(ImGui.DragInt(alias, ref number))
+                    {
+                        propertySetter(component, number);
+                    }
+                    break;
+                case Enum:
+                    {
+                        var type = value.GetType();
+                        var names = Enum.GetNames(type);
+                        var values = Enum.GetValues(type);
+                        var selectedIndex = Array.IndexOf(values, value);
+
+                        if(ImGui.Combo(alias, ref selectedIndex, names, names.Length))
+                        {
+                            propertySetter(component, values.GetValue(selectedIndex));
+                        }
+
+                        break;
+                    }
             }
         }
         private static string ProcessAlias(string alias)

@@ -2,13 +2,16 @@
 
 using OpenTK.Mathematics;
 
+using RockEngine.BulletPhysics;
 using RockEngine.Engine.ECS;
+using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Physics
 {
     public sealed class PhysicsManager : IDisposable
     {
         public DiscreteDynamicsWorld World { get; set; }
+        public DebugRenderer DebugRenderer;
 
         private readonly CollisionDispatcher dispatcher;
         private readonly DbvtBroadphase broadphase;
@@ -28,7 +31,14 @@ namespace RockEngine.Physics
 
         public void Update(float elapsedTime)
         {
+            DebugRenderer?.PrepareOS();
             World.StepSimulation(elapsedTime);
+        }
+
+        public void SetDebugRender(Camera debugCamera)
+        {
+            DebugRenderer = new DebugRenderer(debugCamera);
+            World.DebugDrawer = new GLDebugDrawer(DebugRenderer);
         }
 
         private void ExitPhysics()
@@ -71,17 +81,9 @@ namespace RockEngine.Physics
 
         public EngineRigidBody LocalCreateRigidBody(float mass, Matrix4 startTransform, CollisionShape shape)
         {
-            bool isDynamic = mass != 0.0f;
-
-            BulletSharp.Math.Vector3 localInertia = new(0);
-            if (isDynamic)
-            {
-                shape.CalculateLocalInertia(mass, out localInertia);
-            }
-
             DefaultMotionState myMotionState = new DefaultMotionState(startTransform);
 
-            RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
+            RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, myMotionState, shape);
             EngineRigidBody body = new EngineRigidBody(rbInfo);
             body.Mass = mass;
             World.AddRigidBody(body);
