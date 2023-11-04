@@ -26,13 +26,11 @@ namespace RockEngine.Assets
         public Mesh(ref Vertex3D[] vertices, ref int[] indices, string name, string path, Guid id)
             : base(ref indices, ref vertices, name, path, id)
         {
-            SetupMeshIndicesVertices(ref Indices, ref Vertices);
         }
 
         public Mesh(ref Vertex3D[] vertices, string name, string path, Guid id)
            : base(ref vertices, name, path, id)
         {
-            SetupMeshVertices(ref Vertices);
         }
 
         public Mesh SetupMeshVertices(ref Vertex3D[] vertices)
