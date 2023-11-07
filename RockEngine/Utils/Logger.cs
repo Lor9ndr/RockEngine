@@ -15,6 +15,9 @@ namespace RockEngine.Utils
         public static readonly DebugProc DebugProcCallback = DebugCallback;
         public static DebugProcKhr DebugMessageDelegate = DebugCallback;
         public static DebugProcArb DebugMessageDelegateARB = DebugCallback;
+        private static readonly ColoredLog _logs = new ColoredLog();
+        private static bool _scrollToButton;
+        private static bool _autoScroll = true;
 
         private static void DebugCallback(DebugSource source, DebugType type, int id,
             DebugSeverity severity, int length, nint message, nint userParam)
@@ -50,17 +53,6 @@ namespace RockEngine.Utils
             AddWarn(log);
 
         }
-        public static void ClearError()
-        {
-            while (GL.GetError() != ErrorCode.NoError)
-            {
-
-            }
-        }
-
-        private static readonly ColoredLog _logs = new ColoredLog();
-        private static bool _scrollToButton;
-        private static bool _autoScroll = true;
 
         public static void Clear()
         {
@@ -110,17 +102,16 @@ namespace RockEngine.Utils
                 }
 
                 // Set auto scroll
-                if (_scrollToButton)
+                if(_autoScroll)
                 {
-                    ImGui.SetScrollHereY(1.0f);
-                    _scrollToButton = false;
+                    ImGui.SetScrollHereY(-1.0f);
                 }
 
                 ImGui.PushTextWrapPos(1400);
                 // Default display of logs
                 foreach (var log in _logs)
                 {
-                    ImGui.TextColored(new(log.Color.X, log.Color.Y, log.Color.Z, 1), log.Text);
+                    ImGui.TextColored(log.Color, log.Text);
                 }
 
                 ImGui.PopTextWrapPos();

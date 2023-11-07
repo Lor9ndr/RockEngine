@@ -1,5 +1,4 @@
-﻿using RockEngine.DI;
-using RockEngine.Utils;
+﻿using RockEngine.Utils;
 using RockEngine.Editor;
 
 AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);

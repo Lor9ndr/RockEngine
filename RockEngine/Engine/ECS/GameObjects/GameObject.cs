@@ -165,6 +165,7 @@ namespace RockEngine.Engine.ECS.GameObjects
         /// <returns></returns>
         public T AddComponent<T>(T component) where T : IComponent
         {
+            Validator.ThrowIfNull(component);
             if (component is Transform tr)
             {
                 if (Transform is not null)

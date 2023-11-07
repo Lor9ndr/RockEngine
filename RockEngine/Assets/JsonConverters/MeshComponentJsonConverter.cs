@@ -22,7 +22,6 @@ namespace RockEngine.Assets.JsonConverters
             var id = jsonObject["ID"].ToObject<Guid>();
             var path = jsonObject.Value<string>("Path");
             var type = jsonObject["Type"].ToObject<AssetType>();
-            var renderType = jsonObject["RenderType"].ToObject<RenderType>();
 
             JArray verticesArray = (JArray)jsonObject["Vertices"];
 
@@ -38,6 +37,7 @@ namespace RockEngine.Assets.JsonConverters
                 return new Mesh(ref vertices, name, path, id);
             }
         }
+
         public override void WriteJson(JsonWriter writer, Mesh? value, JsonSerializer serializer)
         {
             if (value is null)

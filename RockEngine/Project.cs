@@ -11,9 +11,6 @@ namespace RockEngine
 
         public static Scene? CurrentScene => Scene.CurrentScene;
 
-        [JsonIgnore]
-        public IEnumerable<Scene> Scenes => AssetManager.Assets.OfType<Scene>();
-
         public Project(string name, string path, Guid id)
             : base(path, name, id, AssetType.Project)
         {
@@ -32,7 +29,7 @@ namespace RockEngine
 
         public Project()
         {
-
+            CurrentProject = this;
         }
 
         public void Dispose()

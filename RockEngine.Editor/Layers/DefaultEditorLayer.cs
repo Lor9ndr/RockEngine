@@ -56,7 +56,8 @@ namespace RockEngine.Editor.Layers
             camera.LookAt(new Vector3(15), new Vector3(0), Vector3.UnitY);
             _physicsManager = IoC.Get<PhysicsManager>();
             _physicsManager.SetDebugRender(camera);
-            _imguiLayer = new ImGuiRenderer(this, _physicsManager);
+            _imguiLayer = new ImGuiRenderer(Application.GetCurrentApp().MainWindow,this, _physicsManager);
+           
         }
 
         public override void OnRender()
@@ -102,7 +103,7 @@ namespace RockEngine.Editor.Layers
 
             OutlineSelectedGameObject(selected);
 
-            _physicsManager.World.DebugDrawer.DebugMode = BulletSharp.DebugDrawModes.DrawFastWireframe;
+          
             if(EditorSettings.DrawCollisions)
             {
                 _physicsManager.DebugRenderer.DebugRender();

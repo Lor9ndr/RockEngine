@@ -16,7 +16,7 @@ namespace RockEngine.Engine.EngineStates
             {
                 _states.Add(item.Key, item);
             }
-            SetNextState(_states.Keys.First());
+            SetNextState(states[0].Key);
         }
 
         public static string GetCurrentStateKey() => _baseEngineState.Key;

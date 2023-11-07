@@ -127,6 +127,9 @@ namespace RockEngine.Engine
             }
         }
 
+        /// <summary>
+        /// Default render without camera
+        /// </summary>
         public void EditorLayerRender()
         {
             foreach (var item in _gameObjects)

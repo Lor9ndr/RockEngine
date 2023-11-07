@@ -8,6 +8,7 @@ namespace RockEngine.Assets.JsonConverters
 {
     public class GameObjectJsonConverter : JsonConverter<GameObject>
     {
+        public static Dictionary<int, object> _refHandlers = new Dictionary<int, object>();
         public override void WriteJson(JsonWriter writer, GameObject? value, JsonSerializer serializer)
         {
             Validator.ThrowIfNull(value);
@@ -58,24 +59,25 @@ namespace RockEngine.Assets.JsonConverters
             gameObject.GameObjectID = jsonObject.GetValue("GameObjectID").Value<uint>();
 
             // Deserialize the parent GameObject if it exists
-            if (jsonObject.TryGetValue("Parent", out var parentToken))
+            if(jsonObject.TryGetValue("Parent", out var parentToken))
             {
                 // TODO: Handle deserialization of the parent object
             }
 
-            if (jsonObject.TryGetValue("Components", out var componentsToken))
+            if(jsonObject.TryGetValue("Components", out var componentsToken))
             {
+
                 var componentsArray = (JArray)componentsToken;
-                if (componentsArray != null)
+                if(componentsArray != null)
                 {
-                    foreach (var componentToken in componentsArray)
+                    foreach(var componentToken in componentsArray)
                     {
-                        if (componentToken.Type == JTokenType.String)
+                        if(componentToken.Type == JTokenType.String)
                         {
                             // If the component is an asset ID, create a reference to the asset
                             var assetId = componentToken.ToObject<Guid>();
                             var assetReference = AssetManager.GetAssetByID(assetId);
-                            if (assetReference is null)
+                            if(assetReference is null)
                             {
                                 Logger.AddLog($"Missing asset id:{assetId} of Gameobject: {gameObject.Name} with id {gameObject.GameObjectID}");
                             }
@@ -84,20 +86,15 @@ namespace RockEngine.Assets.JsonConverters
                                 gameObject.AddComponent((IComponent)assetReference);
                             }
                         }
-                        else if (componentToken.Type == JTokenType.Object)
+                        if(componentToken.Type == JTokenType.Object)
                         {
-                            var componentObject = componentToken.Value<JObject>();
-                            var type = Type.GetType(componentObject["$type"].Value<string>());
-                            var component = componentObject.ToObject(type);
-                            if (component is IComponent validComponent)
-                            {
-                                gameObject.AddComponent(validComponent);
-                            }
+                            var type = componentToken["$type"].ToObject<Type>();
+                            var component = (IComponent)serializer.Deserialize(componentToken.CreateReader(), type);
+                            gameObject.AddComponent(component);
                         }
                     }
                 }
             }
-
             return gameObject;
         }
     }

@@ -25,16 +25,23 @@ namespace RockEngine.Assets.JsonConverters
 
         public override Transform ReadJson(JsonReader reader, Type objectType, Transform existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            // Load the JObject from the reader
-            var jsonObject = JObject.Load(reader);
+            // Load the JSON object from the reader
+            JObject jsonObject = JObject.Load(reader);
 
-            // Create a new Transform instance
-            var transform = new Transform();
+            
 
-            // Deserialize the properties from the JObject
-            transform.Rotation = jsonObject.GetValue("Rotation").ToObject<Vector3>(serializer);
-            transform.Position = jsonObject.GetValue("Position").ToObject<Vector3>(serializer);
-            transform.Scale = jsonObject.GetValue("Scale").ToObject<Vector3>(serializer);
+            // Extract the properties from the JSON object
+            JToken rotationToken = jsonObject["Rotation"];
+            JToken positionToken = jsonObject["Position"];
+            JToken scaleToken = jsonObject["Scale"];
+
+            // Deserialize the properties using the provided serializer
+            Vector3 rotation = rotationToken.ToObject<Vector3>(serializer);
+            Vector3 position = positionToken.ToObject<Vector3>(serializer);
+            Vector3 scale = scaleToken.ToObject<Vector3>(serializer);
+
+            // Create a new Transform object with the deserialized properties
+            Transform transform = new Transform(position, rotation, scale);
 
             return transform;
         }

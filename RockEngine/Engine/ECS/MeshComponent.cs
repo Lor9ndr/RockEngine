@@ -1,6 +1,7 @@
 ﻿using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.Assets;
 using RockEngine.OpenGL;
+using System.Text.Json.Serialization;
 
 namespace RockEngine.Engine.ECS
 {
@@ -12,6 +13,7 @@ namespace RockEngine.Engine.ECS
 
         public int Order => 999;
 
+        [JsonConstructor]
         public MeshComponent(Mesh mesh)
         {
             Mesh = mesh;

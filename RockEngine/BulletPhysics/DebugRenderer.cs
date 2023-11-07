@@ -26,10 +26,11 @@ namespace RockEngine.BulletPhysics
             _camera = camera;
             DebugMesh = new Mesh(ref vertices, "Collider mesh", string.Empty, Guid.Empty);
         }
-
+      
+            
         public void DebugRender()
         {
-            if(DebugMesh is null)
+            if(DebugMesh is null || !DebugMesh.IsSetupped)
             {
                 return;
             }

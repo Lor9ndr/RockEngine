@@ -23,14 +23,20 @@ namespace RockEngine.Assets
         [JsonIgnore]
         public bool IsSetupped => _vao is not null && _vao.IsSetupped;
 
-        public Mesh(ref Vertex3D[] vertices, ref int[] indices, string name, string path, Guid id)
+        public Mesh(ref Vertex3D[ ] vertices, ref int[] indices, string name, string path, Guid id)
             : base(ref indices, ref vertices, name, path, id)
         {
         }
-
+        
         public Mesh(ref Vertex3D[] vertices, string name, string path, Guid id)
            : base(ref vertices, name, path, id)
         {
+        }
+
+        [JsonConstructor]
+        public Mesh():base()
+        {
+
         }
 
         public Mesh SetupMeshVertices(ref Vertex3D[] vertices)

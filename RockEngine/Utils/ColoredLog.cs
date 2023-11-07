@@ -10,25 +10,27 @@ namespace RockEngine.Utils
         private readonly List<Record> _records;
         private readonly StringBuilder _currentMessage;
         private Vector4 _currentColor;
+
         public ColoredLog()
         {
             _records = new List<Record>();
             _currentMessage = new StringBuilder();
         }
+
         public void Append(string message, Vector4 color)
         {
-            if (_currentColor == color)
+            if(_currentColor == color)
             {
                 _currentMessage.AppendLine(message);
             }
             else
             {
-                _records.Add(new Record(_currentMessage.ToString(), _currentColor));
-                _currentMessage.Clear();
+                AddCurrentRecord();
                 _currentMessage.AppendLine(message);
                 _currentColor = color;
             }
         }
+
         public void AddLog(string message)
         {
             Append(message, Record.Log);
@@ -45,33 +47,43 @@ namespace RockEngine.Utils
         }
 
         public void Clear()
-            => _records.Clear();
+        {
+            _records.Clear();
+            _currentMessage.Clear();
+        }
 
         public IEnumerator<Record> GetEnumerator()
         {
-            // при добавлении мы не добавляем текущее сообщение, если цвет его схож с предыдущим, в общем пропуск бывает
-            if (_currentMessage.Length != 0)
-            {
-                _records.Add(new Record(_currentMessage.ToString(), _currentColor));
-                _currentMessage.Clear();
-            }
+            AddCurrentRecord();
             return _records.GetEnumerator();
-
         }
 
         IEnumerator IEnumerable.GetEnumerator()
-            => GetEnumerator();
+        {
+            return GetEnumerator();
+        }
+
+        private void AddCurrentRecord()
+        {
+            if(_currentMessage.Length != 0)
+            {
+                var record = new Record(_currentMessage.ToString(), _currentColor);
+                _records.Add(record);
+                _currentMessage.Clear();
+            }
+        }
 
         internal record struct Record
         {
-            public string Text;
-            public Vector4 Color;
+            public string Text { get; }
+            public Vector4 Color { get; }
 
             public Record(string text, Vector4 color)
             {
                 Text = text;
                 Color = color;
             }
+
             public static Vector4 Error => Vector4.UnitX with { W = 1 };
             public static Vector4 Warn => new Vector4(1f, 1, 0, 1);
             public static Vector4 Log => Vector4.UnitY with { W = 1 };

@@ -31,9 +31,9 @@ namespace RockEngine
             Layers = new Layers();
         }
 
-        public void Start()
+        public virtual void Start()
         {
-                MainWindow.Run();
+            MainWindow.Run();
         }
 
         protected abstract void Load();

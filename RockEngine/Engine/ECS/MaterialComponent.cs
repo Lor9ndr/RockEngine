@@ -4,6 +4,7 @@ using RockEngine.Engine.ECS.GameObjects;
 
 using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
+using RockEngine.Utils;
 
 namespace RockEngine.Engine.ECS
 {
@@ -18,6 +19,7 @@ namespace RockEngine.Engine.ECS
 
         public MaterialComponent(Material material)
         {
+            Validator.ThrowIfNull(material);
             Material = material;
            
             MaterialData = new MaterialData();
