@@ -32,6 +32,7 @@ namespace RockEngine.Assets
             };
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings()
         {
+            ConstructorHandling = ConstructorHandling.AllowNonPublicDefaultConstructor,
             Converters = _converters,
             ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
             Formatting = Formatting.Indented,
@@ -160,7 +161,7 @@ namespace RockEngine.Assets
         {
             string json = File.ReadAllText(filePath);
             var obj = JsonConvert.DeserializeObject<T>(json, _jsonSettings);
-            Validator.ThrowIfNull(obj);
+            Check.IsNull(obj);
             return obj!;
         }
         public static void SaveAssetToFile(string filePath, object objToSave)

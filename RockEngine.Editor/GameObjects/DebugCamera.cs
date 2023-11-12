@@ -26,8 +26,8 @@ namespace RockEngine.Editor.GameObjects
             get => _canMove;
             set
             {
-                _canMove = value;
-                _window.Cursor = _canMove && ImGuiRenderer.IsMouseOnEditorScreen ? MouseCursor.Hand : MouseCursor.Default;
+                _canMove = value && ImGuiRenderer.IsMouseOnEditorScreen;
+                _window.Cursor = _canMove ? MouseCursor.Hand : MouseCursor.Default;
             }
         }
         public DebugCamera(float aspectRatio, EngineWindow window) : base(aspectRatio)
@@ -64,7 +64,7 @@ namespace RockEngine.Editor.GameObjects
         }
         private void ChangePosition(Vector3 offset)
         {
-            if(CanMove && ImGuiRenderer.IsMouseOnEditorScreen)
+            if(CanMove)
             {
                 Parent!.Transform.Position += offset;
             }
@@ -72,7 +72,7 @@ namespace RockEngine.Editor.GameObjects
 
         private void Window_MouseMove(MouseMoveEventArgs mouse)
         {
-            if(CanMove && ImGuiRenderer.IsMouseOnEditorScreen)
+            if(CanMove)
             {
                 Yaw += mouse.DeltaX * Sensitivity;
                 Pitch -= mouse.DeltaY * Sensitivity;
@@ -105,16 +105,6 @@ namespace RockEngine.Editor.GameObjects
             {
                 ChangePosition(-Up * CameraSpeed * Time.DeltaTime); // Front
             }
-        }
-
-        public override void OnUpdateDevelepmentState()
-        {
-            //base.OnUpdateDevelepmentState();
-            OnUpdate();
-        }
-        public override void RenderOnEditorLayer()
-        {
-            base.Render();
         }
     }
 }

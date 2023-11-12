@@ -28,8 +28,8 @@ namespace RockEngine.Editor.Layers
 
         public GameObject DebugCamera;
         private readonly PhysicsManager _physicsManager;
-        private readonly VFShaderProgram PickingShader;
-        private readonly VFShaderProgram SelectingShader;
+        private readonly AShaderProgram PickingShader;
+        private readonly AShaderProgram SelectingShader;
         private readonly ImGuiRenderer _imguiLayer;
 
         public override int Order => 1;
@@ -43,33 +43,33 @@ namespace RockEngine.Editor.Layers
             var basePicking = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.PICKING);
             var baseDebug = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.SELECTED_OBJECT);
 
-            PickingShader = new VFShaderProgram("PickingShader",
+            PickingShader = ShaderProgram.GetOrCreate("PickingShader",
                 new VertexShader(Path.Combine(basePicking, "Picking.vert")),
               new FragmentShader(Path.Combine(basePicking, "Picking.frag")));
 
-            SelectingShader = new VFShaderProgram("SelectingObjectShader",
+            SelectingShader = ShaderProgram.GetOrCreate("SelectingObjectShader",
                 new VertexShader(Path.Combine(baseDebug, "Selected.vert")),
                 new FragmentShader(Path.Combine(baseDebug, "Selected.frag")));
 
             var camera = new DebugCamera(_window.Size.X / (float)_window.Size.Y, _window);
+
             DebugCamera = new GameObject("DebugCamera", camera, new Transform(new Vector3(0, 10, 0)));
             camera.LookAt(new Vector3(15), new Vector3(0), Vector3.UnitY);
             _physicsManager = IoC.Get<PhysicsManager>();
             _physicsManager.SetDebugRender(camera);
-            _imguiLayer = new ImGuiRenderer(Application.GetCurrentApp().MainWindow,this, _physicsManager);
+            _imguiLayer = new ImGuiRenderer(Application.GetMainWindow(),this, _physicsManager);
            
         }
 
-        public override void OnRender()
+        public override void OnRender(Scene scene)
         {
-            DebugCamera.UpdateOnDevelpmentState();
-            DebugCamera.RenderOnEditorLayer();
-            var gameObjects = Scene.CurrentScene?.GetGameObjects();
-            PickingObjectPass(gameObjects);
+            DebugCamera.Update();
+            DebugCamera.Render();
+            PickingObjectPass(scene);
 
-            MainRenderPass();
+            MainRenderPass(scene);
 
-            GettingObjectFromPicked(gameObjects);
+            GettingObjectFromPicked(scene);
             _imguiLayer.OnRender();
         }
 
@@ -90,19 +90,19 @@ namespace RockEngine.Editor.Layers
             }
         }
 
-        private void MainRenderPass()
+        private void MainRenderPass(Scene scene)
         {
             Screen.BeginRenderToScreen();
+
             var selected = _imguiLayer.SelectedGameObject;
             if(selected != null)
             {
                 GL.Clear(ClearBufferMask.StencilBufferBit);
                 selected.IsActive = false;
             }
-            Scene.CurrentScene!.EditorLayerRender();
+            scene.EditorLayerRender();
 
             OutlineSelectedGameObject(selected);
-
           
             if(EditorSettings.DrawCollisions)
             {
@@ -153,8 +153,12 @@ namespace RockEngine.Editor.Layers
                     gObjectIndex = gameObject.GameObjectID,
                     gDrawIndex = 0,
                 };
+                if(gameObject.GetComponent<Camera>() is not null)
+                {
+                    continue;
+                }
                 pd.SendData();
-                gameObject.RenderOnEditorLayer();
+                gameObject.Render();
 
             }
 

@@ -33,7 +33,10 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
         {
             if(IUBOData<CameraData>.UBO is null)
             {
-                IUBOData<CameraData>.UBO = new UBO<CameraData>(new BufferSettings(Size, BufferUsageHint.StreamDraw, BindingPoint, Name)).Setup().SetLabel();
+                IUBOData<CameraData>.UBO = new UBO<CameraData>(new BufferSettings(Size,
+                                                                                  BufferUsageHint.StreamDraw,
+                                                                                  BindingPoint,
+                                                                                  Name)).Setup().SetLabel();
             }
         }
 

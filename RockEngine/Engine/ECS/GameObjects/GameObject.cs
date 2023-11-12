@@ -98,21 +98,7 @@ namespace RockEngine.Engine.ECS.GameObjects
                 }
             }
         }
-
-        /// <summary>
-        /// Render on editorLayer components
-        /// </summary>
-        public virtual void RenderOnEditorLayer()
-        {
-            for (int i = 0; i < _components.Count; i++)
-            {
-                IComponent? item = _components[i];
-                if (item is IRenderable renderable)
-                {
-                    renderable.RenderOnEditorLayer();
-                }
-            }
-        }
+       
 
         /// <summary>
         /// Update components of the gameobject
@@ -126,17 +112,7 @@ namespace RockEngine.Engine.ECS.GameObjects
             }
         }
 
-        /// <summary>
-        /// Update components of the gameobject
-        /// </summary>
-        public virtual void UpdateOnDevelpmentState()
-        {
-            for(int i = 0; i < _components.Count; i++)
-            {
-                IComponent? item = _components[i];
-                item.OnUpdateDevelepmentState();
-            }
-        }
+        
 
         /// <summary>
         /// Dispose components of the gameobject
@@ -165,7 +141,7 @@ namespace RockEngine.Engine.ECS.GameObjects
         /// <returns></returns>
         public T AddComponent<T>(T component) where T : IComponent
         {
-            Validator.ThrowIfNull(component);
+            Check.IsNull(component);
             if (component is Transform tr)
             {
                 if (Transform is not null)

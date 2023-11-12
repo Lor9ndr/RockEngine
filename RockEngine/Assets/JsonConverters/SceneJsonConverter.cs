@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-using RockEngine.Assets;
-
 using RockEngine.Engine;
 using RockEngine.Engine.ECS.GameObjects;
 

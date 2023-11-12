@@ -10,6 +10,7 @@ namespace RockEngine
     {
         private static Application? _instance;
         public static Application? GetCurrentApp() => _instance;
+        public static EngineWindow? GetMainWindow() => _instance?.MainWindow;
 
         public EngineWindow MainWindow;
         public Layers Layers;

@@ -19,7 +19,7 @@ namespace RockEngine.Engine.ECS
 
         public MaterialComponent(Material material)
         {
-            Validator.ThrowIfNull(material);
+            Check.IsNull(material);
             Material = material;
            
             MaterialData = new MaterialData();

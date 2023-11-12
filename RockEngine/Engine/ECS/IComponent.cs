@@ -2,8 +2,6 @@
 
 using RockEngine.Engine.ECS.GameObjects;
 
-using System.Reflection;
-
 namespace RockEngine.Engine.ECS
 {
     public interface IComponent
@@ -20,8 +18,6 @@ namespace RockEngine.Engine.ECS
         void OnStart();
 
         void OnUpdate();
-
-        void OnUpdateDevelepmentState();
 
         void OnDestroy();
 

@@ -44,7 +44,9 @@ namespace RockEngine.Engine.ECS.GameObjects
                 FramebufferAttachment = FramebufferAttachment.ColorAttachment0
             }).Setup();
 
-            _screenShader = Resources.GetOrCreateShader(ShadersPaths.Lit2DShader);
+            _screenShader = ShaderProgram.GetOrCreate("Lit2DShader",
+                new VertexShader("Resources\\Shaders\\Screen\\Screen.vert"),
+                new FragmentShader("Resources\\Shaders\\Screen\\Screen.frag"));
 
             _screenRenderBuffer = new RBO(new RenderBufferSettings(RenderbufferStorage.Depth32fStencil8, RenderbufferTarget.Renderbuffer), size).Setup();
 

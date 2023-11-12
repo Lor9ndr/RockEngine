@@ -29,8 +29,6 @@ namespace RockEngine.Engine.ECS
 
         public int Order => 0;
 
-        internal bool ShouldBeUpdated = true;
-
         private HashSet<Transform> _childTransforms;
         private GameObject? _parent;
 

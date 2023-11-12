@@ -14,13 +14,17 @@ using RockEngine.Inputs;
 using RockEngine.Utils;
 using RockEngine.Editor.ImguiEditor;
 using System.ComponentModel;
+using RockEngine.Assets;
+using RockEngine.OpenGL.Vertices;
+using BulletSharp;
+using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Editor
 {
     internal sealed class Editor : Application, IDisposable
     {
         private readonly EngineWindow _projectSelectingWindow;
-        private VFShaderProgram DefaultShader;
+        private AShaderProgram DefaultShader;
         private PhysicsManager Physics;
         private readonly ProjectSelectorGUI _projectSelectingGUI;
 
@@ -58,7 +62,8 @@ namespace RockEngine.Editor
 
         public override void Start()
         {
-            _projectSelectingWindow.Run();
+            //_projectSelectingWindow.Run();
+            MainWindow.CenterWindow();
             MainWindow.IsVisible = true;
             base.Start();
         }
@@ -87,11 +92,15 @@ namespace RockEngine.Editor
         {
             Physics = IoC.Get<PhysicsManager>();
 
-            DefaultShader = new VFShaderProgram("TestShaderVert", new VertexShader("Resources/Shaders/TestVertex.vert"), new FragmentShader("Resources/Shaders/TestFragment.frag"));
-   /*         AssetManager.CreateProject("Lor9nEngine", "C:\\Users\\Администратор\\Desktop\\LEProject", Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"));
-            Scene scene = AssetManager.CreateScene("Test scene", "C:\\Users\\Администратор\\Desktop\\LEProject\\Assets\\Scenes", Guid.Parse("36CC1F73-C5E7-4D83-8448-855306097C1C"));
+            DefaultShader = ShaderProgram.GetOrCreate("TestShaderVert", new VertexShader("Resources/Shaders/TestVertex.vert"), new FragmentShader("Resources/Shaders/TestFragment.frag"));
 
-            Scene.ChangeScene(scene);
+             AssetManager.CreateProject("Lor9nEngine",
+                 "C:\\Users\\Администратор\\Desktop\\LEProject",
+                 Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"));
+            Scene scene = AssetManager.CreateScene("Test scene",
+                "C:\\Users\\Администратор\\Desktop\\LEProject\\Assets\\Scenes",
+                Guid.Parse("36CC1F73-C5E7-4D83-8448-855306097C1C"));
+
             var material = AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
             var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
 
@@ -100,7 +109,7 @@ namespace RockEngine.Editor
                 Physics.LocalCreateRigidBody(0,
                     floor.Transform.GetModelMatrix(),
                     new BoxShape(100)));
-            scene.AddGameObject(floor);
+            scene.Add(floor);
 
             for(int i = 0; i < 5; i++)
             {
@@ -116,19 +125,20 @@ namespace RockEngine.Editor
                     testTransform.GetModelMatrix().ClearScale(),
                     new BoxShape(testTransform.Scale))
                     );
-                scene.AddGameObject(testGameObject);
+                scene.Add(testGameObject);
             }
-            scene.AddGameObject(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
+            scene.Add(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
 
             Scene.MainCamera!.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
             Scene.MainCamera.GetComponent<Camera>()!.UpdateVectors();
 
-            scene.AddGameObject(
+            scene.Add(
                     new GameObject(
                         "Direct light",
                         new DirectLight(new Vector3(1), 100_000),
                         new Transform(new Vector3(0, 50, 0), new Vector3(-1))));
-            AssetManager.SaveAssetToFile(scene);*/
+            AssetManager.SaveAssetToFile(scene);
+            Scene.ChangeScene(scene);
 
             EngineStateManager.RegisterStates(new DevepolerEngineState(), new PlayEngineState());
             Layers.AddLayer(new DefaultGameLayer());
@@ -155,7 +165,7 @@ namespace RockEngine.Editor
         protected override void Render(FrameEventArgs args)
         {
             DefaultShader.Bind();
-            Layers.OnRender();
+            Layers.OnRender(Scene.CurrentScene);
             DefaultShader.Unbind();
         }
 

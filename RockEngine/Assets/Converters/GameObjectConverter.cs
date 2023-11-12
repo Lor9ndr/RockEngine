@@ -46,7 +46,7 @@ namespace RockEngine.Assets.Converters
             {
                 var id = new Guid(reader.ReadBytes(16));
                 var component = (IComponent?)AssetManager.GetAssetByID(id);
-                Validator.ThrowIfNull(component);
+                Check.IsNull(component);
                 components[i] = component!;
             }
             GameObject go = new GameObject(name, components);

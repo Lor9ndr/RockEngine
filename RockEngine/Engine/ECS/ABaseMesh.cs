@@ -26,7 +26,6 @@ namespace RockEngine.Engine.ECS
         {
             Indices = indices;
             Vertices = vertices;
-            Indices = indices;
 
         }
         public ABaseMesh(ref Vertex3D[] vertices, string name, string path, Guid id)

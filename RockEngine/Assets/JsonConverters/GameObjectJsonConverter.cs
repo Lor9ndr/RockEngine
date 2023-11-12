@@ -11,7 +11,7 @@ namespace RockEngine.Assets.JsonConverters
         public static Dictionary<int, object> _refHandlers = new Dictionary<int, object>();
         public override void WriteJson(JsonWriter writer, GameObject? value, JsonSerializer serializer)
         {
-            Validator.ThrowIfNull(value);
+            Check.IsNull(value);
             // Create a JObject to hold the serialized properties
             var jsonObject = new JObject
             {

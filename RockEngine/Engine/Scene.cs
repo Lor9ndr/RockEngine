@@ -2,10 +2,13 @@
 
 using RockEngine.Assets;
 using RockEngine.Engine.ECS.GameObjects;
+using RockEngine.Utils;
+
+using System.Collections;
 
 namespace RockEngine.Engine
 {
-    public class Scene : BaseAsset, IDisposable
+    public class Scene : BaseAsset, IDisposable, IEnumerable<GameObject>
     {
         /// <summary>
         /// Static property to track of the current scene
@@ -27,11 +30,16 @@ namespace RockEngine.Engine
             Name = name;
             _gameObjects = new List<GameObject>();
         }
-        [JsonConstructor]
         public Scene(string path, string name, Guid id, AssetType type, List<GameObject> gameObjects)
             : base(path, name, id, type)
         {
             _gameObjects = gameObjects;
+        }
+
+        [JsonConstructor]
+        private Scene()
+        {
+
         }
         #endregion
 
@@ -41,15 +49,32 @@ namespace RockEngine.Engine
         /// <param name="newScene">the new scene on which we are changing</param>
         public static void ChangeScene(Scene? newScene)
         {
+            Check.IsNull(newScene);
+            CurrentScene?.Stop();
             CurrentScene = newScene;
+            CurrentScene.Start();
+        }
 
+        private void Start()
+        {
+            foreach(var item in this)
+            {
+                item.OnStart();
+            }
+        } 
+        private void Stop()
+        {
+            foreach(var item in this)
+            {
+                item.Dispose();
+            }
         }
 
         /// <summary>
         /// Method to add a game object to the scene
         /// </summary>
         /// <param name="gameObject">gameobject which to add to scene</param>
-        public Scene AddGameObject(GameObject gameObject)
+        public Scene Add(GameObject gameObject)
         {// Create a HashSet to store the names of existing game objects
             var existingNames = new HashSet<string>(_gameObjects.Select(go => go.Name));
 
@@ -84,6 +109,7 @@ namespace RockEngine.Engine
         {
             parent.AddChild(child);
         }
+
         /// <summary>
         /// Removing child from parent
         /// </summary>
@@ -119,14 +145,6 @@ namespace RockEngine.Engine
             }
         }
 
-        internal void Update()
-        {
-            foreach (var item in _gameObjects)
-            {
-                item.Update();
-            }
-        }
-
         /// <summary>
         /// Default render without camera
         /// </summary>
@@ -152,5 +170,11 @@ namespace RockEngine.Engine
 
             GC.SuppressFinalize(this);
         }
+
+      
+
+        public IEnumerator<GameObject> GetEnumerator() => _gameObjects.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

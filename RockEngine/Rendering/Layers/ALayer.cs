@@ -7,6 +7,6 @@ namespace RockEngine.Rendering.Layers
         public abstract Layer Layer { get;}
 
         public abstract int Order { get; }
-        public abstract void OnRender();
+        public abstract void OnRender(Scene scene);
     }
 }

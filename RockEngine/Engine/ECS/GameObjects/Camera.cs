@@ -81,7 +81,7 @@ namespace RockEngine.Engine.ECS.GameObjects
             }
         }
 
-        public GameObject? Parent { get; set; }
+        public GameObject Parent { get; set; }
 
         public int Order => 0;
 
@@ -101,13 +101,8 @@ namespace RockEngine.Engine.ECS.GameObjects
         public void Render()
         {
             _cameraData.SendData();
-            Parent.Transform.ShouldBeUpdated = false;
         }
-
-        public virtual void RenderOnEditorLayer()
-        {
-            //Render();
-        }
+      
 
         public void UpdateVectors()
         {
@@ -142,7 +137,6 @@ namespace RockEngine.Engine.ECS.GameObjects
             Vector3 newPosition = Parent.Transform.Position + direction * distance;
             Parent.Transform.Position = newPosition;
         }
-
        
 
         public void MoveToTarget(float distance, Vector3 target)
@@ -168,13 +162,6 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public void OnDestroy()
         {
-        }
-
-        public virtual void OnUpdateDevelepmentState()
-        {
-            _cameraData.Projection = GetProjectionMatrix();
-            _cameraData.View = GetViewMatrix();
-            _cameraData.ViewPos = Parent.Transform.Position;
         }
 
         public object GetState()

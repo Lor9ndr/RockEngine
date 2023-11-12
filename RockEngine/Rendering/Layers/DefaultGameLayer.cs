@@ -1,4 +1,6 @@
-﻿using RockEngine.Engine;
+﻿using OpenTK.Mathematics;
+
+using RockEngine.Engine;
 using RockEngine.Engine.ECS.GameObjects;
 
 namespace RockEngine.Rendering.Layers
@@ -13,13 +15,13 @@ namespace RockEngine.Rendering.Layers
 
         public DefaultGameLayer()
         {
-            Screen = new CameraTexture(new OpenTK.Mathematics.Vector2i(1280, 720));
+            Screen = new CameraTexture(new Vector2i(1280, 720));
         }
 
-        public override void OnRender()
+        public override void OnRender(Scene scene)
         {
             Screen.BeginRenderToScreen();
-            Scene.CurrentScene.Render();
+            scene.Render();
             Screen.EndRenderToScreen();
         }
 

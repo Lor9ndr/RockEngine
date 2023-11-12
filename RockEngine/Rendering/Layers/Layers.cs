@@ -1,5 +1,4 @@
-﻿using RockEngine.DI;
-using RockEngine.Engine;
+﻿using RockEngine.Engine;
 
 using System.Collections;
 
@@ -12,7 +11,7 @@ namespace RockEngine.Rendering.Layers
 
         public Layers()
         {
-            _layers = IoC.GetAll<ALayer>().ToList();
+            _layers = new List<ALayer>();
         }
         public void AddLayer(ALayer layer)
         {
@@ -24,12 +23,12 @@ namespace RockEngine.Rendering.Layers
             _layers.Remove(layer);
         }
 
-        public void OnRender()
+        public void OnRender(Scene scene)
         {
             foreach (var item in _layers)
             {
                 CurrentLayer = item.Layer;
-                item.OnRender();
+                item.OnRender(scene);
             }
         }
 

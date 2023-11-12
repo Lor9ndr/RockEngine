@@ -2,9 +2,9 @@
 
 namespace RockEngine.Utils
 {
-    public static class Validator
+    public static class Check
     {
-        public static void ThrowIfNull<T>(T data)
+        public static void IsNull<T>(T data)
         {
             if (data is null)
             {
@@ -12,7 +12,7 @@ namespace RockEngine.Utils
             }
         }
 
-        public static void ThrowIfEmpty(Array array, string message, [CallerMemberName()] string? name = "")
+        public static void IsEmpty(Array array, string message, [CallerMemberName()] string? name = "")
         {
             if (array.Length == 0)
             {

@@ -309,7 +309,7 @@ namespace RockEngine.Rendering.Layers
 
             // Check if the mouse is hovering over the EditorLayer window
             bool isHovering = ImGui.IsMouseHoveringRect(rMin, rMax);
-            IsMouseOnEditorScreen = IsMouseOnEditorScreen ? true: isHovering && ImGui.IsWindowFocused();
+            IsMouseOnEditorScreen = IsMouseOnEditorScreen || isHovering && ImGui.IsWindowFocused();
         }
 
         private void DrawGuizmo()

@@ -10,6 +10,8 @@ using RockEngine.Engine.ECS;
 using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.Utils;
 
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Numerics;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -24,13 +26,12 @@ namespace RockEngine.Rendering.Layers
         private string? _gameObjectName;
 
         #region Reflection Cache 
-        private readonly Dictionary<Type, FieldInfo[]> _cachedFields = new Dictionary<Type, FieldInfo[]>();
-        private readonly Dictionary<Type, PropertyInfo[]> _cachedProperties = new Dictionary<Type, PropertyInfo[]>();
-
-        private static Dictionary<FieldInfo, Func<object, object>> _fieldGettersCache = new Dictionary<FieldInfo, Func<object, object>>();
-        private static Dictionary<PropertyInfo, Func<object, object>> _propertyGettersCache = new Dictionary<PropertyInfo, Func<object, object>>();
-        private static Dictionary<FieldInfo, Action<object, object>> _fieldSettersCache = new Dictionary<FieldInfo, Action<object, object>>();
-        private static Dictionary<PropertyInfo, Action<object, object>> _propertySettersCache = new Dictionary<PropertyInfo, Action<object, object>>();
+        private static readonly Dictionary<Type, FieldInfo[]> _cachedFields = new Dictionary<Type, FieldInfo[]>();
+        private static readonly Dictionary<Type, PropertyInfo[]> _cachedProperties = new Dictionary<Type, PropertyInfo[]>();
+        private static readonly Dictionary<FieldInfo, Func<object, object>> _fieldGettersCache = new Dictionary<FieldInfo, Func<object, object>>();
+        private static readonly Dictionary<PropertyInfo, Func<object, object>> _propertyGettersCache = new Dictionary<PropertyInfo, Func<object, object>>();
+        private static readonly Dictionary<FieldInfo, Action<object, object>> _fieldSettersCache = new Dictionary<FieldInfo, Action<object, object>>();
+        private static readonly Dictionary<PropertyInfo, Action<object, object>> _propertySettersCache = new Dictionary<PropertyInfo, Action<object, object>>();
         #endregion
 
         private readonly Dictionary<Type, string> typeIcons = new Dictionary<Type, string>()
@@ -58,7 +59,6 @@ namespace RockEngine.Rendering.Layers
 
             foreach(var component in gameObject.GetComponents()!)
             {
-                //EngineStateManager.SaveState(gameObject, component);
                 var type = component.GetType();
 
                 ImguiHelper.FaIconText(typeIcons[type]);
@@ -72,8 +72,8 @@ namespace RockEngine.Rendering.Layers
                 {
                     ImGui.CloseCurrentPopup();
                     ImGui.OpenPopup($"ComponentContextMenu##{type}");
-
                 }
+
                 ContextMenuComponents(type, component);
                 
                 DrawFields(component, type);
@@ -294,6 +294,7 @@ namespace RockEngine.Rendering.Layers
         private void ProcessGameObjectComponentFields(IComponent component, FieldInfo field, UIAttribute attribute)
         {
             var fieldGetter = CreateFieldGetter(field);
+            var fieldSetter = CreateFieldSetter(field);
             var value = fieldGetter(component);
 
             var alias = attribute.Alias;
@@ -305,7 +306,6 @@ namespace RockEngine.Rendering.Layers
             {
                 alias += $"##{asset.ID}";
             }
-            var fieldSetter = CreateFieldSetter(field);
             switch(value)
             {
                 case OpenMath.Vector3 v3:

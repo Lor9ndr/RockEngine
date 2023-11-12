@@ -50,7 +50,7 @@ namespace RockEngine.OpenGL.Shaders
 
         protected AShaderProgram(string name, params BaseShaderType[] baseShaders)
         {
-            Validator.ThrowIfEmpty(baseShaders, "Can't create shader program withoud shaders");
+            Check.IsEmpty(baseShaders, "Can't create shader program withoud shaders");
             
             Name = name;
             _shaders = baseShaders.ToList();

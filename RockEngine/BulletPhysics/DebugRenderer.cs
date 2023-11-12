@@ -20,7 +20,7 @@ namespace RockEngine.BulletPhysics
         {
             DebugRenderVertices = new List<Vertex3D>();
             var vertices = DebugRenderVertices.ToArray();
-            ObjShader = new VFShaderProgram("DebugRenderer",
+            ObjShader = ShaderProgram.GetOrCreate("DebugRenderer",
                 new VertexShader("Resources/Shaders/BoxRenderShader/DebugBox.vert"),
                 new FragmentShader("Resources/Shaders/BoxRenderShader/DebugBox.frag"));
             _camera = camera;

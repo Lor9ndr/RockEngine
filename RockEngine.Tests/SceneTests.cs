@@ -14,7 +14,7 @@ namespace RockEngine.Tests
             var gameObject = new GameObject();
 
             // Act
-            scene.AddGameObject(gameObject);
+            scene.Add(gameObject);
 
             // Assert
             Assert.That(scene.GetGameObjects(), Does.Contain(gameObject));
