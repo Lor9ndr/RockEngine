@@ -157,15 +157,19 @@ namespace RockEngine.Rendering.Layers
             if(ImGui.Begin("EDITOR SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar ))
             {
                 CheckMouseIsOnEditorScreen();
-
-                var size = ImGui.GetWindowContentRegionMax();
-                _editorScreen.Resize(new OpenMath.Vector2i((int)size.X, (int)size.Y));
-                ImGui.Image(_editorScreen.ScreenTexture.Handle, size, new Vector2(0, 1), new Vector2(1, 0));
-
                 var mousePos = ImGui.GetMousePos();
                 var padding = ImGui.GetStyle().WindowPadding;
                 var winPos = ImGui.GetWindowPos();
-                EditorScreenMousePos = mousePos - winPos - padding;
+                var winSize = ImGui.GetWindowSize();
+                _editorScreen.Resize(new OpenMath.Vector2i((int)winSize.X, (int)winSize.Y));
+                ImGui.Image(_editorScreen.ScreenTexture.Handle, winSize, new Vector2(0, 1), new Vector2(1, 0));
+
+                var x = mousePos.X  - winPos.X - padding.X;
+                x = (x / winSize.X) * winSize.X;
+
+                var y = mousePos.Y - winPos.Y - padding.Y;
+                y = winSize.Y - y / winSize.Y * winSize.Y;
+                EditorScreenMousePos = new Vector2(x, y);
                 ImGui.End();
             }
         }
@@ -175,7 +179,7 @@ namespace RockEngine.Rendering.Layers
             if (ImGui.Begin("GAME SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar))
             {
                 var size = ImGui.GetWindowContentRegionMax();
-                _gameScreen.Resize(new OpenMath.Vector2i((int)size.X, (int)size.Y));
+                //_gameScreen.Resize(new OpenMath.Vector2i((int)size.X, (int)size.Y));
                 ImGui.Image(_gameScreen.ScreenTexture.Handle, size, new Vector2(0, 1), new Vector2(1, 0));
                 ImGui.End();
             }

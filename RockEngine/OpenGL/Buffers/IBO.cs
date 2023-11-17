@@ -103,5 +103,8 @@ namespace RockEngine.OpenGL.Buffers
             }
             return this;
         }
+
+        public override bool IsBinded()
+           => GL.GetInteger(GetPName.DrawIndirectBufferBinding) == Handle;
     }
 }

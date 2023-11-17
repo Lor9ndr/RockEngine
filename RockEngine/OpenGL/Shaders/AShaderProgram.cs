@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
+using RockEngine.OpenGL.Buffers;
 using RockEngine.Utils;
 
 namespace RockEngine.OpenGL.Shaders
@@ -11,8 +12,6 @@ namespace RockEngine.OpenGL.Shaders
         /// Возможные значения, которые нужно заполнить в шейдере
         /// </summary>
         private readonly Dictionary<string, int> UniformLocations = new Dictionary<string, int>();
-
-        private readonly DateTime LastUpdateTime;
 
         /// <summary>
         /// Cache of the all available shader programs
@@ -26,6 +25,8 @@ namespace RockEngine.OpenGL.Shaders
         /// Path of the first shader
         /// </summary>
         private readonly string _path;
+
+        public Dictionary<int, IGLObject> BoundUniformBuffers = new Dictionary<int, IGLObject>();
 
         public static AShaderProgram? ActiveShader
         {

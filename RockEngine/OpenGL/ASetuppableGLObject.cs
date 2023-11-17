@@ -17,6 +17,15 @@
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        public abstract bool IsBinded();
+        public void BindIfNotBinded()
+        {
+            if(!IsBinded())
+            {
+                Bind();
+            }
+        }
     }
 
     public abstract class ASetuppableGLObject<TSettings> : ISetuppable<TSettings>, IGLObject where TSettings : ISettings
@@ -52,6 +61,14 @@
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+        public abstract bool IsBinded();
+        public void BindIfNotBinded()
+        {
+            if(!IsBinded())
+            {
+                Bind();
+            }
         }
     }
 }

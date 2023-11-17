@@ -59,7 +59,8 @@ namespace RockEngine.BulletPhysics
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            DebugMesh.Dispose();
+            ObjShader.Dispose();
         }
     }
 }

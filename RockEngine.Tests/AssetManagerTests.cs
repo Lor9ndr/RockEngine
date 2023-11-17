@@ -15,7 +15,8 @@ namespace RockEngine.Tests
         {
             // Create a temporary directory for test assets
             Directory.CreateDirectory(TestAssetsPath);
-            AssetManager.CreateProject("TestProject", TestAssetsPath, Guid.Empty);
+            var scene = AssetManager.CreateScene("TestScene", TestAssetsPath, Guid.Empty);
+            AssetManager.CreateProject("TestProject", TestAssetsPath, Guid.Empty, scene);
         }
 
         [TearDown]

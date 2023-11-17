@@ -34,7 +34,7 @@ namespace RockEngine.OpenGL.Buffers
             GL.GetObjectLabel(ObjectLabelIdentifier.VertexArray, Handle, 64, out int length, out string name);
             if (name.Length == 0)
             {
-                name = $"IBO: ({Handle})";
+                name = $"VAO: ({Handle})";
             }
             Logger.AddLog($"Disposing {name}");
             GL.DeleteVertexArrays(1, ref _handle);
@@ -92,5 +92,8 @@ namespace RockEngine.OpenGL.Buffers
             GL.VertexAttribPointer(index, size, type, normalized, stride, offset);
             return this;
         }
+
+        public override bool IsBinded() 
+            => GL.GetInteger(GetPName.VertexArrayBinding) == Handle;
     }
 }

@@ -17,7 +17,7 @@ namespace RockEngine.Assets
         public const string EXTENSION_NAME = ".asset";
 
         public static List<IAsset> Assets = new List<IAsset>();
-        private static readonly JsonConverter[ ] _converters = new JsonConverter[ ]
+        private static readonly JsonConverter[] _converters = new JsonConverter[]
             {
                 new Vector2JsonConverter(),
                 new Vector2iJsonConverter(),
@@ -56,7 +56,7 @@ namespace RockEngine.Assets
                 }
             }
             Assets.Clear();
-            LoadAssetFromFile<Project>(path);
+            var project = LoadAssetFromFile<Project>(path);
             string assetPath = PathInfo.PROJECT_ASSETS_PATH;
             string[] assets = Directory.GetFiles(assetPath, "*.asset", SearchOption.AllDirectories);
             List<string> scenes = new List<string>();
@@ -98,7 +98,7 @@ namespace RockEngine.Assets
             {
                 Assets.Add(LoadAssetFromFile<Scene>(scenePath));
             }
-            Scene.ChangeScene(Assets.OfType<Scene>().First());
+            //Scene.ChangeScene(project.FirstScene);
         }
 
         public static void SaveAll()
@@ -164,15 +164,18 @@ namespace RockEngine.Assets
             Check.IsNull(obj);
             return obj!;
         }
+
         public static void SaveAssetToFile(string filePath, object objToSave)
         {
             string json = JsonConvert.SerializeObject(objToSave, _jsonSettings);
             File.WriteAllText(filePath, json);
         }
+
         public static void SaveAssetToFile(IAsset objToSave)
         {
             SaveAssetToFile(GetFilePath(objToSave), objToSave);
         }
+
         public static string GetFilePath(IAsset asset)
         {
             if(asset is null)
@@ -191,18 +194,16 @@ namespace RockEngine.Assets
             return result;
         }
 
-        public static Project CreateProject(string name, string assetPath, Guid id)
+        public static Project CreateProject(string name, string assetPath, Guid id, Scene firstScne)
         {
-            Project p = new Project(name, assetPath, id);
+            Project p = new Project(name, assetPath, id, firstScne);
             SaveAssetToFile(p);
             Assets.Add(p);
             return p;
         }
 
-        public static IAsset? GetAssetByPath(string fullName)
-        {
-            return Assets.FirstOrDefault(s=> Path.GetFullPath(GetFilePath(s)) == Path.GetFullPath(fullName));
-        }
+        public static IAsset? GetAssetByPath(string fullName) 
+            => Assets.FirstOrDefault(s => Path.GetFullPath(GetFilePath(s)) == Path.GetFullPath(fullName));
 
         public static Scene CreateScene(string name, string assetPath, Guid id)
         {

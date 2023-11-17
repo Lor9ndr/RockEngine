@@ -10,7 +10,6 @@ namespace RockEngine
 {
     public class EngineWindow : GameWindow
     {
-        public static readonly Color4 BACK_GROUND_COLOR = new Color4(0.6f, 0.67f, 0.96f, 1);
 
         #region BorderLessParams
 
@@ -71,7 +70,6 @@ namespace RockEngine
         protected unsafe override void OnRenderFrame(FrameEventArgs args)
         {
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-            GL.ClearColor(BACK_GROUND_COLOR);
 
             GL.Enable(EnableCap.DepthTest);
             GL.DepthFunc(DepthFunction.Less);

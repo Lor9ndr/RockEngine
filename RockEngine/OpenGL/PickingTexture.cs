@@ -9,7 +9,7 @@ namespace RockEngine.OpenGL
 {
     public sealed class PickingTexture : IDisposable
     {
-        private Vector2i _size;
+        public Vector2i Size { get; private set;}
         private FBO _fbo;
         private Texture _pickingTexture;
         private Texture _depthTexture;
@@ -30,21 +30,28 @@ namespace RockEngine.OpenGL
 
         public PickingTexture(Vector2i size)
         {
-            _size = size;
+            Size = size;
             Setup();
         }
 
         private void Setup()
         {
-            _pickingTexture = new Texture(_size, new TextureSettings()
+            _pickingTexture = new Texture(Size, new TextureSettings()
             {
                 TextureTarget = TextureTarget.Texture2D,
                 SizedInternalFormat = SizedInternalFormat.Rgb32f,
                 FramebufferAttachment = FramebufferAttachment.ColorAttachment0,
-                PixelType = PixelType.Float
+                PixelType = PixelType.Float,
+                 TextureParameters = new Dictionary<TextureParameterName, int>()
+                 {
+                     { TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat},
+                     { TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat},
+                     { TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest},
+                     { TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest},
+                 }
             });
 
-            _depthTexture = new Texture(_size, new TextureSettings()
+            _depthTexture = new Texture(Size, new TextureSettings()
             {
                 TextureTarget = TextureTarget.Texture2D,
                 SizedInternalFormat = SizedInternalFormat.DepthComponent16,
@@ -52,7 +59,7 @@ namespace RockEngine.OpenGL
                 FramebufferAttachment = FramebufferAttachment.DepthAttachment
             });
 
-            _fbo = new FBO(new FrameBufferSettings(FramebufferTarget.Framebuffer), _size, _pickingTexture, _depthTexture)
+            _fbo = new FBO(new FrameBufferSettings(FramebufferTarget.Framebuffer), Size, _pickingTexture, _depthTexture)
                 .Setup().SetLabel().Bind();
             GL.ReadBuffer(ReadBufferMode.None);
             GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
@@ -86,10 +93,11 @@ namespace RockEngine.OpenGL
 
         public void CheckSize(Vector2i size)
         {
-            if (size != _size)
+            if (size != Size)
             {
-                _size = size;
-                _fbo.Resize(_size);
+                Size = size;
+                Dispose();
+                Setup();
             }
         }
 

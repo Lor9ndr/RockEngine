@@ -52,7 +52,6 @@ namespace RockEngine.Editor
             if(Project.CurrentProject is not null)
             {
                 _projectSelectingWindow.Close();
-                _projectSelectingWindow.Dispose();
             }
             else
             {
@@ -62,7 +61,9 @@ namespace RockEngine.Editor
 
         public override void Start()
         {
-            //_projectSelectingWindow.Run();
+            _projectSelectingWindow.Run();
+            _projectSelectingWindow.Close();
+            _projectSelectingWindow.Dispose();
             MainWindow.CenterWindow();
             MainWindow.IsVisible = true;
             base.Start();
@@ -94,51 +95,55 @@ namespace RockEngine.Editor
 
             DefaultShader = ShaderProgram.GetOrCreate("TestShaderVert", new VertexShader("Resources/Shaders/TestVertex.vert"), new FragmentShader("Resources/Shaders/TestFragment.frag"));
 
-             AssetManager.CreateProject("Lor9nEngine",
-                 "C:\\Users\\Администратор\\Desktop\\LEProject",
-                 Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"));
-            Scene scene = AssetManager.CreateScene("Test scene",
-                "C:\\Users\\Администратор\\Desktop\\LEProject\\Assets\\Scenes",
-                Guid.Parse("36CC1F73-C5E7-4D83-8448-855306097C1C"));
+            // Mock to load default project
+            /*            var project = AssetManager.CreateProject("Lor9nEngine",
+                             "C:\\Users\\Администратор\\Desktop\\LEProject",
+                             Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"));
+                        Scene scene = AssetManager.CreateScene("Test scene",
+                            "C:\\Users\\Администратор\\Desktop\\LEProject\\Assets\\Scenes",
+                            Guid.Parse("36CC1F73-C5E7-4D83-8448-855306097C1C"));
 
-            var material = AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
-            var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
+                        var material = AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
+                        var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
 
-            var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100, 1, 100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
-            floor.AddComponent(
-                Physics.LocalCreateRigidBody(0,
-                    floor.Transform.GetModelMatrix(),
-                    new BoxShape(100)));
-            scene.Add(floor);
+                        var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100, 1, 100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
+                        floor.AddComponent(
+                            Physics.LocalCreateRigidBody(0,
+                                floor.Transform.GetModelMatrix(),
+                                new BoxShape(100)));
+                        scene.Add(floor);
 
-            for(int i = 0; i < 5; i++)
-            {
-                var testTransform = new Transform(new Vector3(i, i, i));
-                var testGameObject = new GameObject(
-                    "TestGameObject",
-                    testTransform,
-                    new MeshComponent(testMesh),
-                    new MaterialComponent(material));
+                        for(int i = 0; i < 5; i++)
+                        {
+                            var testTransform = new Transform(new Vector3(i, i, i));
+                            var testGameObject = new GameObject(
+                                "TestGameObject",
+                                testTransform,
+                                new MeshComponent(testMesh),
+                                new MaterialComponent(material));
 
-                testGameObject.AddComponent(
-                    Physics.LocalCreateRigidBody(1,
-                    testTransform.GetModelMatrix().ClearScale(),
-                    new BoxShape(testTransform.Scale))
-                    );
-                scene.Add(testGameObject);
-            }
-            scene.Add(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
+                            testGameObject.AddComponent(
+                                Physics.LocalCreateRigidBody(1,
+                                testTransform.GetModelMatrix().ClearScale(),
+                                new BoxShape(testTransform.Scale))
+                                );
+                            scene.Add(testGameObject);
+                        }
+                        scene.Add(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
 
-            Scene.MainCamera!.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
-            Scene.MainCamera.GetComponent<Camera>()!.UpdateVectors();
+                        Scene.MainCamera!.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);
+                        Scene.MainCamera.GetComponent<Camera>()!.UpdateVectors();
 
-            scene.Add(
-                    new GameObject(
-                        "Direct light",
-                        new DirectLight(new Vector3(1), 100_000),
-                        new Transform(new Vector3(0, 50, 0), new Vector3(-1))));
-            AssetManager.SaveAssetToFile(scene);
-            Scene.ChangeScene(scene);
+                        scene.Add(
+                                new GameObject(
+                                    "Direct light",
+                                    new DirectLight(new Vector3(1), 100_000),
+                                    new Transform(new Vector3(0, 50, 0), new Vector3(-1))));
+                        project.FirstScene = scene;
+                        AssetManager.SaveAssetToFile(scene);
+                        AssetManager.SaveAssetToFile(project);
+                        Scene.ChangeScene(scene);*/
+            Scene.ChangeScene(Project.CurrentProject.FirstScene);
 
             EngineStateManager.RegisterStates(new DevepolerEngineState(), new PlayEngineState());
             Layers.AddLayer(new DefaultGameLayer());
@@ -164,6 +169,7 @@ namespace RockEngine.Editor
 
         protected override void Render(FrameEventArgs args)
         {
+            GL.ClearColor(EditorSettings.BackGroundColor);
             DefaultShader.Bind();
             Layers.OnRender(Scene.CurrentScene);
             DefaultShader.Unbind();

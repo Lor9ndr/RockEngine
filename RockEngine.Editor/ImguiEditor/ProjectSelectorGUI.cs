@@ -31,7 +31,10 @@ namespace RockEngine.Editor.ImguiEditor
                     var result = Dialog.FileOpen("asset");
                     if(!string.IsNullOrEmpty(result.Path))
                     {
+                        _window.Close();
+                        _window.Context.MakeNoneCurrent();
                         AssetManager.LoadProject(result.Path);
+                        return;
                     }
                 }
 

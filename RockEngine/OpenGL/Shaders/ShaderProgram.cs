@@ -1,4 +1,6 @@
-﻿namespace RockEngine.OpenGL.Shaders
+﻿using OpenTK.Graphics.OpenGL4;
+
+namespace RockEngine.OpenGL.Shaders
 {
     /// <summary>
     /// Класс шейдера
@@ -23,5 +25,7 @@
             }
             return new ShaderProgram(name, baseShaders);
         }
+        public override bool IsBinded()
+            => GL.GetInteger(GetPName.CurrentProgram) == Handle;
     }
 }

@@ -10,5 +10,14 @@
         public IGLObject Unbind();
 
         public IGLObject SetLabel();
+
+        public bool IsBinded();
+        public void BindIfNotBinded()
+        {
+            if(!IsBinded())
+            {
+                Bind();
+            }
+        }
     }
 }

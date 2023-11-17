@@ -84,5 +84,8 @@ namespace RockEngine.OpenGL.Buffers
             GL.DeleteRenderbuffers(1, ref _handle);
             _handle = IGLObject.EMPTY_HANDLE;
         }
+
+        public override bool IsBinded()
+            => GL.GetInteger(GetPName.RenderbufferBinding) == Handle;
     }
 }

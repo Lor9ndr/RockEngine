@@ -1,4 +1,6 @@
-﻿using RockEngine.Assets;
+﻿using OpenTK.Graphics.OpenGL4;
+
+using RockEngine.Assets;
 using RockEngine.OpenGL.Settings;
 
 namespace RockEngine.OpenGL.Textures
@@ -46,5 +48,7 @@ namespace RockEngine.OpenGL.Textures
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+
+        public abstract bool IsBinded();
     }
 }

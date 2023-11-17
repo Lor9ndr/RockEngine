@@ -9,5 +9,7 @@ namespace RockEngine.OpenGL.Shaders
             : base(path)
         {
         }
+        public override bool IsBinded()
+          => GL.GetInteger(GetPName.CurrentProgram) == _mainProgramHandle;
     }
 }

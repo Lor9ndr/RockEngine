@@ -55,11 +55,6 @@ namespace RockEngine.Engine.ECS
             Mesh.Render();
         }
 
-        public void RenderOnEditorLayer()
-        {
-            Mesh.RenderOnEditorLayer();
-        }
-
         public object GetState()
         {
             return new MeshComponentState()

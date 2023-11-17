@@ -59,8 +59,5 @@ namespace RockEngine.Engine.ECS
                 Models[i] = transforms[i].GetModelMatrix();
             }
         }
-
-        public abstract void RenderOnEditorLayer();
-
     }
 }

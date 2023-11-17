@@ -9,7 +9,7 @@ namespace RockEngine.OpenGL.Shaders
         public virtual ShaderType Type => ShaderType.VertexShader;
         public bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
-        private int _mainProgramHandle;
+        protected int _mainProgramHandle;
         private readonly string _path;
 
         public BaseShaderType(string path)

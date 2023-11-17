@@ -111,5 +111,7 @@ namespace RockEngine.OpenGL.Buffers
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, IGLObject.EMPTY_HANDLE);
             return this;
         }
+        public override bool IsBinded()
+           => GL.GetInteger(GetPName.FramebufferBinding) == Handle;
     }
 }

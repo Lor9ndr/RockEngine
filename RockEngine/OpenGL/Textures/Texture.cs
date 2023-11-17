@@ -174,9 +174,13 @@ namespace RockEngine.OpenGL.Textures
             GL.DeleteTexture(Handle);
             Handle = IGLObject.EMPTY_HANDLE;
         }
+
         ~Texture()
         {
             Dispose();
         }
+
+        public override bool IsBinded()
+           => GL.GetInteger((GetPName)Settings.TextureTarget) == Handle;
     }
 }

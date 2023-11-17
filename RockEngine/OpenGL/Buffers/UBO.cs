@@ -4,6 +4,8 @@ using RockEngine.OpenGL.Settings;
 using RockEngine.OpenGL.Shaders;
 using RockEngine.Utils;
 
+using SkiaSharp;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
@@ -15,20 +17,27 @@ namespace RockEngine.OpenGL.Buffers
 
         public UBO(BufferSettings settings)
             : base(settings) { }
+
         public override UBO<T> Setup()
         {
             GL.CreateBuffers(1, out int handle);
             Handle = handle;
+            if(Handle == IGLObject.EMPTY_HANDLE)
+            {
+                throw new Exception($"Unable to create Uniform buffer of type <{typeof(T)}>");
+            }
             GL.NamedBufferData(Handle, Settings.BufferSize, nint.Zero, Settings.BufferUsageHint);
 
             GL.BindBufferRange(BufferRangeTarget.UniformBuffer, Settings.BindingPoint, Handle, nint.Zero, Settings.BufferSize);
             foreach (var shader in AShaderProgram.AllShaders)
             {
-                shader.Value.Bind();
                 var index = GL.GetUniformBlockIndex(shader.Value.Handle, Settings.BufferName);
-                if (index != -1)
+                if(index != -1)
                 {
                     GL.UniformBlockBinding(shader.Value.Handle, index, Settings.BindingPoint);
+
+                    // Add this line to add the uniform buffer to the cache
+                    shader.Value.BoundUniformBuffers[Handle] = this;
                 }
             }
 
@@ -37,6 +46,11 @@ namespace RockEngine.OpenGL.Buffers
 
         public UBO<T> SendData(T data)
         {
+            if(!BindToActiveShaderIfNot())
+            {
+                return this;
+            }
+
             var ptr = Marshal.AllocHGlobal(Settings.BufferSize);
             Marshal.StructureToPtr(data, ptr, true);
 
@@ -46,6 +60,11 @@ namespace RockEngine.OpenGL.Buffers
         }
         public UBO<T> SendData<Tother>(ref Tother data, int size) where Tother : struct
         {
+            if(!BindToActiveShaderIfNot())
+            {
+                return this;
+            }
+            
             // Switch size to other data size
             GL.BindBufferRange(BufferRangeTarget.UniformBuffer, Settings.BindingPoint, Handle, nint.Zero, size);
             GL.NamedBufferSubData(Handle, nint.Zero, size, ref data);
@@ -54,19 +73,57 @@ namespace RockEngine.OpenGL.Buffers
             return this;
 
         }
+
+        public bool BindToActiveShaderIfNot()
+        {
+            var shader = AShaderProgram.ActiveShader;
+            return shader is not null && BindBufferToShader(shader);
+        }
+        
+        public bool BindBufferToShader(AShaderProgram shader)
+        {
+            if (!shader.BoundUniformBuffers.ContainsKey(Handle))
+            {
+                var index = GL.GetUniformBlockIndex(shader.Handle, Settings.BufferName);
+                if(index != -1)
+                {
+                    GL.UniformBlockBinding(shader.Handle, index, Settings.BindingPoint);
+
+                    // Add this line to add the uniform buffer to the cache
+                    shader.BoundUniformBuffers[Handle] = this;
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        }
+
         public UBO<T> SendData(T[] data, int size)
         {
+            if(!BindToActiveShaderIfNot())
+            {
+                return this;
+            }
+
             GL.NamedBufferSubData(Handle, nint.Zero, size, data);
             return this;
         }
         public UBO<T> SendData(ref nint data, int size)
         {
+            if(!BindToActiveShaderIfNot())
+            {
+                return this;
+            }
             GL.NamedBufferSubData(Handle, nint.Zero, size, data);
             return this;
         }
 
         public UBO<T> SendData<TSub>([NotNull, DisallowNull] TSub subdata, nint offset, int size)
         {
+            if(!BindToActiveShaderIfNot())
+            {
+                return this;
+            }
             var ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr(subdata, ptr, true);
 
@@ -115,14 +172,15 @@ namespace RockEngine.OpenGL.Buffers
 
         public override UBO<T> Bind()
         {
-            GL.BindBuffer(BufferTarget.UniformBuffer, Handle);
-            return this;
+            throw new Exception($"Unable to bind uniform buffer, it is sends data directly at {nameof(SendData)} method");
         }
 
         public override IGLObject Unbind()
         {
-            GL.BindBuffer(BufferTarget.UniformBuffer, IGLObject.EMPTY_HANDLE);
-            return this;
+            throw new Exception($"Unable to UnBind uniform buffer, it is sends data directly at {nameof(SendData)} method");
         }
+
+        public override bool IsBinded()
+           => false;
     }
 }

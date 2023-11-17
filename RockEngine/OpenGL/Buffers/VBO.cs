@@ -6,10 +6,9 @@ using RockEngine.Utils;
 
 namespace RockEngine.OpenGL.Buffers
 {
-    internal sealed class VBO : ASetuppableGLObject<BufferSettings>
+    public sealed class VBO : ASetuppableGLObject<BufferSettings>
     {
         private nint syncObj;
-
 
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
@@ -149,7 +148,6 @@ namespace RockEngine.OpenGL.Buffers
             return this;
         }
 
-
         public VBO SendData<T>(in T[] data) where T : struct
         {
             GL.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
@@ -161,5 +159,8 @@ namespace RockEngine.OpenGL.Buffers
             GL.BindBuffer(BufferTarget.ArrayBuffer, IGLObject.EMPTY_HANDLE);
             return this;
         }
+
+        public override bool IsBinded()
+            => GL.GetInteger(GetPName.ArrayBufferBinding) == Handle;
     }
 }

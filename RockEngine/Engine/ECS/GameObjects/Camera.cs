@@ -87,7 +87,6 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public Camera(float aspectRatio)
         {
-            _cameraData = new CameraData();
             AspectRatio = aspectRatio;
             UpdateVectors();
         }
@@ -151,6 +150,7 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public void OnStart()
         {
+            _cameraData = new CameraData();
         }
 
         public virtual void OnUpdate()

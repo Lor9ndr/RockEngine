@@ -4,7 +4,7 @@ using RockEngine.OpenGL.Vertices;
 
 namespace RockEngine.OpenGL.Settings
 {
-    internal sealed record BufferSettings : ISettings
+    public sealed record BufferSettings : ISettings
     {
         public static BufferSettings DefaultVBOSettings => new BufferSettings(Vertex3D.Size, BufferUsageHint.StaticDraw);
 

@@ -19,14 +19,12 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public DirectLight()
         {
-            _lightData = new LightData();
             LightColor = new Vector3(1);
             Intensity = 10.0f;
         }
 
         public DirectLight(Vector3 lightColor, float intensity)
         {
-            _lightData = new LightData();
             LightColor = lightColor;
             Intensity = intensity;
         }
@@ -39,6 +37,7 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public void OnStart()
         {
+            _lightData = new LightData();
         }
 
         public void OnUpdate()

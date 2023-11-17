@@ -5,9 +5,8 @@ using RockEngine.Utils;
 
 namespace RockEngine.OpenGL.Buffers
 {
-    internal sealed class EBO : ASetuppableGLObject<BufferSettings>
+    public sealed class EBO : ASetuppableGLObject<BufferSettings>
     {
-
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
         public EBO(BufferSettings settings) : base(settings) { }
@@ -46,7 +45,6 @@ namespace RockEngine.OpenGL.Buffers
             _disposed = true;
         }
 
-
         public override EBO SetLabel()
         {
             string label = $"EBO: ({Handle})";
@@ -79,5 +77,8 @@ namespace RockEngine.OpenGL.Buffers
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, IGLObject.EMPTY_HANDLE);
             return this;
         }
+
+        public override bool IsBinded()
+            => GL.GetInteger(GetPName.ElementArrayBufferBinding) == Handle;
     }
 }

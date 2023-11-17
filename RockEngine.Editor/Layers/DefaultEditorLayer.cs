@@ -30,7 +30,7 @@ namespace RockEngine.Editor.Layers
         private readonly PhysicsManager _physicsManager;
         private readonly AShaderProgram PickingShader;
         private readonly AShaderProgram SelectingShader;
-        private readonly ImGuiRenderer _imguiLayer;
+        private readonly ImGuiRenderer _imguiRenderer;
 
         public override int Order => 1;
 
@@ -55,9 +55,10 @@ namespace RockEngine.Editor.Layers
 
             DebugCamera = new GameObject("DebugCamera", camera, new Transform(new Vector3(0, 10, 0)));
             camera.LookAt(new Vector3(15), new Vector3(0), Vector3.UnitY);
+            DebugCamera.OnStart();
             _physicsManager = IoC.Get<PhysicsManager>();
             _physicsManager.SetDebugRender(camera);
-            _imguiLayer = new ImGuiRenderer(Application.GetMainWindow(),this, _physicsManager);
+            _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow(),this, _physicsManager);
            
         }
 
@@ -70,7 +71,7 @@ namespace RockEngine.Editor.Layers
             MainRenderPass(scene);
 
             GettingObjectFromPicked(scene);
-            _imguiLayer.OnRender();
+            _imguiRenderer.OnRender();
         }
 
         private void GettingObjectFromPicked(IEnumerable<GameObject> gameObjects)
@@ -84,7 +85,7 @@ namespace RockEngine.Editor.Layers
                 {
                     var objID = (uint)pi.ObjectID;
                     var selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
-                    _imguiLayer.SelectedGameObject = selected;
+                    _imguiRenderer.SelectedGameObject = selected;
                 }
                 Console.WriteLine($"CLICKED ON: Primitive: {(uint)pi.PrimID}, ObjectID: {(uint)pi.ObjectID}, DrawIndex{(uint)pi.DrawID}");
             }
@@ -94,10 +95,9 @@ namespace RockEngine.Editor.Layers
         {
             Screen.BeginRenderToScreen();
 
-            var selected = _imguiLayer.SelectedGameObject;
+            var selected = _imguiRenderer.SelectedGameObject;
             if(selected != null)
             {
-                GL.Clear(ClearBufferMask.StencilBufferBit);
                 selected.IsActive = false;
             }
             scene.EditorLayerRender();
@@ -118,20 +118,19 @@ namespace RockEngine.Editor.Layers
             {
                 return;
             }
+            selected.IsActive = true;
+            GL.Clear(ClearBufferMask.StencilBufferBit);
             GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.StencilTest);
-
             GL.StencilFunc(StencilFunction.Always, 1, 0xFF);
             GL.StencilMask(0xFF);
-            selected.IsActive = true;
-            selected.Render();
-            GL.StencilFunc(StencilFunction.Notequal, 1, 0xFF);
-            GL.StencilMask(0x00);
-            GL.Disable(EnableCap.DepthTest);
+
             SelectingShader.Bind();
+            DebugCamera.Render();
             selected.Render();
             SelectingShader.Unbind();
+
             GL.StencilMask(0xFF);
             GL.StencilFunc(StencilFunction.Always, 1, 0xFF);
             GL.Enable(EnableCap.DepthTest);
@@ -142,16 +141,19 @@ namespace RockEngine.Editor.Layers
             PickingTexture.CheckSize(Screen.ScreenTexture.Size);
 
             PickingShader.Bind();
+            DebugCamera.Render();
+            GL.Disable(EnableCap.Blend);
             PickingTexture.BeginWrite();
-            GL.Viewport(0, 0, Screen.ScreenTexture.Size.X, Screen.ScreenTexture.Size.Y);
+            GL.Viewport(0, 0, PickingTexture.Size.X, PickingTexture.Size.Y);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            GL.ClearColor(0, 0, 0, 0);
             for(int i = 0; i < gameObjects?.Count(); i++)
             {
                 GameObject? gameObject = gameObjects.ElementAt(i);
                 PickingData pd = new PickingData()
                 {
                     gObjectIndex = gameObject.GameObjectID,
-                    gDrawIndex = 0,
+                    gDrawIndex = (uint)i,
                 };
                 if(gameObject.GetComponent<Camera>() is not null)
                 {
@@ -164,6 +166,9 @@ namespace RockEngine.Editor.Layers
 
             PickingTexture.EndWrite();
             PickingShader.Unbind();
+            GL.Enable(EnableCap.Blend);
+            GL.ClearColor(EditorSettings.BackGroundColor);
+
         }
 
         public void Dispose()

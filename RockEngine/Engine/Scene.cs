@@ -33,14 +33,13 @@ namespace RockEngine.Engine
         public Scene(string path, string name, Guid id, AssetType type, List<GameObject> gameObjects)
             : base(path, name, id, type)
         {
-            _gameObjects = gameObjects;
+            _gameObjects = new List<GameObject>();
+            foreach(var item in gameObjects)
+            {
+                Add(item);
+            }
         }
 
-        [JsonConstructor]
-        private Scene()
-        {
-
-        }
         #endregion
 
         /// <summary>
@@ -96,7 +95,6 @@ namespace RockEngine.Engine
             {
                 MainCamera = gameObject;
             }
-            gameObject.OnStart();
             return this;
         }
 
@@ -170,8 +168,6 @@ namespace RockEngine.Engine
 
             GC.SuppressFinalize(this);
         }
-
-      
 
         public IEnumerator<GameObject> GetEnumerator() => _gameObjects.GetEnumerator();
 

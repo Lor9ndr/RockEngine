@@ -15,26 +15,17 @@ namespace RockEngine.Engine.ECS
         public GameObject? Parent { get; set; }
 
         public int Order => 1;
-       
 
         public MaterialComponent(Material material)
         {
             Check.IsNull(material);
             Material = material;
            
-            MaterialData = new MaterialData();
         }
 
         public void Render() => MaterialData.SendData();
 
-        public void RenderOnEditorLayer()
-        {
-            Render();
-        }
-
-        public void OnStart()
-        {
-        }
+        public void OnStart() => MaterialData = new MaterialData();
 
         public void OnUpdate()
         {

@@ -25,7 +25,7 @@ namespace RockEngine.Utils
 
             string messageString = Marshal.PtrToStringAnsi(message, length);
             string paramString = string.Empty;
-            if (userParam != nint.Zero)
+            if (userParam != IntPtr.Zero)
             {
                 paramString = Marshal.PtrToStringAnsi(userParam, length);
             }

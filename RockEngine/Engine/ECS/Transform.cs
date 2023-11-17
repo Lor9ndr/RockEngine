@@ -32,18 +32,6 @@ namespace RockEngine.Engine.ECS
         private HashSet<Transform> _childTransforms;
         private GameObject? _parent;
 
-        public void AddChildTransform(Transform t) 
-            => _childTransforms.Add(t);
-
-        public void RemoveChildTransform(Transform t) 
-            => _childTransforms.Remove(t);
-
-        public void ClearChildrenTransforms() 
-            => _childTransforms.Clear();
-
-        public HashSet<Transform> GetChildTransforms() 
-            => _childTransforms;
-
         public Transform()
         {
             _childTransforms = new HashSet<Transform>();
@@ -99,17 +87,13 @@ namespace RockEngine.Engine.ECS
             {
                 rb.WorldTransform = _transformData.Model;
             }
+            _transformData = new TransformData();
+
         }
 
         public void OnUpdate()
         {
-            _transformData = new TransformData();
-
             _transformData.Model = GetModelMatrix();
-        }
-
-        public void OnDestroy()
-        {
         }
 
         public void Render()
@@ -117,16 +101,20 @@ namespace RockEngine.Engine.ECS
             _transformData.SendData();
         }
 
-        public void RenderOnEditorLayer()
-        {
-            _transformData.SendData();
-        }
+        public void AddChildTransform(Transform t)
+            => _childTransforms.Add(t);
 
-        public void OnUpdateDevelepmentState()
-        {
-            _transformData = new TransformData();
+        public void RemoveChildTransform(Transform t)
+            => _childTransforms.Remove(t);
 
-            _transformData.Model = GetModelMatrix();
+        public void ClearChildrenTransforms()
+            => _childTransforms.Clear();
+
+        public HashSet<Transform> GetChildTransforms()
+            => _childTransforms;
+
+        public void OnDestroy()
+        {
         }
 
         public object GetState()

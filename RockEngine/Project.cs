@@ -1,8 +1,6 @@
 ﻿using RockEngine.Assets;
 using RockEngine.Engine;
 
-using System.Text.Json.Serialization;
-
 namespace RockEngine
 {
     public sealed class Project : BaseAsset, IDisposable
@@ -11,20 +9,20 @@ namespace RockEngine
 
         public static Scene? CurrentScene => Scene.CurrentScene;
 
-        public Project(string name, string path, Guid id)
+        public Scene FirstScene { get; set; }
+
+        public Project(string name, string path, Guid id, Scene firstScene)
             : base(path, name, id, AssetType.Project)
         {
             CurrentProject = this;
-            Scene scene = new Scene("Default scene", PathInfo.PROJECT_ASSETS_PATH, Guid.NewGuid());
-            Scene.ChangeScene(scene);
+            Scene.ChangeScene(firstScene);
+            FirstScene = firstScene;
         }
 
         public Project(BaseAsset baseAsset)
             : base(baseAsset.Path, baseAsset.Name, baseAsset.ID, AssetType.Project)
         {
             CurrentProject = this;
-            Scene scene = new Scene("Default scene", PathInfo.PROJECT_ASSETS_PATH, Guid.NewGuid());
-            Scene.ChangeScene(scene);
         }
 
         public Project()

@@ -20,5 +20,7 @@
         public abstract IGLObject SetLabel();
 
         public abstract IGLObject Unbind();
+
+        public abstract bool IsBinded();
     }
 }

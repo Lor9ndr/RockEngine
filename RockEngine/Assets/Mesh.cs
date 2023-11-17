@@ -7,21 +7,21 @@ using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.OpenGL.Buffers;
 using RockEngine.OpenGL.Settings;
 using RockEngine.OpenGL.Vertices;
+using RockEngine.Rendering.Commands;
 
 namespace RockEngine.Assets
 {
     public class Mesh : ABaseMesh, IDisposable
     {
-        private VAO? _vao;
-        private VBO? _vbo;
-
-        private EBO? _ebo;
-        private VBO? _modelBuffer;
+        public VAO VAO { get; private set;}
+        public VBO VBO { get; private set; }
+        public EBO EBO { get; private set; }
+        public VBO ModelBuffer { get; private set; }
 
         private nint _mappedBuffer;
 
         [JsonIgnore]
-        public bool IsSetupped => _vao is not null && _vao.IsSetupped;
+        public bool IsSetupped => VAO is not null && VAO.IsSetupped;
 
         public Mesh(ref Vertex3D[ ] vertices, ref int[] indices, string name, string path, Guid id)
             : base(ref indices, ref vertices, name, path, id)
@@ -31,36 +31,37 @@ namespace RockEngine.Assets
         public Mesh(ref Vertex3D[] vertices, string name, string path, Guid id)
            : base(ref vertices, name, path, id)
         {
+            VAO = new VAO();
         }
 
         [JsonConstructor]
         public Mesh():base()
         {
-
+            VAO = new VAO();
         }
 
         public Mesh SetupMeshVertices(ref Vertex3D[] vertices)
         {
             Vertices = vertices;
-            _vao = new VAO()
+            VAO = new VAO()
                 .Setup()
                 .Bind()
                 .SetLabel();
 
-            _vbo = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
+            VBO = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
                 .Setup()
                 .Bind()
                 .SendData(vertices)
                 .SetLabel();
 
-            _vao.EnableVertexArrayAttrib(0)
+            VAO.EnableVertexArrayAttrib(0)
                 .VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.PositionOffset)
                 .EnableVertexArrayAttrib(1)
                 .VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.NormalOffset)
                 .EnableVertexArrayAttrib(2)
                 .VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.TexCoordsOffset);
             //PrepareSendingModel();
-            _vao.Unbind();
+            VAO.Unbind();
             return this;
         }
 
@@ -69,24 +70,24 @@ namespace RockEngine.Assets
             Vertices = vertices;
             Indices = indices;
 
-            _vao = new VAO()
+            VAO = new VAO()
                 .Setup()
                 .Bind()
                 .SetLabel();
 
-            _vbo = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
+            VBO = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
                 .Setup()
                 .Bind()
                 .SendData(in vertices)
                 .SetLabel();
 
-            _ebo = new EBO(new BufferSettings(sizeof(int) * indices.Length, BufferUsageHint.StaticDraw))
+            EBO = new EBO(new BufferSettings(sizeof(int) * indices.Length, BufferUsageHint.StaticDraw))
                 .Setup()
                 .SendData(in indices)
                 .Bind()
                 .SetLabel();
 
-            _vao.EnableVertexArrayAttrib(0)
+            VAO.EnableVertexArrayAttrib(0)
                 .VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.PositionOffset)
                 .EnableVertexArrayAttrib(1)
                 .VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.NormalOffset)
@@ -95,20 +96,16 @@ namespace RockEngine.Assets
 
             //PrepareSendingModel();
 
-            _vbo.Unbind();
-            _ebo.Unbind();
-            _vao.Unbind();
+            VBO.Unbind();
+            EBO.Unbind();
+            VAO.Unbind();
             return this;
-        }
-
-        public override void RenderOnEditorLayer()
-        {
-            Render();
         }
 
         public override void Render()
         {
-            _vao!.Bind();
+            //var command = new DrawMeshCommand(this);
+            VAO!.BindIfNotBinded();
 
             if(InstanceCount > 1)
             {
@@ -116,7 +113,7 @@ namespace RockEngine.Assets
                 //THINK ABOUT MATERIALS AND OTHER COMPONENTS ATTACHED TO THE GameObject
                 if(HasIndices)
                 {
-                    _ebo!.Bind();
+                    EBO!.BindIfNotBinded();
                     GL.DrawElementsInstanced(PrimitiveType.Triangles, Indices!.Length, DrawElementsType.UnsignedInt, nint.Zero, InstanceCount);
                 }
                 else
@@ -128,7 +125,7 @@ namespace RockEngine.Assets
             {
                 if(HasIndices)
                 {
-                    _ebo!.Bind();
+                    EBO!.BindIfNotBinded();
                     GL.DrawElements(PrimitiveType.Triangles, Indices!.Length, DrawElementsType.UnsignedInt, 0);
                 }
                 else
@@ -136,8 +133,6 @@ namespace RockEngine.Assets
                     GL.DrawArrays(PrimitiveType.Triangles, 0, Vertices!.Length);
                 }
             }
-
-            _vao.Unbind();
         }
 
         private void PrepareSendingModel()
@@ -160,14 +155,14 @@ namespace RockEngine.Assets
 
         private void CreateInstanceBuffer(int size)
         {
-            _modelBuffer = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = size, BufferUsageHint = BufferUsageHint.StreamDraw })
+            ModelBuffer = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = size, BufferUsageHint = BufferUsageHint.StreamDraw })
                              .Setup()
                              .SetLabel()
                              .SetupBufferStorage(BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapWriteBit, 0)
                              .Bind()
                              .MapBuffer(BufferAccessMask.MapPersistentBit | BufferAccessMask.MapWriteBit, out _mappedBuffer);
 
-            GL.VertexArrayVertexBuffer(_vao!.Handle, VAO.INSTANCE_MODELS_ATTRIBUTE, _modelBuffer.Handle, nint.Zero, sizeof(float) * 4 * 4);
+            GL.VertexArrayVertexBuffer(VAO!.Handle, VAO.INSTANCE_MODELS_ATTRIBUTE, ModelBuffer.Handle, nint.Zero, sizeof(float) * 4 * 4);
         }
 
         private void SetInstancedAttributes()
@@ -175,19 +170,19 @@ namespace RockEngine.Assets
             var mat4Size = sizeof(float) * 4 * 4;
             for(int i = 0; i < 4; i++)
             {
-                _vao!.EnableVertexArrayAttrib(VAO.INSTANCE_MODELS_ATTRIBUTE + i);
-                _vao.VertexAttribPointer(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 4, VertexAttribPointerType.Float, false, mat4Size, sizeof(float) * i * 4);
-                _vao.VertexAttribDivisor(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 1);
+                VAO!.EnableVertexArrayAttrib(VAO.INSTANCE_MODELS_ATTRIBUTE + i);
+                VAO.VertexAttribPointer(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 4, VertexAttribPointerType.Float, false, mat4Size, sizeof(float) * i * 4);
+                VAO.VertexAttribDivisor(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 1);
             }
         }
 
         public void Dispose()
         {
-            _ebo?.Dispose();
-            _modelBuffer?.UnmapBuffer(ref _mappedBuffer);
-            _modelBuffer?.Dispose();
-            _vbo?.Dispose();
-            _vao?.Dispose();
+            EBO?.Dispose();
+            ModelBuffer?.UnmapBuffer(ref _mappedBuffer);
+            ModelBuffer?.Dispose();
+            VBO?.Dispose();
+            VAO?.Dispose();
         }
 
        

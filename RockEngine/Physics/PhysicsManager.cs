@@ -94,6 +94,7 @@ namespace RockEngine.Physics
         public void Dispose()
         {
             ExitPhysics();
+            DebugRenderer.Dispose();
         }
     }
 }

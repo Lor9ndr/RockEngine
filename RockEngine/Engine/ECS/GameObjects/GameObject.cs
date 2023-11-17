@@ -5,15 +5,13 @@ namespace RockEngine.Engine.ECS.GameObjects
 {
     public class GameObject : IDisposable, IRenderable
     {
-        internal IRenderable DevRenderableObject;
+        private static uint _objectID;
 
         private List<IComponent> _components;
 
         public Layer Layer = Layer.Default;
 
         public bool IsActive = true;
-
-        private static uint ObjectID;
 
         /// <summary>
         /// ID of the currentObject 
@@ -72,7 +70,7 @@ namespace RockEngine.Engine.ECS.GameObjects
         public GameObject()
         {
             Name = "Gameobject";
-            GameObjectID = ObjectID++;
+            GameObjectID = _objectID++;
             _components = new List<IComponent>();
             Children = new List<GameObject>();
             Transform = new Transform();

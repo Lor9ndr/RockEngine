@@ -64,7 +64,6 @@ namespace RockEngine.OpenGL.Shaders
             _disposed = true;
         }
 
-
         public override Pipeline SetLabel()
         {
             string label = $"Pipeline: ({Handle})";
@@ -86,5 +85,8 @@ namespace RockEngine.OpenGL.Shaders
             GL.CreateProgramPipelines(1, out _handle);
             return this;
         }
+
+        public override bool IsBinded()
+            => GL.GetInteger(GetPName.ProgramPipelineBinding) == Handle;
     }
 }
