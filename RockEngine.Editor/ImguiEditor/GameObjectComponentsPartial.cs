@@ -174,7 +174,7 @@ namespace RockEngine.Rendering.Layers
                     if(TryGetAssetFromPayload(payload, out var asset, out var ddAsset))
                     {
                         // Check if the AssetTypes match
-                        if(fieldValue!.Type == ddAsset.AssetType)
+                        if(field.FieldType == asset.GetType())
                         {
                             // The DragDropAsset.AssetType fits in the current field type
                             field.SetValue(component, asset);
@@ -201,7 +201,7 @@ namespace RockEngine.Rendering.Layers
                     if(TryGetAssetFromPayload(payload, out var asset, out var ddAsset))
                     {
                         // Check if the AssetTypes match
-                        if(fieldValue!.Type == ddAsset.AssetType)
+                        if(property.PropertyType == asset.GetType())
                         {
                             // The DragDropAsset.AssetType fits in the current field type
                             property.SetValue(component, asset);

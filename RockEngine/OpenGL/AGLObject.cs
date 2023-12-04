@@ -22,5 +22,13 @@
         public abstract IGLObject Unbind();
 
         public abstract bool IsBinded();
+
+        public void BindIfNotBinded()
+        {
+            if(!IsBinded())
+            {
+                Bind();
+            }
+        }
     }
 }

@@ -32,7 +32,7 @@ namespace RockEngine.Physics
         public void Update(float elapsedTime)
         {
             DebugRenderer?.PrepareOS();
-            World.StepSimulation(elapsedTime);
+            //World.StepSimulation(elapsedTime);
         }
 
         public void SetDebugRender(Camera debugCamera)

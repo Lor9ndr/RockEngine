@@ -1,13 +1,10 @@
 ﻿using Newtonsoft.Json;
 
 using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
 using RockEngine.Engine.ECS;
-using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.OpenGL.Buffers;
 using RockEngine.OpenGL.Settings;
 using RockEngine.OpenGL.Vertices;
-using RockEngine.Rendering.Commands;
 
 namespace RockEngine.Assets
 {
@@ -23,7 +20,7 @@ namespace RockEngine.Assets
         [JsonIgnore]
         public bool IsSetupped => VAO is not null && VAO.IsSetupped;
 
-        public Mesh(ref Vertex3D[ ] vertices, ref int[] indices, string name, string path, Guid id)
+        public Mesh(ref Vertex3D[] vertices, ref int[] indices, string name, string path, Guid id)
             : base(ref indices, ref vertices, name, path, id)
         {
         }
@@ -35,10 +32,7 @@ namespace RockEngine.Assets
         }
 
         [JsonConstructor]
-        public Mesh():base()
-        {
-            VAO = new VAO();
-        }
+        public Mesh() : base() => VAO = new VAO();
 
         public Mesh SetupMeshVertices(ref Vertex3D[] vertices)
         {
@@ -102,6 +96,18 @@ namespace RockEngine.Assets
             return this;
         }
 
+        public Mesh SetupMeshVertices()
+        {
+            SetupMeshVertices(ref Vertices!);
+            return this;
+        }
+
+        public Mesh SetupMeshIndicesVertices()
+        {
+            SetupMeshIndicesVertices(ref Indices!, ref Vertices!);
+            return this;
+        }
+
         public override void Render()
         {
             //var command = new DrawMeshCommand(this);
@@ -114,11 +120,11 @@ namespace RockEngine.Assets
                 if(HasIndices)
                 {
                     EBO!.BindIfNotBinded();
-                    GL.DrawElementsInstanced(PrimitiveType.Triangles, Indices!.Length, DrawElementsType.UnsignedInt, nint.Zero, InstanceCount);
+                    GL.DrawElementsInstanced(PrimitiveType, Indices!.Length, DrawElementsType.UnsignedInt, nint.Zero, InstanceCount);
                 }
                 else
                 {
-                    GL.DrawArraysInstanced(PrimitiveType.Triangles, 0, Vertices!.Length, InstanceCount);
+                    GL.DrawArraysInstanced(PrimitiveType, 0, Vertices!.Length, InstanceCount);
                 }
             }
             else
@@ -126,11 +132,11 @@ namespace RockEngine.Assets
                 if(HasIndices)
                 {
                     EBO!.BindIfNotBinded();
-                    GL.DrawElements(PrimitiveType.Triangles, Indices!.Length, DrawElementsType.UnsignedInt, 0);
+                    GL.DrawElements(PrimitiveType, Indices!.Length, DrawElementsType.UnsignedInt, 0);
                 }
                 else
                 {
-                    GL.DrawArrays(PrimitiveType.Triangles, 0, Vertices!.Length);
+                    GL.DrawArrays(PrimitiveType, 0, Vertices!.Length);
                 }
             }
         }

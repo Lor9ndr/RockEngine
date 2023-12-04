@@ -35,11 +35,11 @@ namespace RockEngine.Rendering.Layers
         public GameObject? SelectedGameObject = null;
         private int _currentFontIndex;
 
-        private readonly string[] _fontsPaths = new string[]
-        {
+        private readonly string[] _fontsPaths =
+        [
             "Resources\\Fonts\\Roboto-Regular.ttf",
             "Resources\\Fonts\\InclusiveSans-Regular.ttf"
-        };
+        ];
         public bool DrawCollisions;
 
         #endregion
@@ -131,7 +131,16 @@ namespace RockEngine.Rendering.Layers
 
         public void AddGameObjectContextWindow()
         {
+            if(ImGui.BeginPopup("#CONTEXT_ADDGAMEOBJECT"))
+            {
+                if(ImGui.Button("Add game object"))
+                {
+                    Scene.CurrentScene.Add(new GameObject());
+                    ImGui.CloseCurrentPopup();
+                }
+                ImGui.EndPopup();
 
+            }
         }
 
         private void SelectProjectWindow()
@@ -274,15 +283,11 @@ namespace RockEngine.Rendering.Layers
                         SelectedGameObject = gameObject;
                     }
                 }
-                if(ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+                if(Input.IsButtonDown(MouseButton.Right))
                 {
-                    if(SelectedGameObject is not null)
-                    {
-                        var camera = _editorLayer.DebugCamera.GetComponent<Camera>();
-                        camera?.LookAt(SelectedGameObject!);
-                        camera?.MoveToTarget(10f, SelectedGameObject!.Transform.Position);
-                    }
+                    ImGui.OpenPopup("#CONTEXT_ADDGAMEOBJECT");
                 }
+                AddGameObjectContextWindow();
                 ImGui.End();
             }
         }

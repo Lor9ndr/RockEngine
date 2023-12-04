@@ -15,6 +15,8 @@ using RockEngine.Editor.GameObjects;
 using RockEngine.Utils;
 using RockEngine.DI;
 using RockEngine.Physics;
+using RockEngine.Editor.Rendering;
+using Ninject.Selection;
 
 namespace RockEngine.Editor.Layers
 {
@@ -31,6 +33,7 @@ namespace RockEngine.Editor.Layers
         private readonly AShaderProgram PickingShader;
         private readonly AShaderProgram SelectingShader;
         private readonly ImGuiRenderer _imguiRenderer;
+        private readonly GizmoRenderer _gizmoRenderer;
 
         public override int Order => 1;
 
@@ -58,8 +61,9 @@ namespace RockEngine.Editor.Layers
             DebugCamera.OnStart();
             _physicsManager = IoC.Get<PhysicsManager>();
             _physicsManager.SetDebugRender(camera);
-            _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow(),this, _physicsManager);
-           
+            _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!,this, _physicsManager);
+            _gizmoRenderer = new GizmoRenderer(Screen);
+
         }
 
         public override void OnRender(Scene scene)
@@ -81,13 +85,12 @@ namespace RockEngine.Editor.Layers
             {
                 PickingTexture.PixelInfo pi = PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y);
 
-                if((uint)pi.PrimID != 0 )
+                if((uint)pi.PrimID != 0 && !_gizmoRenderer.IsClickingOnAxis())
                 {
                     var objID = (uint)pi.ObjectID;
                     var selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
                     _imguiRenderer.SelectedGameObject = selected;
                 }
-                Console.WriteLine($"CLICKED ON: Primitive: {(uint)pi.PrimID}, ObjectID: {(uint)pi.ObjectID}, DrawIndex{(uint)pi.DrawID}");
             }
         }
 
@@ -134,6 +137,7 @@ namespace RockEngine.Editor.Layers
             GL.StencilMask(0xFF);
             GL.StencilFunc(StencilFunction.Always, 1, 0xFF);
             GL.Enable(EnableCap.DepthTest);
+            _gizmoRenderer.Render(selected.Transform);
         }
 
         private void PickingObjectPass(IEnumerable<GameObject> gameObjects)
@@ -144,9 +148,7 @@ namespace RockEngine.Editor.Layers
             DebugCamera.Render();
             GL.Disable(EnableCap.Blend);
             PickingTexture.BeginWrite();
-            GL.Viewport(0, 0, PickingTexture.Size.X, PickingTexture.Size.Y);
-            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            GL.ClearColor(0, 0, 0, 0);
+
             for(int i = 0; i < gameObjects?.Count(); i++)
             {
                 GameObject? gameObject = gameObjects.ElementAt(i);

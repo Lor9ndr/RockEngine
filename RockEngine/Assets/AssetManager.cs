@@ -58,12 +58,12 @@ namespace RockEngine.Assets
             Assets.Clear();
             var project = LoadAssetFromFile<Project>(path);
             string assetPath = PathInfo.PROJECT_ASSETS_PATH;
-            string[] assets = Directory.GetFiles(assetPath, "*.asset", SearchOption.AllDirectories);
+            
             List<string> scenes = new List<string>();
             List<string> meshes = new List<string>();
 
             // Load textures
-            foreach (var asset in assets)
+            foreach (var asset in Directory.EnumerateFiles(assetPath, "*.asset", SearchOption.AllDirectories))
             {
                 var baseAsset = LoadAssetFromFile<BaseAsset>(asset);
                 if (baseAsset.Type == AssetType.Texture)

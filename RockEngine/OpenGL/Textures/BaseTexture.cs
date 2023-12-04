@@ -1,6 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL4;
-
-using RockEngine.Assets;
+﻿using RockEngine.Assets;
 using RockEngine.OpenGL.Settings;
 
 namespace RockEngine.OpenGL.Textures
@@ -8,7 +6,7 @@ namespace RockEngine.OpenGL.Textures
     public abstract class BaseTexture : BaseAsset, ISetuppable<TextureSettings>, IGLObject
     {
         protected bool _disposed = false;
-        public event Action OnSettingsChanged;
+        public event Action? OnSettingsChanged;
 
         private TextureSettings _settings;
         public TextureSettings Settings
@@ -50,5 +48,13 @@ namespace RockEngine.OpenGL.Textures
         }
 
         public abstract bool IsBinded();
+
+        public void BindIfNotBinded()
+        {
+            if(!IsBinded())
+            {
+                Bind();
+            }
+        }
     }
 }

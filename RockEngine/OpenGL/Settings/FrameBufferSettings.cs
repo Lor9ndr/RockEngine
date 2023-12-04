@@ -2,7 +2,7 @@
 
 namespace RockEngine.OpenGL.Settings
 {
-    internal record FrameBufferSettings : ISettings
+    public record FrameBufferSettings : ISettings
     {
         public FramebufferTarget FramebufferTarget { get; set; }
 
@@ -11,7 +11,7 @@ namespace RockEngine.OpenGL.Settings
             FramebufferTarget = framebufferTarget;
         }
     }
-    internal sealed record FrameBufferRenderBufferSettings : FrameBufferSettings
+    public sealed record FrameBufferRenderBufferSettings : FrameBufferSettings
     {
         public FramebufferAttachment RenderBufferAttachment { get; set; }
 
@@ -22,7 +22,7 @@ namespace RockEngine.OpenGL.Settings
         }
     }
 
-    internal sealed record RenderBufferSettings : ISettings
+    public sealed record RenderBufferSettings : ISettings
     {
         public RenderbufferStorage RenderbufferStorage { get; set; }
         public RenderbufferTarget RenderbufferTarget { get; set; }

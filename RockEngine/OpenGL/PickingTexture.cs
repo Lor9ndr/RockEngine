@@ -13,7 +13,8 @@ namespace RockEngine.OpenGL
         private FBO _fbo;
         private Texture _pickingTexture;
         private Texture _depthTexture;
-
+        private int _prevDrawFbo;
+        private int _prevReadFbo;
         public struct PixelInfo
         {
             public float ObjectID;
@@ -33,6 +34,8 @@ namespace RockEngine.OpenGL
             Size = size;
             Setup();
         }
+
+
 
         private void Setup()
         {
@@ -70,16 +73,21 @@ namespace RockEngine.OpenGL
 
         public void BeginWrite()
         {
+            _prevDrawFbo =  GL.GetInteger(GetPName.DrawFramebufferBinding);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _fbo.Handle);
+            GL.Viewport(0, 0, Size.X, Size.Y);
+            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            GL.ClearColor(0, 0, 0, 0);
         }
 
         public void EndWrite()
         {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, IGLObject.EMPTY_HANDLE);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _prevDrawFbo);
         }
 
         public PixelInfo ReadPixel(int x, int y)
         {
+            _prevReadFbo =  GL.GetInteger(GetPName.ReadFramebufferBinding);
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _fbo.Handle);
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
 
@@ -87,7 +95,7 @@ namespace RockEngine.OpenGL
             GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, ref pixel);
 
             GL.ReadBuffer(ReadBufferMode.None);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, IGLObject.EMPTY_HANDLE);
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _prevReadFbo);
             return pixel;
         }
 

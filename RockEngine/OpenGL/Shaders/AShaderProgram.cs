@@ -483,6 +483,11 @@ namespace RockEngine.OpenGL.Shaders
             _disposed = true;
         }
 
+        public override bool IsBinded()
+        {
+            return Handle == GL.GetInteger(GetPName.CurrentProgram);
+        }
+
         ~AShaderProgram()
         {
             Dispose();

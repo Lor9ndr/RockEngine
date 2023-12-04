@@ -53,11 +53,10 @@ namespace RockEngine.Engine.ECS
 
         public override void Render()
         {
-            SpriteTexture.Bind();
+            SpriteTexture.BindIfNotBinded();
 
-            _vao?.Bind();
+            _vao?.BindIfNotBinded();
             GL.DrawArrays(PrimitiveType.Triangles, 0, Vertices.Length);
-            _vao?.Unbind();
             SpriteTexture.Unbind();
         }
 

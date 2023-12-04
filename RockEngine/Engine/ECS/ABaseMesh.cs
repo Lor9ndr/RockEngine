@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 using RockEngine.Assets;
@@ -10,6 +11,8 @@ namespace RockEngine.Engine.ECS
 {
     public abstract class ABaseMesh : BaseAsset, IRenderable
     {
+
+        public PrimitiveType PrimitiveType;
         public Vertex3D[]? Vertices;
 
         public int[]? Indices;
@@ -26,16 +29,19 @@ namespace RockEngine.Engine.ECS
         {
             Indices = indices;
             Vertices = vertices;
+            PrimitiveType = PrimitiveType.Triangles;
 
         }
         public ABaseMesh(ref Vertex3D[] vertices, string name, string path, Guid id)
             : base(path, name, id, AssetType.Mesh)
         {
             Vertices = vertices;
+            PrimitiveType = PrimitiveType.Triangles;
         }
 
         protected ABaseMesh()
         {
+            PrimitiveType = PrimitiveType.Triangles;
         }
 
         public abstract void Render();

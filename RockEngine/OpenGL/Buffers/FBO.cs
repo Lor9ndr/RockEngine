@@ -7,11 +7,11 @@ using RockEngine.Utils;
 
 namespace RockEngine.OpenGL.Buffers
 {
-    internal class FBO : ASetuppableGLObject<FrameBufferSettings>
+    public class FBO : ASetuppableGLObject<FrameBufferSettings>
     {
         public Vector2i Size { get; protected set; }
         protected List<Texture> _textures;
-
+        private static int _prevFbo;
 
         public FBO(FrameBufferSettings settings, Vector2i size, params Texture[] textures)
             : base(settings)
@@ -22,8 +22,6 @@ namespace RockEngine.OpenGL.Buffers
         }
 
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
-
-
 
         protected override void Dispose(bool disposing)
         {
@@ -102,15 +100,17 @@ namespace RockEngine.OpenGL.Buffers
 
         public override FBO Bind()
         {
+            _prevFbo = GL.GetInteger(GetPName.FramebufferBinding);
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
             return this;
         }
 
         public override FBO Unbind()
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, IGLObject.EMPTY_HANDLE);
+            GL.BindFramebuffer(FramebufferTarget.Framebuffer, _prevFbo);
             return this;
         }
+
         public override bool IsBinded()
            => GL.GetInteger(GetPName.FramebufferBinding) == Handle;
     }

@@ -13,7 +13,7 @@ namespace RockEngine
         public static EngineWindow? GetMainWindow() => _instance?.MainWindow;
 
         public EngineWindow MainWindow;
-        public Layers Layers;
+        public readonly Layers Layers;
         public Application(string name, int width = 1280, int height = 720)
         {
             IoC.Setup();

@@ -21,6 +21,8 @@ namespace RockEngine.Editor.GameObjects
         public float CameraSpeed { get; private set; } = 12.0f;
         public float Sensitivity { get; } = 0.125f;
 
+        public static DebugCamera ActiveDebugCamera;
+
         public bool CanMove
         {
             get => _canMove;
@@ -37,16 +39,17 @@ namespace RockEngine.Editor.GameObjects
             _window.MouseWheel += Window_MouseWheel;
             _window.MouseMove += Window_MouseMove;
             _window.MouseDown += Window_MouseDown;
-            _window.MouseUp += _window_MouseUp;
-            _window.Resize += _window_Resize;
+            _window.MouseUp += Window_MouseUp;
+            _window.Resize += Window_Resize;
+            ActiveDebugCamera = this;
         }
 
-        private void _window_Resize(ResizeEventArgs obj)
+        private void Window_Resize(ResizeEventArgs obj)
         {
             AspectRatio = obj.Size.X / (float)obj.Size.Y;
         }
 
-        private void _window_MouseUp(MouseButtonEventArgs obj)
+        private void Window_MouseUp(MouseButtonEventArgs obj)
         {
             CanMove = false;
         }

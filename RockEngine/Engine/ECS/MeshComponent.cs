@@ -7,7 +7,7 @@ namespace RockEngine.Engine.ECS
 {
     public class MeshComponent :  IComponent, IDisposable, IRenderable
     {
-        public Mesh Mesh;
+        public Mesh? Mesh;
 
         public GameObject? Parent { get;set; }
 
@@ -19,9 +19,14 @@ namespace RockEngine.Engine.ECS
             Mesh = mesh;
         }
 
+        public MeshComponent()
+        {
+
+        }
+
         public void OnStart()
         {
-            if(!Mesh.IsSetupped)
+            if(Mesh is not null  && !Mesh.IsSetupped)
             {
                 if(Mesh.HasIndices)
                 {
@@ -38,9 +43,6 @@ namespace RockEngine.Engine.ECS
         {
         }
 
-        public void OnUpdateDevelepmentState()
-        {
-        }
         public void OnDestroy()
         {
         }
@@ -52,7 +54,7 @@ namespace RockEngine.Engine.ECS
 
         public void Render()
         {
-            Mesh.Render();
+            Mesh?.Render();
         }
 
         public object GetState()

@@ -33,7 +33,6 @@ namespace RockEngine.Assets.Converters
 
         private void WriteNonAssetComponent<T>(T component, BinaryWriter writer) where T : IComponent
         {
-            BinaryFormatter fromatter = new BinaryFormatter();
 
         }
 

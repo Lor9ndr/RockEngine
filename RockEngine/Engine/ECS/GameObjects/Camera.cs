@@ -4,6 +4,9 @@ using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
 
 using RockEngine.Editor;
+using OpenTK.Graphics.OpenGL4;
+using RockEngine.Figures;
+using RockEngine.Utils;
 
 namespace RockEngine.Engine.ECS.GameObjects
 {
@@ -158,6 +161,39 @@ namespace RockEngine.Engine.ECS.GameObjects
             _cameraData.Projection = GetProjectionMatrix();
             _cameraData.View = GetViewMatrix();
             _cameraData.ViewPos = Parent.Transform.Position;
+        }
+
+        public Ray ScreenPointToRay(Vector2 mousePosition)
+        {
+            // Get the current viewport dimensions
+            int[ ] viewport = new int[4];
+            GL.GetInteger(GetPName.Viewport, viewport);
+
+            // Create a normalized device coordinate from the screen position
+            Vector3 ndc = new Vector3(
+                (2.0f * mousePosition.X) / viewport[2] - 1.0f,
+                1.0f - (2.0f * mousePosition.Y) / viewport[3],
+                0.0f
+            );
+
+            // Create a view-space coordinate by unprojecting the normalized device coordinate
+            Matrix4 viewMatrix =  GetViewMatrix();
+            Matrix4 projectionMatrix = GetProjectionMatrix();
+
+            Matrix4 inverseProjection = Matrix4.Invert(projectionMatrix);
+            Matrix4 inverseView = Matrix4.Invert(viewMatrix);
+
+            Vector4 ndc4 = new Vector4(ndc.X, ndc.Y, ndc.Z, 1.0f); // Convert to Vector4
+
+            Vector4 viewSpace = MathUtil.Transform(ndc4, inverseProjection);
+            viewSpace /= viewSpace.W;
+            viewSpace = MathUtil.Transform(viewSpace, inverseView);
+
+            // Create a ray from the camera position to the view-space coordinate
+            Vector3 rayOrigin = Parent.Transform.Position;
+            Vector3 rayDirection = Vector3.Normalize(viewSpace.Xyz - rayOrigin);
+
+            return new Ray(rayOrigin, rayDirection);
         }
 
         public void OnDestroy()

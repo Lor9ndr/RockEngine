@@ -63,7 +63,6 @@ namespace RockEngine.OpenGL.Buffers
             return this;
         }
 
-
         protected override void Dispose(bool disposing)
         {
             if (_disposed)
