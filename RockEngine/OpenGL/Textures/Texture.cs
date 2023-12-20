@@ -48,7 +48,7 @@ namespace RockEngine.OpenGL.Textures
         {
             Size = size;
             Name = name;
-            Path = PathInfo.ENGINE_DIRECTORY;
+            Path = PathsInfo.ENGINE_DIRECTORY;
             /* OnSettingsChanged += () =>
              {
                  Dispose();
@@ -60,7 +60,7 @@ namespace RockEngine.OpenGL.Textures
         {
             Size = size;
             Name = "Texture";
-            Path = PathInfo.ENGINE_DIRECTORY;
+            Path = PathsInfo.ENGINE_DIRECTORY;
             /*  OnSettingsChanged += () =>
               {
                   Dispose();

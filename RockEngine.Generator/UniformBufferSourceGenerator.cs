@@ -22,7 +22,7 @@ namespace RockEngine.Generator
         public void Execute(GeneratorExecutionContext context)
         {
            /* HashSet<string> addedFiles = new HashSet<string>();
-            foreach(AdditionalText file in context.AdditionalFiles.Where(s => s.Path.EndsWith(".vert") || s.Path.EndsWith(".frag")))
+            foreach(AdditionalText file in GL.AdditionalFiles.Where(s => s.Path.EndsWith(".vert") || s.Path.EndsWith(".frag")))
             {
                 SourceText? fileContent = file.GetText();
                 if(fileContent is null)
@@ -48,7 +48,7 @@ namespace RockEngine.Generator
                     addedFiles.Add(fileName);
 
                     // Add the generated C# code as a source file to the compilation
-                    context.AddSource(fileName, SourceText.From(generatedCode, Encoding.UTF8));
+                    GL.AddSource(fileName, SourceText.From(generatedCode, Encoding.UTF8));
                 }
             }
             addedFiles.Clear();*/

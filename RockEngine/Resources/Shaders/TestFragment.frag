@@ -11,13 +11,21 @@ in VS_OUT {
     vec3 ViewPos;
 } fs_in;
 
-layout (std140, binding = 3) uniform MaterialData
-{
+struct Material {
+	sampler2D Albedo;
     vec3 albedo;
     float metallic;
     float roughness;
     float ao;
-}materialData;
+};
+
+//layout (std140, binding = 3) uniform MaterialData
+//{
+//    vec3 albedo;
+//    float metallic;
+//    float roughness;
+//    float ao;
+//}materialData;
 
 layout (std140, binding = 4) uniform LightData
 {
@@ -27,6 +35,8 @@ layout (std140, binding = 4) uniform LightData
     float intensity;
 
 }lightData;
+
+uniform Material material;
 
 const vec3 outlineColor = vec3(1,0,0);
 
@@ -82,13 +92,13 @@ vec3 calculateDirectLight(vec3 fragPos, vec3 N, vec3 V, vec3 F0)
     vec3 radiance     = lightData.lightColor * attenuation * lightData.intensity;        
     
     // cook-torrance brdf
-    float NDF = DistributionGGX(N, H, materialData.roughness);        
-    float G   = GeometrySmith(N, V, L, materialData.roughness);      
+    float NDF = DistributionGGX(N, H, material.roughness);        
+    float G   = GeometrySmith(N, V, L, material.roughness);      
     vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
     
     vec3 kS = F;
     vec3 kD = vec3(1.0) - kS;
-    kD *= 1.0 - materialData.metallic;	  
+    kD *= 1.0 - material.metallic;	  
     
     vec3 numerator    = NDF * G * F;
     float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
@@ -97,7 +107,7 @@ vec3 calculateDirectLight(vec3 fragPos, vec3 N, vec3 V, vec3 F0)
     // add to outgoing radiance Lo
     float NdotL = max(dot(N, L), 0.0);                
 
-    return (kD * materialData.albedo / PI + specular) * radiance * NdotL;
+    return (kD * material.albedo / PI + specular) * radiance * NdotL;
 }
 
 
@@ -107,10 +117,10 @@ void main()
     vec3 V = normalize(fs_in.ViewPos - fs_in.FragPos);
     
     vec3 F0 = vec3(0.04); 
-    F0 = mix(F0, materialData.albedo, materialData.metallic);
+    F0 = mix(F0, material.albedo, material.metallic);
     vec3 Lo = calculateDirectLight(fs_in.FragPos, N, V, F0);
     
-    vec3 ambient = vec3(0.03) * materialData.albedo * materialData.ao;
+    vec3 ambient = vec3(0.03) * material.albedo * material.ao;
     vec3 color = ambient + Lo;
 	
     color = color / (color + vec3(1.0));

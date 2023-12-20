@@ -1,7 +1,7 @@
 ﻿
 using OpenTK.Mathematics;
 
-namespace RockEngine.Editor.Rendering
+namespace RockEngine.Editor.Rendering.Gizmo
 {
     internal sealed class Axis
     {

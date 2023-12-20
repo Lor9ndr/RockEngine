@@ -9,6 +9,7 @@ using RockEngine.OpenGL.Vertices;
 using RockEngine.Utils;
 
 using RockEngine.Assets.JsonConverters;
+using RockEngine.OpenGL.Shaders;
 
 namespace RockEngine.Assets
 {
@@ -57,7 +58,7 @@ namespace RockEngine.Assets
             }
             Assets.Clear();
             var project = LoadAssetFromFile<Project>(path);
-            string assetPath = PathInfo.PROJECT_ASSETS_PATH;
+            string assetPath = PathsInfo.PROJECT_ASSETS_PATH;
             
             List<string> scenes = new List<string>();
             List<string> meshes = new List<string>();
@@ -109,9 +110,9 @@ namespace RockEngine.Assets
             }
         }
 
-        public static Material CreateMaterialAsset(string path, string name = "Material")
+        public static Material CreateMaterialAsset(AShaderProgram shader,string path, string name = "Material")
         {
-            var asset = new Material(path, name, Guid.NewGuid());
+            var asset = new Material(shader, path, name, Guid.NewGuid());
             Assets.Add(asset);
             SaveAssetToFile(asset);
             return asset;
@@ -121,7 +122,7 @@ namespace RockEngine.Assets
         {
             if (string.IsNullOrEmpty(path))
             {
-                path = PathInfo.PROJECT_ASSETS_PATH;
+                path = PathsInfo.PROJECT_ASSETS_PATH;
             }
             if (id == default)
             {
@@ -137,7 +138,7 @@ namespace RockEngine.Assets
         {
             if (string.IsNullOrEmpty(path))
             {
-                path = PathInfo.PROJECT_ASSETS_PATH;
+                path = PathsInfo.PROJECT_ASSETS_PATH;
             }
             if (id == default)
             {
@@ -184,7 +185,7 @@ namespace RockEngine.Assets
             }
             if (string.IsNullOrEmpty(asset.Path))
             {
-                asset.Path = PathInfo.PROJECT_ASSETS_PATH;
+                asset.Path = PathsInfo.PROJECT_ASSETS_PATH;
             }
             var result = asset.Path + "\\" + asset.Name + EXTENSION_NAME;
             if (!Directory.Exists(asset.Path))

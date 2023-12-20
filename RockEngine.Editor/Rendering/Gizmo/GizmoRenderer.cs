@@ -1,24 +1,22 @@
-﻿using ImGuiNET;
+﻿using Ninject.Activation;
 
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-
 using RockEngine.Assets;
 using RockEngine.Editor.GameObjects;
 using RockEngine.Editor.Layers;
 using RockEngine.Engine.ECS;
 using RockEngine.Engine.ECS.GameObjects;
-using RockEngine.Figures;
 using RockEngine.Inputs;
 using RockEngine.OpenGL;
 using RockEngine.OpenGL.Shaders;
 using RockEngine.OpenGL.Vertices;
+using RockEngine.Rendering;
 using RockEngine.Rendering.Layers;
 using RockEngine.Rendering.Renderers;
 
-
-namespace RockEngine.Editor.Rendering
+namespace RockEngine.Editor.Rendering.Gizmo
 {
     public class GizmoRenderer : IRenderer, IDisposable
     {
@@ -27,16 +25,16 @@ namespace RockEngine.Editor.Rendering
         new Vertex3D[ ]
         {
             // X-axis
-            new Vertex3D(new Vector3(0.0f, 0.0f, 0.0f)),
-            new Vertex3D(new Vector3(1.0f, 0.0f, 0.0f)),
+            new Vertex3D(Vector3.Zero, Vector3.UnitX),
+            new Vertex3D(Vector3.UnitX, Vector3.UnitX),
 
             // Y-axis
-            new Vertex3D(new Vector3(0.0f, 0.0f, 0.0f)),
-            new Vertex3D(new Vector3(0.0f, 1.0f, 0.0f)),
+            new Vertex3D(Vector3.Zero, Vector3.UnitY),
+            new Vertex3D(Vector3.UnitY, Vector3.UnitY),
 
             // Z-axis
-            new Vertex3D(new Vector3(0.0f, 0.0f, 0.0f)),
-            new Vertex3D(new Vector3(0.0f, 0.0f, 1.0f))
+            new Vertex3D(Vector3.Zero, Vector3.UnitZ),
+            new Vertex3D(Vector3.UnitZ, Vector3.UnitZ)
         };
 
         // Define the indices for the axes
@@ -48,8 +46,9 @@ namespace RockEngine.Editor.Rendering
             4, 5  // Z-axis
         };
 
-        private readonly Mesh _axisMesh;
-        private readonly GameObject _gizmoGameObject;
+        private readonly GameObject _gizmoPosGameObject;
+        private readonly GameObject _gizmoRotGameObject;
+        private readonly GameObject _gizmoScaleGameObject;
         private readonly CameraTexture _screen;
         private readonly PickingRenderer _pickingRenderer;
         private readonly Dictionary<int, Axis> _axes;
@@ -63,15 +62,20 @@ namespace RockEngine.Editor.Rendering
 
         public GizmoRenderer(CameraTexture screen)
         {
-            var baseDebug = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.SELECTED_OBJECT);
-            _selectingShader = ShaderProgram.GetOrCreate("SelectingObjectShader",
-                new VertexShader(Path.Combine(baseDebug, "Selected.vert")),
-                 new FragmentShader(Path.Combine(baseDebug, "Selected.frag")));
+            var baseDebug = new PathInfo(PathConstants.RESOURCES) / PathConstants.SHADERS / PathConstants.DEBUG / PathConstants.GIZMO;
 
-            _axisMesh = new Mesh(ref _axisVertices, ref _axisIndices, "GIZMO MESH AXIS", PathInfo.ENGINE_DIRECTORY, Guid.Empty);
-            _axisMesh.SetupMeshIndicesVertices();
-            _axisMesh.PrimitiveType = PrimitiveType.Lines;
-            _gizmoGameObject = new GameObject("GIZMO", new MeshComponent(_axisMesh));
+            _selectingShader = ShaderProgram.GetOrCreate("GizmoShader",
+                new VertexShader(baseDebug / "Gizmo.vert"),
+                 new FragmentShader(baseDebug / "Gizmo.frag"));
+            _selectingShader.Setup();
+
+            var posMesh = new Mesh(ref _axisVertices, ref _axisIndices, "GIZMO MESH AXIS position", PathsInfo.ENGINE_DIRECTORY, Guid.Empty);
+            posMesh.PrimitiveType = PrimitiveType.Lines;
+
+            _gizmoPosGameObject = new GameObject("GIZMOPos", new MeshComponent(posMesh));
+            _gizmoScaleGameObject = new GameObject("GIZMOScale", new MeshComponent(posMesh));
+            _gizmoPosGameObject.OnStart();
+            _gizmoScaleGameObject.OnStart();
 
             _screen = screen;
             _pickingRenderer = new PickingRenderer(_screen.ScreenTexture.Size);
@@ -117,7 +121,7 @@ namespace RockEngine.Editor.Rendering
 
         private void GizmoRenderer_MouseDown(OpenTK.Windowing.Common.MouseButtonEventArgs obj)
         {
-            if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis() && 
+            if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis() &&
                 _axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis) &&
                 _currentTransform is not null)
             {
@@ -135,33 +139,33 @@ namespace RockEngine.Editor.Rendering
         {
             if(component is Transform tr)
             {
-                var lineWidth = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - tr.Position).Length/2f;
+                var camOffset = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - tr.Position).Length;
+                var lineLength = Math.Clamp(camOffset / 2, 2, 6);
+                var lineWidth = Math.Clamp(lineLength, 8, 10);
                 GL.LineWidth(lineWidth);
                 _currentTransform = tr;
                 // Setting transform data
-                _gizmoGameObject.Transform.Position = tr.Position;
-                _gizmoGameObject.Transform.Scale = new Vector3(Math.Max(tr.Scale.X, Math.Max(tr.Scale.Y, tr.Scale.Z))) * 5f;
-                _gizmoGameObject.Transform.RotationQuaternion = Quaternion.Identity;
-
+                _gizmoPosGameObject.Transform.Position = tr.Position;
+                _gizmoPosGameObject.Transform.Scale = new Vector3(Math.Max(tr.Scale.X, Math.Max(tr.Scale.Y, tr.Scale.Z))) * lineLength;
+                _gizmoPosGameObject.Transform.RotationQuaternion = Quaternion.Identity;
                 // Picking pass
                 _pickingRenderer.Begin();
-                _pickingRenderer.ResizeTexture(_screen.ScreenTexture.Size);
-                _gizmoGameObject.Update();
-                _pickingRenderer.Render(_gizmoGameObject);
+                _pickingRenderer.ResizeTexture( _screen.ScreenTexture.Size);
+                _gizmoPosGameObject.Update();
+                _pickingRenderer.Render( _gizmoPosGameObject);
                 _pickingRenderer.End();
-                
+
                 // DefaultRender pass to render gizmos
                 _selectingShader.BindIfNotBinded();
                 HandleClickingOnAxis();
-                _gizmoGameObject.Update();
-                _gizmoGameObject.Render();
+                _gizmoPosGameObject.Render();
                 _selectingShader.SetShaderData("outlineColor", Vector3.One);
                 _selectingShader.Unbind();
                 GL.LineWidth(1);
 
                 if(_isDragging)
                 {
-                    StartDrag.Invoke(_currentAxis, _currentTransform);
+                    StartDrag.Invoke(_currentAxis!, _currentTransform);
                 }
             }
             _lastMousePos = (Vector2)ImGuiRenderer.EditorScreenMousePos;
@@ -194,9 +198,6 @@ namespace RockEngine.Editor.Rendering
             };
         }
 
-        public void Dispose()
-        {
-            _axisMesh.Dispose();
-        }
+        public void Dispose() => _gizmoPosGameObject.Dispose();
     }
 }

@@ -104,10 +104,10 @@ namespace RockEngine.Editor
                  Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"), scene);
           
 
-            var material = AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
+            var material = AssetManager.CreateMaterialAsset(DefaultShader,PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
             var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
 
-            var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100, 1, 100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(PathInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
+            var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100, 1, 100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
             floor.AddComponent(
                 Physics.LocalCreateRigidBody(0,
                     floor.Transform.GetModelMatrix(),

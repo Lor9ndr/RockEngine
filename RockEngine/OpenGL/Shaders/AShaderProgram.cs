@@ -1,8 +1,13 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using Ninject.Activation;
+
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-using RockEngine.OpenGL.Buffers;
+using RockEngine.Editor;
+using RockEngine.Rendering;
 using RockEngine.Utils;
+
+using System.Reflection.Metadata;
 
 namespace RockEngine.OpenGL.Shaders
 {
@@ -26,18 +31,10 @@ namespace RockEngine.OpenGL.Shaders
         /// </summary>
         private readonly string _path;
 
+        [DiableUI]
         public Dictionary<int, IGLObject> BoundUniformBuffers = new Dictionary<int, IGLObject>();
 
-        public static AShaderProgram? ActiveShader
-        {
-            get => _activeShader;
-            set
-            {
-                _activeShader?.Unbind();
-                _activeShader = null;
-                value?.Bind();
-            }
-        }
+        public static AShaderProgram? ActiveShader => _activeShader;
 
         /// <summary>
         /// Shaders with different types linked to that shaderProgram
@@ -55,17 +52,19 @@ namespace RockEngine.OpenGL.Shaders
             
             Name = name;
             _shaders = baseShaders.ToList();
-            if(!AllShaders.TryAdd(this.Name, this))
+            if(!AllShaders.TryAdd(Name, this))
             {
                 throw new Exception($"Same shader with name:{this.Name} is already contains");
             }
 
-            Setup();
             _path = _shaders[0].GetFilePath();
+            Setup();
         }
+
         public ISetuppable Setup()
         {
-            Setup(true);
+            if(!IsSetupped)
+            }
             return this;
         }
 
@@ -86,16 +85,8 @@ namespace RockEngine.OpenGL.Shaders
         /// </summary>
         public override AShaderProgram Unbind()
         {
-            var handle = IGLObject.EMPTY_HANDLE;
-            var current = _activeShader;
-            if (_prevActiveShader != null)
-            {
-                _activeShader = _prevActiveShader;
-                handle = _activeShader.Handle;
             }
-            _prevActiveShader = current;
-
-            GL.UseProgram(handle);
+            GL.UseProgram(_prevActiveShader.Handle);
             return this;
         }
 
@@ -110,6 +101,48 @@ namespace RockEngine.OpenGL.Shaders
 
         public void ResetShader() => Setup(false);
 
+        {
+            GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out int unifromCount);
+
+            var uniforms = new UniformFieldInfo[unifromCount];
+
+            // Next, allocate the dictionary to hold the locations.
+            
+            for(var i = 0; i < unifromCount; i++)
+            {
+                // get the name of this uniform,
+                GL.GetActiveUniform(Handle, i, 256,out _, out var size, out var type, out string name);
+                // get the location,
+                var location = GL.GetUniformLocation(Handle, name);
+
+                uniforms[i] = new UniformFieldInfo
+                {
+                    Location = location,
+                    Name = name,
+                    Size = size,
+                    Type = type
+                };
+                ;
+            }
+
+            return uniforms;
+        }
+
+        public List<UniformFieldInfo> GetMaterialUniforms()
+        {
+            List<UniformFieldInfo> materialData = new List<UniformFieldInfo>();
+
+            foreach(var item in GetUniforms())
+            {
+                if(item.Name.StartsWith("material"))
+                {
+                    materialData.Add(item);
+                }
+            }
+
+            return materialData;
+        }
+
         /// <summary>
         /// Отправка в шейдер булевую переменную
         /// в GLSL нельзя вроде отправить булевую переменную поэтому перевод в целочисленный тип,
@@ -122,11 +155,44 @@ namespace RockEngine.OpenGL.Shaders
             GL.Uniform1(location, data ? 1 : 0);
             return this;
         }
+
+        public AShaderProgram SetShaderData(string name, object data)
+        {
+            var loc = GetUniformLocation(name);
+            if(data is int di)
+            {
+                SetShaderData(loc, di);
+            }
+            else if(data is float df)
+            {
+                SetShaderData(loc, df);
+            }
+            else if (data is Vector2 dv2)
+            {
+                SetShaderData(loc,dv2);
+            }
+            else if (data is Vector3 dv3)
+            {
+                SetShaderData(loc, dv3);
+            }
+            else if (data is Vector4 dv4)
+            {
+                SetShaderData(loc, dv4);
+            }
+            else if(data is Matrix4 m4)
+            {
+                SetShaderData(loc, m4);
+            }
+
+            // fill more if needed
+            return this;
+        }
+
         public AShaderProgram SetShaderData(string name, Vector4[] data)
         {
             for (int i = 0; i < data.Length; i++)
             {
-                GL.Uniform4(GetUniformLocation(name + $"[{i}]"), data[i]);
+                GL.Uniform4(GetUniformLocation($"{name}[{i}]"), data[i]);
             }
 
             return this;
@@ -361,14 +427,14 @@ namespace RockEngine.OpenGL.Shaders
             }
             else
             {
-                int pos = GL.GetUniformLocation(Handle, name);
-                UniformLocations.TryAdd(name, pos);
-                if (pos == -1)
+                var location = GL.GetUniformLocation(Handle, name);
+                UniformLocations.TryAdd(name, location);
+                if (location == -1)
                 {
                     var error = $"{name} Was not setted in {_path}";
                     Logger.AddWarn(error);
                 }
-                return pos;
+                return location;
             }
         }
 
@@ -434,22 +500,18 @@ namespace RockEngine.OpenGL.Shaders
 
         private void FillCacheUniforms()
         {
-            // First, we have to get the number of active uniforms in the shader.
-            GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out var numberOfUniforms);
+            var uniforms = GetUniforms();
 
             // Next, allocate the dictionary to hold the locations.
             UniformLocations.Clear();
             // Loop over all the uniforms,
-            for (var i = 0; i < numberOfUniforms; i++)
+            for (var i = 0; i < uniforms.Length; i++)
             {
                 // get the name of this uniform,
-                var key = GL.GetActiveUniform(Handle, i, out _, out _);
-
-                // get the location,
-                var location = GL.GetUniformLocation(Handle, key);
-
+                var uniform = uniforms[i];
                 // and then add it to the dictionary.
                 UniformLocations.Add(key, location);
+                UniformLocations.Add(uniform.Name, uniform.Location);
             }
         }
 
@@ -483,10 +545,8 @@ namespace RockEngine.OpenGL.Shaders
             _disposed = true;
         }
 
-        public override bool IsBinded()
-        {
-            return Handle == GL.GetInteger(GetPName.CurrentProgram);
         }
+        public override bool IsBinded() => GL.GetInteger(GetPName.CurrentProgram) == Handle;
 
         ~AShaderProgram()
         {

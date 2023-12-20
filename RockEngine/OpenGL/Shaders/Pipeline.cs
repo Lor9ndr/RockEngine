@@ -1,37 +1,64 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using Ninject.Activation;
 
+using OpenTK.Graphics.OpenGL4;
+
+using RockEngine.Rendering;
 using RockEngine.Utils;
 
 namespace RockEngine.OpenGL.Shaders
 {
-    internal sealed class Pipeline : ASetuppableGLObject
+    [Flags]
+    internal enum PipeLineSetupFlag
     {
-        public static Pipeline CurrentPipeline;
+        None = 0,
+        VertexShader = 1,
+        FragmentShader = 2,
+        ComputeShader = 4,
 
-        private static Pipeline _prevPipeline;
+        FullSetup = (VertexShader & FragmentShader) | (ComputeShader)
 
+    }
+    public sealed class Pipeline : ASetuppableGLObject
+    {
         public RenderType RenderType;
 
         public readonly string Name;
 
-        public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
+        private PipeLineSetupFlag _setupFlag;
+
+        public List<AShaderProgram> Shaders;
+
+        public override bool IsSetupped => _setupFlag.HasFlag(PipeLineSetupFlag.FullSetup) && Handle != IGLObject.EMPTY_HANDLE;
 
         public Pipeline(RenderType renderType, string name)
         {
+            Shaders = new List<AShaderProgram>();
             RenderType = renderType;
             Name = name;
         }
 
-        public Pipeline UseShader(AShaderProgram shader, ProgramStageMask stageMask)
+        public Pipeline UseShader( AShaderProgram shader, ProgramStageMask stageMask)
         {
             GL.UseProgramStages(Handle, stageMask, shader.Handle);
+            Shaders.Add(shader);
+
+            switch(stageMask)
+            {
+                case ProgramStageMask.VertexShaderBit:
+                    _setupFlag |= PipeLineSetupFlag.VertexShader;
+                    break;
+                case ProgramStageMask.FragmentShaderBit:
+                    _setupFlag |= PipeLineSetupFlag.FragmentShader;
+                    break;
+                case ProgramStageMask.ComputeShaderBit:
+                    _setupFlag |= PipeLineSetupFlag.ComputeShader;
+                    break;
+            }
             return this;
         }
 
         public override Pipeline Bind()
         {
-            _prevPipeline = CurrentPipeline;
-            CurrentPipeline = this;
             GL.BindProgramPipeline(Handle);
             return this;
         }
@@ -75,18 +102,17 @@ namespace RockEngine.OpenGL.Shaders
 
         public override Pipeline Unbind()
         {
-            CurrentPipeline = _prevPipeline;
-            GL.BindProgramPipeline(CurrentPipeline.Handle);
+            GL.BindProgramPipeline(0);
             return this;
         }
 
         public override Pipeline Setup()
         {
-            GL.CreateProgramPipelines(1, out _handle);
+            GL.CreateProgramPipelines(1,out _handle);
             return this;
         }
 
-        public override bool IsBinded()
+        public override bool IsBinded() 
             => GL.GetInteger(GetPName.ProgramPipelineBinding) == Handle;
     }
 }

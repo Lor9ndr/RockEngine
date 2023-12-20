@@ -13,7 +13,7 @@ namespace RockEngine.Rendering.Layers
 {
     public partial class ImGuiRenderer
     {
-        private const string SELECTED_ASSET_PAYLOAD = "SELECTED_ASSET_PAYLOAD";
+        public const string SELECTED_ASSET_PAYLOAD = "SELECTED_ASSET_PAYLOAD";
 
         private IAsset _selectedAsset;
         private string _currentFileSelected;

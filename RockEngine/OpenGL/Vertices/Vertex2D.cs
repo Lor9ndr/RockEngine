@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace RockEngine.OpenGL.Vertices
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1, Size = Size)]
-    internal struct Vertex2D
+    public struct Vertex2D
     {
         public const int Size = sizeof(float) * (2 + 2);
         public static nint PositionOffset => Marshal.OffsetOf<Vertex2D>(nameof(Position));

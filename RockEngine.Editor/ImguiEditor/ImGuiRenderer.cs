@@ -4,7 +4,6 @@ using System.Numerics;
 using RockEngine.Utils;
 using ImGuiNET;
 using OpenTK.Graphics.OpenGL4;
-using System.Runtime.InteropServices;
 using FontAwesome.Constants;
 //using ImGuizmoNET;
 using NativeFileDialogSharp;
@@ -52,6 +51,8 @@ namespace RockEngine.Rendering.Layers
         private readonly DefaultGameLayer _gameLayer;
         private readonly PhysicsManager _physicsManager;
         private readonly EngineWindow _window;
+
+        public event Action<Scene> ClickingOnGameScreen;
 
         public ImGuiRenderer(EngineWindow window, DefaultEditorLayer editorLayer, PhysicsManager physics)
         {
@@ -307,11 +308,11 @@ namespace RockEngine.Rendering.Layers
                 ImGui.End();
             }
         }
-     
 
-       
-
-        private static void CheckMouseIsOnEditorScreen()
+        /// <summary>
+        /// Checking is mouse currently on Editor screen, means that it is hovering editor window
+        /// </summary>
+        private void CheckMouseIsOnEditorScreen()
         {
             var rMin = ImGui.GetWindowPos();
             var rMax = rMin + ImGui.GetWindowContentRegionMax();
@@ -319,6 +320,10 @@ namespace RockEngine.Rendering.Layers
             // Check if the mouse is hovering over the EditorLayer window
             bool isHovering = ImGui.IsMouseHoveringRect(rMin, rMax);
             IsMouseOnEditorScreen = IsMouseOnEditorScreen || isHovering && ImGui.IsWindowFocused();
+            if(IsMouseOnEditorScreen && Input.IsAnyButtoneDown)
+            {
+                ClickingOnGameScreen?.Invoke(Scene.CurrentScene);
+            }
         }
 
         private void DrawGuizmo()

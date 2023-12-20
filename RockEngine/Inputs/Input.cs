@@ -11,18 +11,11 @@ namespace RockEngine.Inputs
         public static KeyboardState KeyboardState { get => _window.KeyboardState; }
         public static MouseState MouseState { get => _window.MouseState; }
 
-        public static bool IsKeyDown(Keys key)
-        {
-            return KeyboardState.IsKeyDown(key);
-        }
+        public static bool IsAnyButtoneDown => MouseState.IsAnyButtonDown;
 
-        public static bool IsButtonDown(MouseButton button)
-        {
-            return MouseState.IsButtonDown(button);
-        }
-        public static bool IsButtonPressed(MouseButton button)
-        {
-            return MouseState.IsButtonPressed(button);
-        }
+        public static bool IsKeyDown(Keys key) => KeyboardState.IsKeyDown(key);
+
+        public static bool IsButtonDown(MouseButton button) => MouseState.IsButtonDown(button);
+        public static bool IsButtonPressed(MouseButton button) => MouseState.IsButtonPressed(button);
     }
 }

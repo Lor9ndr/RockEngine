@@ -1,7 +1,11 @@
 ﻿using Ninject;
+using Ninject.Modules;
+using Ninject.Parameters;
 
 using RockEngine.DI.Managers;
 using RockEngine.DI.Modules;
+
+using System.Reflection;
 
 namespace RockEngine.DI
 {
@@ -13,6 +17,8 @@ namespace RockEngine.DI
         {
             _kernel = new StandardKernel();
             _kernel.Load(new AssetModule(), new ManagersModule());
+
+            RegistratorLoader.LoadRegistrators(Assembly.GetExecutingAssembly());
         }
 
         public static T Get<T>()
@@ -28,6 +34,16 @@ namespace RockEngine.DI
         public static object Get(Type t)
         {
             return _kernel.Get(t);
+        }
+
+        public static T Get<T>(ConstructorArgument argument)
+        {
+            return _kernel.Get<T>(argument);
+        }
+
+        public static void Load(NinjectModule module)
+        {
+            _kernel.Load(module);
         }
     }
 }

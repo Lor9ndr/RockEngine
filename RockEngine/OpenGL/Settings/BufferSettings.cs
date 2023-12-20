@@ -8,10 +8,10 @@ namespace RockEngine.OpenGL.Settings
     {
         public static BufferSettings DefaultVBOSettings => new BufferSettings(Vertex3D.Size, BufferUsageHint.StaticDraw);
 
-        public int BufferSize { get; internal set; }
-        public BufferUsageHint BufferUsageHint { get; internal set; }
-        public int BindingPoint { get; internal set; }
-        public string? BufferName { get; internal set; }
+        public int BufferSize { get; set; }
+        public BufferUsageHint BufferUsageHint { get; set; }
+        public int BindingPoint { get; set; }
+        public string? BufferName { get; set; }
         public BufferSettings(int bufferSize, BufferUsageHint bufferUsageHint)
         {
             BufferSize = bufferSize;

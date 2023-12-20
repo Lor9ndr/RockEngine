@@ -64,6 +64,7 @@ namespace RockEngine.Editor.Layers
             _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!,this, _physicsManager);
             _gizmoRenderer = new GizmoRenderer(Screen);
 
+            SelectingShader.Setup();
         }
 
         public override void OnRender(Scene scene)
@@ -101,12 +102,12 @@ namespace RockEngine.Editor.Layers
             var selected = _imguiRenderer.SelectedGameObject;
             if(selected != null)
             {
-                selected.IsActive = false;
+                GL.Clear(ClearBufferMask.StencilBufferBit);
             }
             scene.EditorLayerRender();
 
             OutlineSelectedGameObject(selected);
-          
+            scene.EditorLayerRender();
             if(EditorSettings.DrawCollisions)
             {
                 _physicsManager.DebugRenderer.DebugRender();
@@ -121,7 +122,6 @@ namespace RockEngine.Editor.Layers
             {
                 return;
             }
-            selected.IsActive = true;
             GL.Clear(ClearBufferMask.StencilBufferBit);
             GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
             GL.Enable(EnableCap.DepthTest);
@@ -129,9 +129,14 @@ namespace RockEngine.Editor.Layers
             GL.StencilFunc(StencilFunction.Always, 1, 0xFF);
             GL.StencilMask(0xFF);
 
+            selected.RenderMeshWithoutMaterial();
+
+            GL.StencilMask(0xFF);
+            GL.Disable(EnableCap.DepthTest);
+
             SelectingShader.Bind();
             DebugCamera.Render();
-            selected.Render();
+            selected.RenderMeshWithoutMaterial();
             SelectingShader.Unbind();
 
             GL.StencilMask(0xFF);
@@ -162,7 +167,7 @@ namespace RockEngine.Editor.Layers
                     continue;
                 }
                 pd.SendData();
-                gameObject.Render();
+                gameObject.RenderMeshWithoutMaterial();
 
             }
 
@@ -170,7 +175,6 @@ namespace RockEngine.Editor.Layers
             PickingShader.Unbind();
             GL.Enable(EnableCap.Blend);
             GL.ClearColor(EditorSettings.BackGroundColor);
-
         }
 
         public void Dispose()
