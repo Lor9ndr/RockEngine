@@ -28,7 +28,8 @@ namespace RockEngine.Rendering.Layers
         private readonly ImGuiOpenGL _controller;
 
         private const string LAYOUT_FILE = "Layout.ini";
-        
+        private const string CONTEXT_ADDGAMEOBJECT_POPUP = "#CONTEXT_ADDGAMEOBJECT";
+
         #region GUI Fields
 
         public GameObject? SelectedGameObject = null;
@@ -286,7 +287,7 @@ namespace RockEngine.Rendering.Layers
                 }
                 if(Input.IsButtonDown(MouseButton.Right))
                 {
-                    ImGui.OpenPopup("#CONTEXT_ADDGAMEOBJECT");
+                    ImGui.OpenPopup(CONTEXT_ADDGAMEOBJECT_POPUP);
                 }
                 AddGameObjectContextWindow();
                 ImGui.End();

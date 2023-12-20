@@ -4,7 +4,7 @@
 layout(location = 0) out vec4 FragColor;
 
 
-uniform vec3 outlineColor = vec3(1);
+uniform vec3 outlineColor = vec3(0.2, 1, 1);
 
 
 void main()
