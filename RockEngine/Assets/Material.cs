@@ -105,7 +105,16 @@ namespace RockEngine.Assets
                     throw new Exception("Unsupported material shader type"); // Return null for unsupported types or handle the case accordingly
             }
         }
+        
 
+        public void SendData()
+        {
+            ShaderProgram.Bind();
+            foreach(var item in ShaderData)
+            {
+                ShaderProgram.SetShaderData(item.Key, item.Value);
+            }
+            ShaderProgram.Unbind();
         }
     }
 }

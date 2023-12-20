@@ -17,6 +17,7 @@ using RockEngine.DI;
 using RockEngine.Physics;
 using RockEngine.Editor.Rendering;
 using Ninject.Selection;
+using RockEngine.Editor.Rendering.Gizmo;
 
 namespace RockEngine.Editor.Layers
 {
@@ -103,6 +104,7 @@ namespace RockEngine.Editor.Layers
             if(selected != null)
             {
                 GL.Clear(ClearBufferMask.StencilBufferBit);
+                selected.IsActive = false;
             }
             scene.EditorLayerRender();
 
@@ -122,25 +124,28 @@ namespace RockEngine.Editor.Layers
             {
                 return;
             }
+            selected.IsActive = true;
             GL.Clear(ClearBufferMask.StencilBufferBit);
             GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.StencilTest);
+
             GL.StencilFunc(StencilFunction.Always, 1, 0xFF);
             GL.StencilMask(0xFF);
 
-            selected.RenderMeshWithoutMaterial();
+            selected.Render();
 
+            GL.StencilFunc(StencilFunction.Notequal, 1, 0xff);
             GL.StencilMask(0xFF);
             GL.Disable(EnableCap.DepthTest);
 
             SelectingShader.Bind();
             DebugCamera.Render();
-            selected.RenderMeshWithoutMaterial();
+            selected.Render();
             SelectingShader.Unbind();
 
             GL.StencilMask(0xFF);
-            GL.StencilFunc(StencilFunction.Always, 1, 0xFF);
+            GL.StencilFunc(StencilFunction.Always, 0, 0xFF);
             GL.Enable(EnableCap.DepthTest);
             _gizmoRenderer.Render(selected.Transform);
         }

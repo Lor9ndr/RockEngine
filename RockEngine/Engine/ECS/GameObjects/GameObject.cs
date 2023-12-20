@@ -217,8 +217,11 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public void RenderMeshWithoutMaterial()
         {
-            Transform.Render();
-            GetComponent<MeshComponent>()?.Render();
+            if(IsActive)
+            {
+                Transform.Render();
+                GetComponent<MeshComponent>()?.Render();
+            }
         }
 
         #endregion

@@ -64,6 +64,8 @@ namespace RockEngine.OpenGL.Shaders
         public ISetuppable Setup()
         {
             if(!IsSetupped)
+            {
+                Setup(true);
             }
             return this;
         }
@@ -85,8 +87,16 @@ namespace RockEngine.OpenGL.Shaders
         /// </summary>
         public override AShaderProgram Unbind()
         {
+            var handle = IGLObject.EMPTY_HANDLE;
+            var current = _activeShader;
+            if(_prevActiveShader != null)
+            {
+                _activeShader = _prevActiveShader;
+                handle = _activeShader.Handle;
             }
-            GL.UseProgram(_prevActiveShader.Handle);
+            _prevActiveShader = current;
+
+            GL.UseProgram(handle);
             return this;
         }
 
@@ -101,6 +111,7 @@ namespace RockEngine.OpenGL.Shaders
 
         public void ResetShader() => Setup(false);
 
+        public UniformFieldInfo[] GetUniforms()
         {
             GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out int unifromCount);
 
@@ -112,6 +123,7 @@ namespace RockEngine.OpenGL.Shaders
             {
                 // get the name of this uniform,
                 GL.GetActiveUniform(Handle, i, 256,out _, out var size, out var type, out string name);
+
                 // get the location,
                 var location = GL.GetUniformLocation(Handle, name);
 
@@ -507,10 +519,8 @@ namespace RockEngine.OpenGL.Shaders
             // Loop over all the uniforms,
             for (var i = 0; i < uniforms.Length; i++)
             {
-                // get the name of this uniform,
                 var uniform = uniforms[i];
                 // and then add it to the dictionary.
-                UniformLocations.Add(key, location);
                 UniformLocations.Add(uniform.Name, uniform.Location);
             }
         }
@@ -545,7 +555,6 @@ namespace RockEngine.OpenGL.Shaders
             _disposed = true;
         }
 
-        }
         public override bool IsBinded() => GL.GetInteger(GetPName.CurrentProgram) == Handle;
 
         ~AShaderProgram()
