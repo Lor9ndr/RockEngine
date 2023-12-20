@@ -91,16 +91,15 @@ namespace RockEngine.Editor.Layers
                     return;
                 }
                 PickingTexture.PixelInfo pi = PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y);
+                GameObject? selected = null;
                 if((uint)pi.PrimID != 0 )
                 {
                     var objID = (uint)pi.ObjectID;
-                    var selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
-                    _imguiRenderer.SelectedGameObject = selected;
+                    selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
                 }
-                else
-                {
-                    _imguiRenderer.SelectedGameObject = null;
-                }
+                
+                _imguiRenderer.SelectedGameObject = selected;
+
             }
         }
 
