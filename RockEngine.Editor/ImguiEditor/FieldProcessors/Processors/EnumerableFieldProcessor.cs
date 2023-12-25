@@ -12,13 +12,13 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType.GetInterface(nameof(IEnumerable)) != null && fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() != typeof(Dictionary<,>);
         }
 
-        public void Process(ref object obj, ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
         {
             if(value is null)
             {
                 return;
             }
-            string alias = FieldProcessor.CreateAlias(obj, field, attribute);
+            string alias = FieldProcessor.CreateAlias(value, field, attribute);
             var valueType  = value.GetType();
             var fieldInfo  = valueType.GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
             ImGui.Text(alias);

@@ -12,7 +12,7 @@ namespace RockEngine.Assets.Converters
         {
             var components = data.GetComponents();
             writer.Write(data.Name);
-            writer.Write(components.Count());
+            writer.Write(components.Count);
             foreach (var component in components)
             {
                 if (component is IAsset asset)

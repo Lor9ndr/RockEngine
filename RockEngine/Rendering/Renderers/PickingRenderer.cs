@@ -7,6 +7,7 @@ using RockEngine.OpenGL.Shaders;
 using RockEngine.OpenGL;
 using RockEngine.OpenGL.Buffers.UBOBuffers;
 using OpenTK.Graphics.OpenGL4;
+using RockEngine.Utils;
 
 namespace RockEngine.Rendering.Renderers
 {
@@ -62,9 +63,9 @@ namespace RockEngine.Rendering.Renderers
             PickingTexture.CheckSize(size);
         }
 
-        public PickingTexture.PixelInfo GetPixelData(int x, int y)
+        public void ReadPixel(int x, int y, ref PixelInfo pixelInfo)
         {
-            return PickingTexture.ReadPixel(x, y);
+            PickingTexture.ReadPixel(x, y, ref pixelInfo);
         }
     }
 }

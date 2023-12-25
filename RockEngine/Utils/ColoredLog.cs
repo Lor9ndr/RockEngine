@@ -1,11 +1,9 @@
 ﻿using OpenTK.Mathematics;
-
-using System.Collections;
 using System.Text;
 
 namespace RockEngine.Utils
 {
-    internal sealed class ColoredLog : IEnumerable<ColoredLog.Record>
+    internal sealed class ColoredLog
     {
         private readonly List<Record> _records;
         private readonly StringBuilder _currentMessage;
@@ -52,15 +50,11 @@ namespace RockEngine.Utils
             _currentMessage.Clear();
         }
 
-        public IEnumerator<Record> GetEnumerator()
+        public int Count => _records.Count;
+        public List<Record> GetRecords()
         {
             AddCurrentRecord();
-            return _records.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            return _records;
         }
 
         private void AddCurrentRecord()
@@ -73,7 +67,7 @@ namespace RockEngine.Utils
             }
         }
 
-        internal record struct Record
+        internal struct Record
         {
             public string Text { get; }
             public Vector4 Color { get; }

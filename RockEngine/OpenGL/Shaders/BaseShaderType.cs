@@ -16,6 +16,7 @@ namespace RockEngine.OpenGL.Shaders
         {
             _path = path;
         }
+
         public BaseShaderType Setup(int mainProgramHandle)
         {
             _mainProgramHandle = mainProgramHandle;

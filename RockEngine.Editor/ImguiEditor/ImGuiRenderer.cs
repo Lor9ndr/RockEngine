@@ -54,6 +54,7 @@ namespace RockEngine.Rendering.Layers
         private readonly EngineWindow _window;
 
         public event Action<Scene> ClickingOnGameScreen;
+        public event Action<OpenMath.Vector2i> ResizeGameWindow;
 
         public ImGuiRenderer(EngineWindow window, DefaultEditorLayer editorLayer, PhysicsManager physics)
         {
@@ -133,7 +134,7 @@ namespace RockEngine.Rendering.Layers
 
         public void AddGameObjectContextWindow()
         {
-            if(ImGui.BeginPopup("#CONTEXT_ADDGAMEOBJECT"))
+            if(IsHoveringCurrentWindow() && ImGui.BeginPopup("#CONTEXT_ADDGAMEOBJECT"))
             {
                 if(ImGui.Button("Add game object"))
                 {
@@ -175,14 +176,22 @@ namespace RockEngine.Rendering.Layers
                 _editorScreen.Resize(new OpenMath.Vector2i((int)winSize.X, (int)winSize.Y));
                 ImGui.Image(_editorScreen.ScreenTexture.Handle, winSize, new Vector2(0, 1), new Vector2(1, 0));
 
-                var x = mousePos.X  - winPos.X - padding.X;
-                x = (x / winSize.X) * winSize.X;
-
-                var y = mousePos.Y - winPos.Y - padding.Y;
-                y = winSize.Y - y / winSize.Y * winSize.Y;
-                EditorScreenMousePos = new Vector2(x, y);
+                var pos = GetActualWindowMousePos(mousePos, padding, winPos, winSize);
+                EditorScreenMousePos = pos;
                 ImGui.End();
             }
+        }
+
+        private static Vector2  GetActualWindowMousePos(Vector2 mousePos, Vector2 padding, Vector2 winPos, Vector2 winSize)
+        {
+            float x, y;
+
+            x = mousePos.X - winPos.X - padding.X;
+            x = (x / winSize.X) * winSize.X;
+
+            y = mousePos.Y - winPos.Y - padding.Y;
+            y = winSize.Y - y / winSize.Y * winSize.Y;
+            return new Vector2(x, y);
         }
 
         private void GameScreen()
@@ -315,16 +324,22 @@ namespace RockEngine.Rendering.Layers
         /// </summary>
         private void CheckMouseIsOnEditorScreen()
         {
-            var rMin = ImGui.GetWindowPos();
-            var rMax = rMin + ImGui.GetWindowContentRegionMax();
-
-            // Check if the mouse is hovering over the EditorLayer window
-            bool isHovering = ImGui.IsMouseHoveringRect(rMin, rMax);
+            bool isHovering = IsHoveringCurrentWindow();
             IsMouseOnEditorScreen = IsMouseOnEditorScreen || isHovering && ImGui.IsWindowFocused();
             if(IsMouseOnEditorScreen && Input.IsAnyButtoneDown)
             {
                 ClickingOnGameScreen?.Invoke(Scene.CurrentScene);
             }
+        }
+
+        private static bool IsHoveringCurrentWindow()
+        {
+            var rMin = ImGui.GetWindowPos();
+            var rMax = rMin + ImGui.GetWindowContentRegionMax();
+
+            // Check if the mouse is hovering over the EditorLayer window
+            bool isHovering = ImGui.IsMouseHoveringRect(rMin, rMax);
+            return isHovering;
         }
 
         private void DrawGuizmo()
@@ -356,10 +371,6 @@ namespace RockEngine.Rendering.Layers
 
             }*/
         }
-
-      
-
-      
 
         public void Dispose()
         {

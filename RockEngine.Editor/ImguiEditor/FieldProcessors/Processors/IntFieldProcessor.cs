@@ -11,14 +11,13 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType == typeof(int);
         }
 
-        public void Process(ref object obj, ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
         {
-            string alias = FieldProcessor.CreateAlias(obj, field, attribute);
-            var setter = FieldProcessor.GetOrCreateFieldSetter(field);
+            string alias = FieldProcessor.CreateAlias(value, field, attribute);
             var number = (int)value;
             if(ImGui.DragInt(alias, ref number))
             {
-                setter(obj, number);
+                value = number;
             }
         }
     }

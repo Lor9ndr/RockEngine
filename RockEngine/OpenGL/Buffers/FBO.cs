@@ -12,6 +12,8 @@ namespace RockEngine.OpenGL.Buffers
         public Vector2i Size { get; protected set; }
         protected List<Texture> _textures;
         private static int _prevFbo;
+        private static int _prevDrawFbo;
+        private static int _prevReadFbo;
 
         public FBO(FrameBufferSettings settings, Vector2i size, params Texture[] textures)
             : base(settings)
@@ -109,6 +111,42 @@ namespace RockEngine.OpenGL.Buffers
         {
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, _prevFbo);
             return this;
+        }
+
+        public virtual FBO BindAsDrawBuffer()
+        {
+            _prevDrawFbo = GL.GetInteger(GetPName.DrawFramebufferBinding);
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, Handle);
+            return this;
+        }
+
+        public virtual FBO UnbindAsDrawBuffer()
+        {
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _prevDrawFbo);
+            return this;
+        }
+        public virtual FBO BindAsReadBuffer()
+        {
+            _prevReadFbo = GL.GetInteger(GetPName.ReadFramebufferBinding);
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, Handle);
+            return this;
+        }
+
+        public virtual FBO UnbindAsReadBuffer()
+        {
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _prevReadFbo);
+            return this;
+        }
+
+        public void ReadPixel(int x, int y, ref PixelInfo info)
+        {
+            BindAsReadBuffer();
+            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+
+            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, ref info);
+
+            GL.ReadBuffer(ReadBufferMode.None);
+            UnbindAsReadBuffer();
         }
 
         public override bool IsBinded()

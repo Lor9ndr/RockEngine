@@ -1,13 +1,8 @@
-﻿using Ninject.Activation;
-
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
 using RockEngine.Editor;
-using RockEngine.Rendering;
 using RockEngine.Utils;
-
-using System.Reflection.Metadata;
 
 namespace RockEngine.OpenGL.Shaders
 {
@@ -117,8 +112,6 @@ namespace RockEngine.OpenGL.Shaders
 
             var uniforms = new UniformFieldInfo[unifromCount];
 
-            // Next, allocate the dictionary to hold the locations.
-            
             for(var i = 0; i < unifromCount; i++)
             {
                 // get the name of this uniform,
@@ -143,16 +136,27 @@ namespace RockEngine.OpenGL.Shaders
         public List<UniformFieldInfo> GetMaterialUniforms()
         {
             List<UniformFieldInfo> materialData = new List<UniformFieldInfo>();
-
-            foreach(var item in GetUniforms())
+            var uniforms = GetUniforms();
+            foreach(var item in uniforms)
             {
-                if(item.Name.StartsWith("material"))
+                if(item.Name.StartsWith("Material", StringComparison.OrdinalIgnoreCase))
                 {
                     materialData.Add(item);
                 }
             }
 
             return materialData;
+        }
+
+        public UniformFieldInfo[] GetUniformBufferData(int bufferBindingPoint)
+        {
+            GL.GetActiveUniformBlock(Handle, bufferBindingPoint, ActiveUniformBlockParameter.UniformBlockActiveUniforms, out int cnt);
+            UniformFieldInfo[ ] info = new UniformFieldInfo[cnt];
+            for(int i = 0; i < cnt; i++)
+            {
+                //GL.GetActiveUniform(Handle, i, 
+            }
+            return info;
         }
 
         /// <summary>

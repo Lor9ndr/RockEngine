@@ -23,20 +23,18 @@ namespace RockEngine.Editor.Layers
 {
     public sealed class DefaultEditorLayer : ALayer, IDisposable
     {
-        private readonly EngineWindow _window;
         public CameraTexture Screen;
         public PickingTexture PickingTexture;
-
         public override Layer Layer => Layer.Editor;
-
         public GameObject DebugCamera;
+        public override int Order => 1;
+
+        private readonly EngineWindow _window;
         private readonly PhysicsManager _physicsManager;
         private readonly AShaderProgram PickingShader;
         private readonly AShaderProgram SelectingShader;
         private readonly ImGuiRenderer _imguiRenderer;
         private readonly GizmoRenderer _gizmoRenderer;
-
-        public override int Order => 1;
 
         public DefaultEditorLayer()
         {
@@ -64,8 +62,6 @@ namespace RockEngine.Editor.Layers
             _physicsManager.SetDebugRender(camera);
             _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!,this, _physicsManager);
             _gizmoRenderer = new GizmoRenderer(Screen);
-
-            SelectingShader.Setup();
         }
 
         public override void OnRender(Scene scene)
@@ -90,7 +86,8 @@ namespace RockEngine.Editor.Layers
                 {
                     return;
                 }
-                PickingTexture.PixelInfo pi = PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y);
+                PixelInfo pi = new PixelInfo();
+                PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref pi);
                 GameObject? selected = null;
                 if((uint)pi.PrimID != 0 )
                 {
@@ -99,38 +96,34 @@ namespace RockEngine.Editor.Layers
                 }
                 
                 _imguiRenderer.SelectedGameObject = selected;
-
             }
         }
 
         private void MainRenderPass(Scene scene)
         {
             Screen.BeginRenderToScreen();
-
             var selected = _imguiRenderer.SelectedGameObject;
             if(selected != null)
             {
-                GL.Clear(ClearBufferMask.StencilBufferBit);
                 selected.IsActive = false;
             }
             scene.EditorLayerRender();
-
-            OutlineSelectedGameObject(selected);
-            scene.EditorLayerRender();
+            if(selected != null)
+            {
+                GL.Enable(EnableCap.Blend);
+                OutlineSelectedGameObject(selected);
+            }
             if(EditorSettings.DrawCollisions)
             {
                 _physicsManager.DebugRenderer.DebugRender();
             }
 
             Screen.EndRenderToScreen();
+           
         }
 
-        private void OutlineSelectedGameObject(GameObject? selected)
+        private void OutlineSelectedGameObject(GameObject selected)
         {
-            if(selected == null)
-            {
-                return;
-            }
             selected.IsActive = true;
             GL.Clear(ClearBufferMask.StencilBufferBit);
             GL.StencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Replace);

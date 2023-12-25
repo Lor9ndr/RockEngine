@@ -15,7 +15,7 @@ namespace RockEngine.Figures
 
         public Vector3 GetPoint(float distance)
         {
-            return this.Origin + this.Direction * distance;
+            return Origin + Direction * distance;
         }
     }
 }

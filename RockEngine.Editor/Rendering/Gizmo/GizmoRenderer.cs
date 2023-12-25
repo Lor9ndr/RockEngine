@@ -15,6 +15,7 @@ using RockEngine.OpenGL.Vertices;
 using RockEngine.Rendering;
 using RockEngine.Rendering.Layers;
 using RockEngine.Rendering.Renderers;
+using RockEngine.Utils;
 
 namespace RockEngine.Editor.Rendering.Gizmo
 {
@@ -52,7 +53,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
         private readonly CameraTexture _screen;
         private readonly PickingRenderer _pickingRenderer;
         private readonly Dictionary<int, Axis> _axes;
-        private PickingTexture.PixelInfo CurrentPixelInfo;
+        private PixelInfo CurrentPixelInfo;
         private Vector2 _lastMousePos;
         private bool _isDragging;
         private Axis? _currentAxis;
@@ -186,7 +187,8 @@ namespace RockEngine.Editor.Rendering.Gizmo
 
         public bool IsClickingOnAxis()
         {
-            CurrentPixelInfo = _pickingRenderer.GetPixelData((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y);
+            _pickingRenderer.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref CurrentPixelInfo);
+
             return Input.IsButtonDown(MouseButton.Left) && CurrentPixelInfo.PrimID >= 1 && CurrentPixelInfo.PrimID <= 3;
         }
 

@@ -14,12 +14,12 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
         }
 
       
-        public void Process(ref object obj, ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process( ref object value, FieldInfo field, UIAttribute? attribute = null)
         {
             string alias = $"##{value.GetHashCode()}";
             if(field is not null)
             {
-                alias = FieldProcessor.CreateAlias(obj, field, attribute);
+                alias = FieldProcessor.CreateAlias(value, field, attribute);
             }
             var realValue = (Vector3)value;
             var guilValue = (System.Numerics.Vector3)realValue;

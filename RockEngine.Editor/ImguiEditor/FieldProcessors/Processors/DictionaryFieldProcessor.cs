@@ -12,9 +12,9 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(Dictionary<,>);
         }
 
-        public void Process(ref object obj,ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
         {
-            string alias = FieldProcessor.CreateAlias(obj, field, attribute);
+            string alias = FieldProcessor.CreateAlias(value, field, attribute);
             ImGui.Text(alias);
             var dict = (IDictionary)value;
             var items = dict.Cast<object>().ToArray();

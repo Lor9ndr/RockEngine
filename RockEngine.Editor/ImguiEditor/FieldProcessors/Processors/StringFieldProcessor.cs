@@ -11,7 +11,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType == typeof(string);
         }
 
-        public void Process(ref object refToValueHandler, ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
         {
             string str = (string)value;
             if(ImGui.InputText(field.Name, ref str, 999))

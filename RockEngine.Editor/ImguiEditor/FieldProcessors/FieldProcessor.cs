@@ -27,6 +27,8 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
         private static readonly Dictionary<PropertyInfo, Action<object, object>> _propertySettersCache = new Dictionary<PropertyInfo, Action<object, object>>();
 
         private static readonly Type _keyValuePairType  = typeof(KeyValuePair<,>);
+
+        private static object _previousProceededObject;
         #endregion
 
         public static readonly Dictionary<Type, IUIFieldProcessor> FieldProcessors = new Dictionary<Type, IUIFieldProcessor>
@@ -54,6 +56,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             {
                 return;
             }
+
             var type = obj.GetType();
             // Check if the fields are already cached
             var fieldInfos = GetCachedFieldInfo(type);
@@ -61,7 +64,8 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             {
                 if(processor.Value.CanProcess(type))
                 {
-                    processor.Value.Process(ref obj, ref obj, null, null);
+                    processor.Value.Process(ref obj, null, null);
+                    _previousProceededObject = obj;
                     return;
                 }
             }
@@ -76,19 +80,21 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                     if(processor.Value.CanProcess(fieldInfo.FieldType))
                     {
                         var attribute = fieldInfo.FieldType.GetCustomAttribute<UIAttribute>();
-                        processor.Value.Process(ref obj, ref value, fieldInfo, attribute);
-                        fieldSetter(obj, value);
+                        processor.Value.Process(ref value, fieldInfo, attribute);
                         isProcessed = true;
+                        _previousProceededObject = value;
                         break;
                     }
                 }
-                if(!isProcessed )
+                if(!isProcessed)
                 {
                     ProcessField(ref value);
-                    fieldSetter(obj, value);
                 }
+                fieldSetter(obj, value);
+                _previousProceededObject = value;
             }
         }
+
         internal static void ProcessComponent(ref IComponent component)
         {
             var value = (object)component;
@@ -125,7 +131,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
 
         public static string CreateAlias(object obj, FieldInfo field, UIAttribute? attribute = null)
         {
-            string alias = $"##{obj.GetHashCode()}";
+            string alias;
             if(field is not null)
             {
                 alias = field.Name;
@@ -137,6 +143,10 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                         alias = ProcessAlias(field.Name);
                     }
                 }
+            }
+            else
+            {
+                alias = $"##{Guid.NewGuid()}";
             }
             
             if(obj is IAsset asset)

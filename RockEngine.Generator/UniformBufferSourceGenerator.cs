@@ -21,8 +21,8 @@ namespace RockEngine.Generator
 
         public void Execute(GeneratorExecutionContext context)
         {
-           /* HashSet<string> addedFiles = new HashSet<string>();
-            foreach(AdditionalText file in GL.AdditionalFiles.Where(s => s.Path.EndsWith(".vert") || s.Path.EndsWith(".frag")))
+            HashSet<string> addedFiles = new HashSet<string>();
+            foreach(AdditionalText file in context.AdditionalFiles.Where(s => s.Path.EndsWith(".vert") || s.Path.EndsWith(".frag")))
             {
                 SourceText? fileContent = file.GetText();
                 if(fileContent is null)
@@ -48,10 +48,10 @@ namespace RockEngine.Generator
                     addedFiles.Add(fileName);
 
                     // Add the generated C# code as a source file to the compilation
-                    GL.AddSource(fileName, SourceText.From(generatedCode, Encoding.UTF8));
+                    context.AddSource(fileName, SourceText.From(generatedCode, Encoding.UTF8));
                 }
             }
-            addedFiles.Clear();*/
+            addedFiles.Clear();
         }
 
         private List<UBO> GetUbos(string file)
@@ -135,7 +135,7 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
                 sb.AppendLine();
             }
             sb.AppendLine($@" 
-        public const int Size = {CalculateSizeOfStruct(uboValues)};
+        public const int Size = 0;
         private static UBO<{ubo.Name}> UBO => IUBOData<{ubo.Name}>.UBO;
         public readonly string Name => nameof({ubo.Name});
 

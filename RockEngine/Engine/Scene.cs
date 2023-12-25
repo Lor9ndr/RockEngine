@@ -5,6 +5,7 @@ using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.Utils;
 
 using System.Collections;
+using System.Linq;
 
 namespace RockEngine.Engine
 {
@@ -63,8 +64,9 @@ namespace RockEngine.Engine
         } 
         private void Stop()
         {
-            foreach(var item in this)
+            for(int i = 0; i < _gameObjects.Count; i++)
             {
+                var item = _gameObjects[i];
                 item.Dispose();
             }
         }
@@ -122,19 +124,17 @@ namespace RockEngine.Engine
         /// Method to get all game objects in the scene
         /// </summary>
         /// <returns>List of gameobjects</returns>
-        public IEnumerable<GameObject> GetGameObjects()
+        public List<GameObject> GetGameObjects()
         {
-            foreach(var item in _gameObjects)
-            {
-                yield return item;
-            }
+            return _gameObjects;
         }
 
         public void Render()
         {
             MainCamera?.Render();
-            foreach (var item in _gameObjects)
+            for(int i = 0; i < _gameObjects.Count; i++)
             {
+                GameObject? item = _gameObjects[i];
                 if (item == MainCamera)
                 {
                     continue;
@@ -148,8 +148,9 @@ namespace RockEngine.Engine
         /// </summary>
         public void EditorLayerRender()
         {
-            foreach (var item in _gameObjects)
+            for(int i = 0; i < _gameObjects.Count; i++)
             {
+                GameObject? item = _gameObjects[i];
                 if (item == MainCamera)
                 {
                     continue;
@@ -160,8 +161,9 @@ namespace RockEngine.Engine
 
         public void Dispose()
         {
-            foreach (var item in _gameObjects)
+            for(int i = 0; i < _gameObjects.Count; i++)
             {
+                GameObject? item = _gameObjects[i];
                 item.Dispose();
             }
             _gameObjects.Clear();

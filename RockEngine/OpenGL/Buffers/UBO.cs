@@ -4,8 +4,6 @@ using RockEngine.OpenGL.Settings;
 using RockEngine.OpenGL.Shaders;
 using RockEngine.Utils;
 
-using SkiaSharp;
-
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
@@ -26,21 +24,25 @@ namespace RockEngine.OpenGL.Buffers
             {
                 throw new Exception($"Unable to create Uniform buffer of type <{typeof(T)}>");
             }
-            GL.NamedBufferData(Handle, Settings.BufferSize, nint.Zero, Settings.BufferUsageHint);
-
-            GL.BindBufferRange(BufferRangeTarget.UniformBuffer, Settings.BindingPoint, Handle, nint.Zero, Settings.BufferSize);
+          
             foreach (var shader in AShaderProgram.AllShaders)
             {
                 var index = GL.GetUniformBlockIndex(shader.Value.Handle, Settings.BufferName);
-                if(index != -1)
+                GL.GetProgram(shader.Value.Handle, GetProgramParameterName.ActiveUniformBlocks, out int maxCount);
+
+                if(index != -1 && index < maxCount )
                 {
                     GL.UniformBlockBinding(shader.Value.Handle, index, Settings.BindingPoint);
+                    GL.GetActiveUniformBlock(shader.Value.Handle, index, ActiveUniformBlockParameter.UniformBlockDataSize, out int size);
+                    Settings.BufferSize = (int)MathF.Max(size, Settings.BufferSize);
 
                     // Add this line to add the uniform buffer to the cache
                     shader.Value.BoundUniformBuffers[Handle] = this;
                 }
             }
+            GL.NamedBufferData(Handle, Settings.BufferSize, nint.Zero, Settings.BufferUsageHint);
 
+            GL.BindBufferRange(BufferRangeTarget.UniformBuffer, Settings.BindingPoint, Handle, nint.Zero, Settings.BufferSize);
             return this;
         }
 
@@ -58,6 +60,29 @@ namespace RockEngine.OpenGL.Buffers
             Marshal.FreeHGlobal(ptr);
             return this;
         }
+
+        public UBO<T> SendData(object[] data)
+        {
+            throw new NotImplementedException("NOT IMPLEMENTED: TODO");
+            if(!BindToActiveShaderIfNot())
+            {
+                return this;
+            }
+            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            for(int i = 0; i < data.Length; i++)
+            {
+                var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(data, i);
+                var arraySegment = new ArraySegment<object>(data);
+                int offset = arraySegment.Offset + i;
+                GL.NamedBufferSubData(Handle, offset, Settings.BufferSize, ptr);
+            }
+            handle.Free();
+
+            //Marshal.StructureToPtr(data, ptr, false);
+
+            return this;
+        }
+
         public UBO<T> SendData<Tother>(ref Tother data, int size) where Tother : struct
         {
             if(!BindToActiveShaderIfNot())
@@ -71,7 +96,6 @@ namespace RockEngine.OpenGL.Buffers
             // Return to the base size 
             GL.BindBufferRange(BufferRangeTarget.UniformBuffer, Settings.BindingPoint, Handle, nint.Zero, Settings.BufferSize);
             return this;
-
         }
 
         public bool BindToActiveShaderIfNot()
@@ -126,7 +150,6 @@ namespace RockEngine.OpenGL.Buffers
             }
             var ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr(subdata, ptr, true);
-
             GL.NamedBufferSubData(Handle, offset, size, ptr);
             Marshal.FreeHGlobal(ptr);
             return this;

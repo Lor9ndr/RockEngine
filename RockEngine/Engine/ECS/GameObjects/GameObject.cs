@@ -165,14 +165,8 @@ namespace RockEngine.Engine.ECS.GameObjects
             return _components.OfType<T>().FirstOrDefault();
         }
 
-        public IEnumerable<IComponent> GetComponents()
-        {
-            for (int i = 0; i < _components.Count; i++)
-            {
-                IComponent? item = _components[i];
-                yield return item;
-            }
-        }
+        public List<IComponent> GetComponents() => _components;
+
         public void RemoveComponent(IComponent component)
         {
             if (component is Transform tr)
@@ -201,16 +195,18 @@ namespace RockEngine.Engine.ECS.GameObjects
 
         public void OnStart()
         {
-            foreach (var item in _components)
+            for(int i = 0; i < _components.Count; i++)
             {
+                IComponent? item = _components[i];
                 item.OnStart();
             }
         }
 
         internal void OnExit()
         {
-            foreach (var item in _components)
+            for(int i = 0; i < _components.Count; i++)
             {
+                IComponent? item = _components[i];
                 item.OnDestroy();
             }
         }

@@ -39,7 +39,7 @@ namespace RockEngine.Rendering.Layers
         {
             var winSizeX = ImGui.GetWindowWidth();
             var components = gameObject.GetComponents();
-            for(int i = 0; i < components.Count(); i++)
+            for(int i = 0; i < components.Count; i++)
             {
                 var component = components.ElementAt(i);
 
@@ -149,10 +149,6 @@ namespace RockEngine.Rendering.Layers
 
             }
         }*/
-
-
-     
-      
 
         internal static unsafe bool TryGetAssetFromPayload(ImGuiPayloadPtr payload, out IAsset? asset, out DragDropAsset ddAsset)
         {

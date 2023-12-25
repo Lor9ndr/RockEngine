@@ -8,22 +8,10 @@ using RockEngine.OpenGL.Settings;
 
 namespace RockEngine.OpenGL.Buffers.UBOBuffers
 {
-    [StructLayout(LayoutKind.Explicit, Size = Size)]
     public struct MaterialData : IUBOData<MaterialData>
     {
-        [FieldOffset(0)]
-        public Vector3 albedo;
+        public object[] Data;
 
-        [FieldOffset(12)]
-        public float metallic;
-
-        [FieldOffset(16)]
-        public float roughness;
-
-        [FieldOffset(20)]
-        public float ao;
-
-        public const int Size = 32;
         private static UBO<MaterialData> UBO => IUBOData<MaterialData>.UBO;
         public readonly string Name => nameof(MaterialData);
 
@@ -36,7 +24,7 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
         {
             if(IUBOData<MaterialData>.UBO is null)
             {
-                IUBOData<MaterialData>.UBO = new UBO<MaterialData>(new BufferSettings(Size, BufferUsageHint.StreamDraw, BindingPoint, Name)).Setup().SetLabel();
+                IUBOData<MaterialData>.UBO = new UBO<MaterialData>(new BufferSettings(0, BufferUsageHint.DynamicDraw, BindingPoint, Name)).Setup().SetLabel();
             }
         }
 

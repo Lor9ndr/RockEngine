@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using RockEngine.OpenGL.Buffers;
 using RockEngine.OpenGL.Settings;
 using RockEngine.OpenGL.Textures;
+using RockEngine.Utils;
 
 namespace RockEngine.OpenGL
 {
@@ -13,29 +14,12 @@ namespace RockEngine.OpenGL
         private FBO _fbo;
         private Texture _pickingTexture;
         private Texture _depthTexture;
-        private int _prevDrawFbo;
-        private int _prevReadFbo;
-        public struct PixelInfo
-        {
-            public float ObjectID;
-            public float DrawID;
-            public float PrimID;
-
-            public PixelInfo()
-            {
-                ObjectID = 0.0f;
-                DrawID = 0.0f;
-                PrimID = 0.0f;
-            }
-        };
 
         public PickingTexture(Vector2i size)
         {
             Size = size;
             Setup();
         }
-
-
 
         private void Setup()
         {
@@ -63,18 +47,18 @@ namespace RockEngine.OpenGL
             });
 
             _fbo = new FBO(new FrameBufferSettings(FramebufferTarget.Framebuffer), Size, _pickingTexture, _depthTexture)
-                .Setup().SetLabel().Bind();
+                .Setup()
+                .SetLabel()
+                .Bind();
             GL.ReadBuffer(ReadBufferMode.None);
             GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
             _fbo.CheckBuffer();
             _fbo.Unbind();
-
         }
 
         public void BeginWrite()
-        {
-            _prevDrawFbo =  GL.GetInteger(GetPName.DrawFramebufferBinding);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _fbo.Handle);
+        {   
+            _fbo.BindAsDrawBuffer();
             GL.Viewport(0, 0, Size.X, Size.Y);
             GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
             GL.ClearColor(0, 0, 0, 0);
@@ -82,21 +66,12 @@ namespace RockEngine.OpenGL
 
         public void EndWrite()
         {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _prevDrawFbo);
+            _fbo.UnbindAsDrawBuffer();
         }
 
-        public PixelInfo ReadPixel(int x, int y)
+        public void ReadPixel(int x, int y, ref PixelInfo info)
         {
-            _prevReadFbo =  GL.GetInteger(GetPName.ReadFramebufferBinding);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _fbo.Handle);
-            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
-
-            PixelInfo pixel = new PixelInfo();
-            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, ref pixel);
-
-            GL.ReadBuffer(ReadBufferMode.None);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _prevReadFbo);
-            return pixel;
+            _fbo.ReadPixel(x,y, ref info);
         }
 
         public void CheckSize(Vector2i size)

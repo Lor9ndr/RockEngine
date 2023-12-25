@@ -27,7 +27,7 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
         {
             if(IUBOData<TransformData>.UBO is null)
             {
-                IUBOData<TransformData>.UBO = new UBO<TransformData>(new BufferSettings(Size, BufferUsageHint.StreamDraw, BindingPoint, Name)).Setup().SetLabel();
+                IUBOData<TransformData>.UBO = new UBO<TransformData>(new BufferSettings(Size, BufferUsageHint.DynamicDraw, BindingPoint, Name)).Setup().SetLabel();
             }
         }
 

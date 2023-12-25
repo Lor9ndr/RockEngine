@@ -16,7 +16,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType.IsGenericType &&  fieldType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
         }
 
-        public void Process(ref object refToValueHandler, ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
         {
             var kvalue = (KeyValuePair<string,object>)value;
             var kvalueItem = kvalue.Value;

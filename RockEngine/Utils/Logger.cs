@@ -12,6 +12,9 @@ namespace RockEngine.Utils
 {
     public static class Logger
     {
+        private const int LOG_ID = 0;
+        private const int WARN_ID = 1;
+        private const int ERROR_ID = 2;
         public static readonly DebugProc DebugProcCallback = DebugCallback;
         public static DebugProcKhr DebugMessageDelegate = DebugCallback;
         public static DebugProcArb DebugMessageDelegateARB = DebugCallback;
@@ -22,7 +25,6 @@ namespace RockEngine.Utils
         private static void DebugCallback(DebugSource source, DebugType type, int id,
             DebugSeverity severity, int length, nint message, nint userParam)
         {
-
             string messageString = Marshal.PtrToStringAnsi(message, length);
             string paramString = string.Empty;
             if (userParam != IntPtr.Zero)
@@ -30,28 +32,36 @@ namespace RockEngine.Utils
                 paramString = Marshal.PtrToStringAnsi(userParam, length);
             }
             var log = $"{severity} {type} | {messageString}";
-            if (severity == DebugSeverity.DebugSeverityNotification)
+            Vector4 color = Record.Log;
+            int level = 0;
+            switch(severity)
             {
-                //AddLog(log);
-                Console.WriteLine(log);
-                return;
+                case DebugSeverity.DontCare:
+                    break;
+                case DebugSeverity.DebugSeverityNotification:
+                    level = 1;
+                    break;
+                case DebugSeverity.DebugSeverityLow:
+                    level = 2;
+                    color = Record.Warn;
+                    break;
+                case DebugSeverity.DebugSeverityMedium:
+                    level = 3;
+                    color = Record.Warn;
+                    break;
+                case DebugSeverity.DebugSeverityHigh:
+                    level = 4;
+                    color = Record.Error;
+                    break;
             }
-            if (severity == DebugSeverity.DebugSeverityMedium)
-            {
-                Debug.WriteLine(log, severity, type);
-                AddWarn(log);
-            }
+            Debugger.Log(level, type.ToString(), log);
+            _logs.Append(log, color);
 
             if (type == DebugType.DebugTypeError)
             {
                 var exc = new Exception(messageString + paramString);
-                Debug.WriteLine(log, severity, type);
-                AddError(log);
-
                 throw exc;
             }
-            AddWarn(log);
-
         }
 
         public static void Clear()
@@ -67,17 +77,17 @@ namespace RockEngine.Utils
 
         public static void AddLog(string message)
         {
-            AddLog(message, Record.Log);
+            GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeMarker, LOG_ID, DebugSeverity.DebugSeverityNotification, -1, message);
         }
 
         public static void AddError(string message)
         {
-            AddLog(message, Record.Error);
+            GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeError, ERROR_ID, DebugSeverity.DebugSeverityHigh, -1, message);
         }
 
         public static void AddWarn(string message)
         {
-            AddLog(message, Record.Warn);
+            GL.DebugMessageInsert(DebugSourceExternal.DebugSourceApplication, DebugType.DebugTypeOther, WARN_ID, DebugSeverity.DebugSeverityMedium, -1, message);
         }
 
         public static void DrawDebugLogWindow()
@@ -109,9 +119,13 @@ namespace RockEngine.Utils
 
                 ImGui.PushTextWrapPos(1400);
                 // Default display of logs
-                foreach (var log in _logs)
+
+                var logs = _logs.GetRecords();
+                for(int i = 0; i < logs.Count; i++)
                 {
+                    var log = logs[i];
                     ImGui.TextColored(log.Color, log.Text);
+
                 }
 
                 ImGui.PopTextWrapPos();

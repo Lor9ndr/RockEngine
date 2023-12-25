@@ -12,7 +12,6 @@ in VS_OUT {
 } fs_in;
 
 struct Material {
-	sampler2D Albedo;
     vec3 albedo;
     float metallic;
     float roughness;
@@ -36,7 +35,8 @@ layout (std140, binding = 4) uniform LightData
 
 }lightData;
 
-uniform Material material;
+//MaterialData materialData = materialData(;
+uniform Material material = Material(vec3(1), 1.0f, 1.0f,0.5f);
 
 const vec3 outlineColor = vec3(1,0,0);
 

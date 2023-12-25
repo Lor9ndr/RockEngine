@@ -14,14 +14,14 @@ namespace RockEngine.Engine.EngineStates
 
         public void SaveState(Scene scene)
         {
-            foreach(var item in scene.GetGameObjects())
+            foreach(var item in scene)
             {
                 SaveState(item);
             }
         }
         public void RestoreState(Scene scene)
         {
-            foreach(var item in scene.GetGameObjects())
+            foreach(var item in scene)
             {
                 RestoreState(item);
             }
