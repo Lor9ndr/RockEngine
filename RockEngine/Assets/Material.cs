@@ -2,7 +2,6 @@
 using OpenTK.Mathematics;
 
 using RockEngine.Editor;
-using RockEngine.OpenGL.Buffers.UBOBuffers;
 using RockEngine.OpenGL.Shaders;
 using RockEngine.OpenGL.Textures;
 
@@ -44,6 +43,7 @@ namespace RockEngine.Assets
             foreach(var uniform in uniforms)
             {
                 float[] value = new float[4*4]; // max is mat4x4
+                GL.GetUniform(ShaderProgram.Handle, uniform.Location, value);
                 var obj = ConvertGettedUniformValue(uniform.Type, value);
 
                 ShaderData.Add(uniform.Name, 

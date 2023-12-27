@@ -20,9 +20,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
         {
             var kvalue = (KeyValuePair<string,object>)value;
             var kvalueItem = kvalue.Value;
-            ImGui.Text(kvalue.Key);
-            ImGui.SameLine();
-            FieldProcessor.ProcessField(ref kvalueItem);
+            FieldProcessor.ProcessField(ref kvalueItem, kvalue.Key);
             value = new KeyValuePair<object, object>(kvalue.Key,kvalueItem);
         }
     }

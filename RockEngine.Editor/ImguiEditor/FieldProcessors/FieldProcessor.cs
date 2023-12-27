@@ -50,7 +50,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             { typeof(string), new StringFieldProcessor() }
         };
 
-        public static void ProcessField(ref object obj)
+        public static void ProcessField(ref object obj, string alias = UIAttribute.UNKNOWN)
         {
             if(obj is null)
             {
@@ -64,7 +64,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             {
                 if(processor.Value.CanProcess(type))
                 {
-                    processor.Value.Process(ref obj, null, null);
+                    processor.Value.Process(ref obj, null, new UIAttribute(alias));
                     _previousProceededObject = obj;
                     return;
                 }
@@ -79,7 +79,8 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                 {
                     if(processor.Value.CanProcess(fieldInfo.FieldType))
                     {
-                        var attribute = fieldInfo.FieldType.GetCustomAttribute<UIAttribute>();
+                        //var attribute = fieldInfo.FieldType.GetCustomAttribute<UIAttribute>();
+                        var attribute = new UIAttribute(alias);
                         processor.Value.Process(ref value, fieldInfo, attribute);
                         isProcessed = true;
                         _previousProceededObject = value;
@@ -129,19 +130,18 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             return fields;
         }
 
-        public static string CreateAlias(object obj, FieldInfo field, UIAttribute? attribute = null)
+        public static string CreateAlias(object obj, FieldInfo field, UIAttribute attribute)
         {
             string alias;
-            if(field is not null)
+            if(attribute is not null)
             {
-                alias = field.Name;
-                if(attribute is not null)
+                if(attribute.Alias == UIAttribute.UNKNOWN && field is not null)
+                {
+                    alias = ProcessAlias(field.Name);
+                }
+                else
                 {
                     alias = attribute.Alias;
-                    if(attribute.Alias == UIAttribute.UNKNOWN)
-                    {
-                        alias = ProcessAlias(field.Name);
-                    }
                 }
             }
             else

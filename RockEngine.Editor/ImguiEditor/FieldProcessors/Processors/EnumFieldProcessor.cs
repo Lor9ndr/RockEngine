@@ -11,7 +11,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType.BaseType == typeof(Enum);
         }
 
-        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
             string alias = FieldProcessor.CreateAlias(value, field, attribute);
             var type = value.GetType();
