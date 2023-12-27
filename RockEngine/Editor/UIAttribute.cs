@@ -11,7 +11,7 @@
         public float Min { get; set; }
         public float Max { get; set; }
 
-        public UIAttribute(string alias = UNKNOWN, bool isColor = false, float speed = 0.1f, float min = float.MinValue, float max = float.MaxValue)
+        public UIAttribute(string alias = UNKNOWN, bool isColor = false, float speed = 0.01f, float min = float.MinValue, float max = float.MaxValue)
         {
             Alias = alias;
             IsColor = isColor;

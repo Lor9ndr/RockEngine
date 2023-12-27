@@ -14,13 +14,9 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
         }
 
       
-        public void Process( ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
-            string alias = $"##{value.GetHashCode()}";
-            if(field is not null)
-            {
-                alias = FieldProcessor.CreateAlias(value, field, attribute);
-            }
+            var alias = FieldProcessor.CreateAlias(value, field, attribute);
             var realValue = (Vector3)value;
             var guilValue = (System.Numerics.Vector3)realValue;
             if(attribute is not null && attribute.IsColor)
@@ -32,7 +28,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             }
             else
             {
-                if(ImGui.DragFloat3(alias, ref guilValue))
+                if(ImGui.DragFloat3(alias, ref guilValue, attribute.Speed, attribute.Min, attribute.Max))
                 {
                     value = (Vector3)guilValue;
                 }

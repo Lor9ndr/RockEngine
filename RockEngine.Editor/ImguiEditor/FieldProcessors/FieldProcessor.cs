@@ -1,7 +1,5 @@
 ﻿using ImGuiNET;
 
-using Newtonsoft.Json.Linq;
-
 using RockEngine.Assets;
 using RockEngine.Editor.ImguiEditor.FieldProcessors.Processors;
 using RockEngine.Engine.ECS;
@@ -28,7 +26,6 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
 
         private static readonly Type _keyValuePairType  = typeof(KeyValuePair<,>);
 
-        private static object _previousProceededObject;
         #endregion
 
         public static readonly Dictionary<Type, IUIFieldProcessor> FieldProcessors = new Dictionary<Type, IUIFieldProcessor>
@@ -36,6 +33,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             { typeof(KeyValuePair<,>), new KeyValuePairFieldProcessor() },
             { typeof(OpenMath.Vector3), new Vector3FieldProcessor() },
             { typeof(OpenMath.Vector4), new Vector4FieldProcessor() },
+            { typeof(OpenMath.Quaternion), new QuaternionFieldProcessor() },
             { typeof(Enum), new EnumFieldProcessor() },
             { typeof(Enumerable), new EnumerableFieldProcessor() },
             { typeof(IList), new EnumerableFieldProcessor() },
@@ -65,10 +63,15 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                 if(processor.Value.CanProcess(type))
                 {
                     processor.Value.Process(ref obj, null, new UIAttribute(alias));
-                    _previousProceededObject = obj;
                     return;
                 }
             }
+
+            ProcessFieldInfos(ref obj, alias, fieldInfos);
+        }
+
+        private static void ProcessFieldInfos(ref object obj, string alias, FieldInfo[]? fieldInfos)
+        {
             foreach(var fieldInfo in fieldInfos)
             {
                 var isProcessed = false;
@@ -82,17 +85,16 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                         //var attribute = fieldInfo.FieldType.GetCustomAttribute<UIAttribute>();
                         var attribute = new UIAttribute(alias);
                         processor.Value.Process(ref value, fieldInfo, attribute);
+                        fieldSetter(obj, value);
                         isProcessed = true;
-                        _previousProceededObject = value;
                         break;
                     }
                 }
                 if(!isProcessed)
                 {
                     ProcessField(ref value);
+                    fieldSetter(obj, value);
                 }
-                fieldSetter(obj, value);
-                _previousProceededObject = value;
             }
         }
 
