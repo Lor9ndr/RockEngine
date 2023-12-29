@@ -2,12 +2,12 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RockEngine.Utils;
 
 using RockEngine.Rendering.Layers;
-using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.Inputs;
-using RockEngine.Engine;
+using RockEngine.Common;
+using RockEngine.ECS.GameObjects;
+using RockEngine.Common.Utils;
 
 namespace RockEngine.Editor.GameObjects
 {

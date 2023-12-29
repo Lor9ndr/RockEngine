@@ -1,5 +1,4 @@
-using RockEngine.Engine;
-using RockEngine.Engine.ECS.GameObjects;
+using RockEngine.ECS;
 
 namespace RockEngine.Tests
 {

@@ -1,23 +1,20 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-
-using RockEngine.Assets;
-using RockEngine.Engine;
-using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.Inputs;
-using RockEngine.OpenGL;
-using RockEngine.OpenGL.Buffers.UBOBuffers;
-using RockEngine.OpenGL.Shaders;
-using RockEngine.Engine.ECS;
 using RockEngine.Rendering.Layers;
 using RockEngine.Editor.GameObjects;
-using RockEngine.Utils;
 using RockEngine.DI;
 using RockEngine.Physics;
-using RockEngine.Editor.Rendering;
-using Ninject.Selection;
 using RockEngine.Editor.Rendering.Gizmo;
+using RockEngine.ECS.GameObjects;
+using RockEngine.Rendering.OpenGL;
+using RockEngine.ECS;
+using RockEngine.Common;
+using RockEngine.Rendering.OpenGL.Shaders;
+using RockEngine.Common.Utils;
+using RockEngine.ECS.Layers;
+using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.Editor.Layers
 {
@@ -25,7 +22,6 @@ namespace RockEngine.Editor.Layers
     {
         public CameraTexture Screen;
         public PickingTexture PickingTexture;
-        public override Layer Layer => Layer.Editor;
         public GameObject DebugCamera;
         public override int Order => 1;
 
@@ -115,7 +111,7 @@ namespace RockEngine.Editor.Layers
             }
             if(EditorSettings.DrawCollisions)
             {
-                _physicsManager.DebugRenderer.DebugRender();
+               // _physicsManager.DebugRenderer.DebugRender();
             }
 
             Screen.EndRenderToScreen();

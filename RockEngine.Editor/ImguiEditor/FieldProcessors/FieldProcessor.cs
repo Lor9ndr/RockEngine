@@ -1,9 +1,8 @@
 ﻿using ImGuiNET;
-
-using RockEngine.Assets;
+using RockEngine.ECS;
 using RockEngine.Editor.ImguiEditor.FieldProcessors.Processors;
-using RockEngine.Engine.ECS;
 using RockEngine.Rendering.Layers;
+using RockEngine.Common.Editor;
 
 using System.Collections;
 using System.Reflection;
@@ -11,6 +10,7 @@ using System.Reflection.Emit;
 using System.Text;
 
 using OpenMath = OpenTK.Mathematics;
+using RockEngine.ECS.Assets;
 
 namespace RockEngine.Editor.ImguiEditor.FieldProcessors
 {

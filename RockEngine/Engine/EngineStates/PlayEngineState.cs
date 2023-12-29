@@ -1,6 +1,6 @@
 ﻿using BulletSharp;
 
-using RockEngine.Engine.ECS;
+using RockEngine.ECS;
 
 namespace RockEngine.Engine.EngineStates
 {
@@ -16,12 +16,12 @@ namespace RockEngine.Engine.EngineStates
                 {
                     if(component is EngineRigidBody rb)
                     {
-                        rb.ForceActivationState(ActivationState.ActiveTag);
+                       /* rb.ForceActivationState(ActivationState.ActiveTag);
                         rb.ForceActivationState(ActivationState.DisableDeactivation);
                         rb.ForceActivationState(ActivationState.ActiveTag);
                         rb.Activate(true);
 
-                        rb.SetMassProps(rb.Mass, new BulletSharp.Math.Vector3(0));
+                        rb.SetMassProps(rb.Mass, new BulletSharp.Math.Vector3(0));*/
                     }
                     component.OnStart();
                 }

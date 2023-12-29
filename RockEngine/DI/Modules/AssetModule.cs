@@ -2,10 +2,10 @@
 
 using OpenTK.Mathematics;
 
-using RockEngine.Assets;
-using RockEngine.Assets.Converters;
-using RockEngine.Engine.ECS.GameObjects;
-using RockEngine.OpenGL.Settings;
+using RockEngine.ECS;
+using RockEngine.ECS.Assets;
+using RockEngine.ECS.Assets.Converters;
+using RockEngine.Rendering.OpenGL.Settings;
 
 namespace RockEngine.DI.Modules
 {

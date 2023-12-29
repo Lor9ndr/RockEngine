@@ -1,8 +1,6 @@
 ﻿using ImGuiNET;
 
-using RockEngine.Rendering;
-using RockEngine.Rendering.Layers;
-using RockEngine.Utils;
+using RockEngine.Common.Utils;
 
 using System.Numerics;
 using System.Runtime.InteropServices;

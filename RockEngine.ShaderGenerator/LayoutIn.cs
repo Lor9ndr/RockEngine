@@ -2,7 +2,7 @@
 
 namespace RockEngine.ShaderGenerator
 {
-    internal class LayoutIn<T> :Variable where T : struct
+    internal sealed class LayoutIn<T> :Variable where T : struct
     {
         public int Location { get;set;}
 
@@ -16,7 +16,7 @@ namespace RockEngine.ShaderGenerator
         }
     }
 
-    internal class LayoutOut<T> : Variable where T : struct
+    internal sealed class LayoutOut<T> : Variable where T : struct
     {
         public int Location { get; set; }
 
@@ -31,7 +31,7 @@ namespace RockEngine.ShaderGenerator
         }
     }
 
-    internal class Out<T> : Variable where T : struct
+    internal sealed class Out<T> : Variable where T : struct
     {
         public override string GetString([CallerMemberName] string fieldName = "")
         {

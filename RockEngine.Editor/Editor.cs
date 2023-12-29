@@ -1,23 +1,22 @@
 ﻿using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using RockEngine.DI;
-using RockEngine.Engine.ECS;
 using RockEngine.Engine.EngineStates;
-using RockEngine.Engine;
-using RockEngine.OpenGL.Shaders;
-using RockEngine.Rendering.Layers;
 using RockEngine.Physics;
 using OpenTK.Graphics.OpenGL4;
 using RockEngine.Editor.Layers;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using RockEngine.Inputs;
-using RockEngine.Utils;
 using RockEngine.Editor.ImguiEditor;
 using System.ComponentModel;
-using RockEngine.Assets;
-using RockEngine.OpenGL.Vertices;
-using BulletSharp;
-using RockEngine.Engine.ECS.GameObjects;
+using RockEngine.ECS;
+using RockEngine.ECS.GameObjects;
+using RockEngine.Rendering.OpenGL.Shaders;
+using RockEngine.ECS.Assets;
+using RockEngine.ECS.Layers;
+using RockEngine.Common;
+using RockEngine.Common.Utils;
+using RockEngine.Common.Vertices;
 
 namespace RockEngine.Editor
 {
@@ -110,11 +109,11 @@ namespace RockEngine.Editor
             var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100, 1, 100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
             floor.AddComponent(
                 Physics.LocalCreateRigidBody(0,
-                    floor.Transform.GetModelMatrix(),
-                    new BoxShape(100)));
+                    floor.Transform.Position,
+                    new BoxCollider(floor.Transform.Position, floor.Transform.Scale * Vertex3D.GetMaxPosition(testMesh.Vertices))));
             scene.Add(floor);
 
-            for(int i = 0; i < 5; i++)
+            for(int i = 0; i < 500; i++)
             {
                 var testTransform = new Transform(new Vector3(i, i, i));
                 var testGameObject = new GameObject(
@@ -125,8 +124,8 @@ namespace RockEngine.Editor
 
                 testGameObject.AddComponent(
                     Physics.LocalCreateRigidBody(1,
-                    testTransform.GetModelMatrix().ClearScale(),
-                    new BoxShape(testTransform.Scale))
+                    testTransform.Position,
+                    new BoxCollider(testTransform.Position , testTransform.Scale * Vertex3D.GetMaxPosition(testMesh.Vertices)))
                     );
                 scene.Add(testGameObject);
             }
@@ -155,16 +154,16 @@ namespace RockEngine.Editor
         {
             if(EditorSettings.DrawCollisions)
             {
-                foreach(var item in Scene.CurrentScene.GetGameObjects())
+               /* foreach(var item in Scene.CurrentScene.GetGameObjects())
                 {
                     var rb = item.GetComponent<EngineRigidBody>();
                     if(rb is not null)
                     {
                         Physics.World.DebugDrawObject(rb.WorldTransform, rb.CollisionShape, Vector3.UnitX);
                     }
-                }
+                }*/
             }
-            Physics.Update(Time.DeltaTime);
+            Physics.Update((float)args.Time);
             EngineStateManager.UpdateState();
         }
 

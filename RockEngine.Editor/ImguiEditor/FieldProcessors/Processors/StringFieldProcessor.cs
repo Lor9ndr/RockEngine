@@ -1,5 +1,7 @@
 ﻿using ImGuiNET;
 
+using RockEngine.Common.Editor;
+
 using System.Reflection;
 
 namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
@@ -11,10 +13,11 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType == typeof(string);
         }
 
-        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
             string str = (string)value;
-            if(ImGui.InputText(field.Name, ref str, 999))
+            var alias = FieldProcessor.CreateAlias(value, field, attribute);
+            if(ImGui.InputText(alias, ref str, 999))
             {
                 value = str;
             }

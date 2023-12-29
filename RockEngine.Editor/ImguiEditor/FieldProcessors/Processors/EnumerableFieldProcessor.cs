@@ -1,5 +1,7 @@
 ﻿using ImGuiNET;
 
+using RockEngine.Common.Editor;
+
 using System.Collections;
 using System.Reflection;
 
@@ -12,7 +14,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType.GetInterface(nameof(IEnumerable)) != null && fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() != typeof(Dictionary<,>);
         }
 
-        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
             if(value is null)
             {

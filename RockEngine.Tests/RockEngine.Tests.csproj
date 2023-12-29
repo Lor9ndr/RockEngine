@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RockEngine.Common\RockEngine.Common.csproj" />
     <ProjectReference Include="..\RockEngine\RockEngine.csproj" />
   </ItemGroup>
 

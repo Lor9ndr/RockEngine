@@ -1,5 +1,7 @@
 ﻿using ImGuiNET;
 
+using RockEngine.Common.Editor;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +18,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType.IsGenericType &&  fieldType.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
         }
 
-        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
             var kvalue = (KeyValuePair<string,object>)value;
             var kvalueItem = kvalue.Value;

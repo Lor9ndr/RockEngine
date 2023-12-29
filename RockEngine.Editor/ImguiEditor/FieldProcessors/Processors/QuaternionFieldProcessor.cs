@@ -2,11 +2,13 @@
 
 using OpenTK.Mathematics;
 
+using RockEngine.Common.Editor;
+
 using System.Reflection;
 
 namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
 {
-    internal class QuaternionFieldProcessor : IUIFieldProcessor
+    internal sealed class QuaternionFieldProcessor : IUIFieldProcessor
     {
         public bool CanProcess(Type fieldType)
         {

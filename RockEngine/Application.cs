@@ -1,8 +1,9 @@
 ﻿using OpenTK.Windowing.Common;
 
 using RockEngine.DI;
-using RockEngine.Rendering.Layers;
-using RockEngine.Utils;
+using RockEngine.Common;
+using RockEngine.Common.Utils;
+using RockEngine.ECS.Layers;
 
 namespace RockEngine
 {

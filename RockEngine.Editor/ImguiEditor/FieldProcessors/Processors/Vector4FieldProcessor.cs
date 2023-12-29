@@ -2,6 +2,8 @@
 
 using OpenTK.Mathematics;
 
+using RockEngine.Common.Editor;
+
 using System.Reflection;
 
 namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
@@ -10,7 +12,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
     {
         public bool CanProcess(Type fieldType) => fieldType == typeof(Vector4);
 
-        public void Process(ref object value, FieldInfo field, UIAttribute? attribute = null)
+        public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
             var alias = FieldProcessor.CreateAlias(value, field, attribute);
 

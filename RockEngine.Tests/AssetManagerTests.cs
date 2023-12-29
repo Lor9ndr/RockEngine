@@ -1,8 +1,8 @@
-﻿using RockEngine.Assets;
-using RockEngine.OpenGL.Vertices;
-using RockEngine.OpenGL.Textures;
-using RockEngine.OpenGL.Settings;
-using RockEngine.OpenGL.Shaders;
+﻿using RockEngine.ECS;
+using RockEngine.Common.Vertices;
+using RockEngine.Rendering.OpenGL.Settings;
+using RockEngine.Rendering.OpenGL.Shaders;
+using RockEngine.ECS.Assets;
 
 namespace RockEngine.Tests
 {
@@ -93,7 +93,7 @@ namespace RockEngine.Tests
         {
             // Arrange
             var filePath = Path.Combine(TestAssetsPath, "Material.asset");
-            var assetToSave = new Material( ShaderProgram.GetOrCreate("", new VertexShader())TestAssetsPath, "Material", Guid.NewGuid());
+            var assetToSave = new Material(ShaderProgram.GetOrCreate("", new VertexShader())TestAssetsPath, "Material", Guid.NewGuid());
             AssetManager.SaveAssetToFile(filePath, assetToSave);
 
             // Act

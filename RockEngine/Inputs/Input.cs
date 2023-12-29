@@ -1,7 +1,7 @@
 ﻿using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using RockEngine;
-using RockEngine.Utils;
+using RockEngine.Common;
+using RockEngine.Common.Utils;
 
 namespace RockEngine.Inputs
 {

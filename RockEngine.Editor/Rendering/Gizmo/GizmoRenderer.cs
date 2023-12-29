@@ -1,21 +1,18 @@
-﻿using Ninject.Activation;
-
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RockEngine.Assets;
+
+using RockEngine.Common;
+using RockEngine.Common.Utils;
+using RockEngine.Common.Vertices;
+using RockEngine.ECS;
+using RockEngine.ECS.GameObjects;
 using RockEngine.Editor.GameObjects;
 using RockEngine.Editor.Layers;
-using RockEngine.Engine.ECS;
-using RockEngine.Engine.ECS.GameObjects;
 using RockEngine.Inputs;
-using RockEngine.OpenGL;
-using RockEngine.OpenGL.Shaders;
-using RockEngine.OpenGL.Vertices;
-using RockEngine.Rendering;
+using RockEngine.Renderers;
 using RockEngine.Rendering.Layers;
-using RockEngine.Rendering.Renderers;
-using RockEngine.Utils;
+using RockEngine.Rendering.OpenGL.Shaders;
 
 namespace RockEngine.Editor.Rendering.Gizmo
 {

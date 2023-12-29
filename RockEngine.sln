@@ -14,7 +14,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Editor", "RockEn
 		{002C6A0C-F76D-4891-8154-F9996CE74AAE} = {002C6A0C-F76D-4891-8154-F9996CE74AAE}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RockEngine.ShaderGenerator", "RockEngine.ShaderGenerator\RockEngine.ShaderGenerator.csproj", "{093F3888-0E19-41A8-AD73-04B8764B20EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.ShaderGenerator", "RockEngine.ShaderGenerator\RockEngine.ShaderGenerator.csproj", "{093F3888-0E19-41A8-AD73-04B8764B20EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Physics", "RockEngine.Physics\RockEngine.Physics.csproj", "{95B9E609-4792-4D48-B735-D04642583BAE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.ECS", "RockEngine.ECS\RockEngine.ECS.csproj", "{DD26BE0F-FCAD-40FD-B89D-FDEFE38C1FF6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Rendering", "RockEngine.Rendering\RockEngine.Rendering.csproj", "{E8F52262-50AB-472A-9474-23CCE6D682B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockEngine.Common", "RockEngine.Common\RockEngine.Common.csproj", "{FECCA7D5-8D47-4031-853E-C23EE8A30678}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -42,6 +50,22 @@ Global
 		{093F3888-0E19-41A8-AD73-04B8764B20EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{093F3888-0E19-41A8-AD73-04B8764B20EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{093F3888-0E19-41A8-AD73-04B8764B20EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95B9E609-4792-4D48-B735-D04642583BAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95B9E609-4792-4D48-B735-D04642583BAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95B9E609-4792-4D48-B735-D04642583BAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95B9E609-4792-4D48-B735-D04642583BAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD26BE0F-FCAD-40FD-B89D-FDEFE38C1FF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD26BE0F-FCAD-40FD-B89D-FDEFE38C1FF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD26BE0F-FCAD-40FD-B89D-FDEFE38C1FF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD26BE0F-FCAD-40FD-B89D-FDEFE38C1FF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8F52262-50AB-472A-9474-23CCE6D682B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8F52262-50AB-472A-9474-23CCE6D682B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8F52262-50AB-472A-9474-23CCE6D682B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8F52262-50AB-472A-9474-23CCE6D682B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FECCA7D5-8D47-4031-853E-C23EE8A30678}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FECCA7D5-8D47-4031-853E-C23EE8A30678}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FECCA7D5-8D47-4031-853E-C23EE8A30678}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FECCA7D5-8D47-4031-853E-C23EE8A30678}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

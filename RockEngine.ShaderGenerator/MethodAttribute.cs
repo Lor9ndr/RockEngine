@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace RockEngine.ShaderGenerator
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class MethodAttribute : Attribute
+    internal sealed class MethodAttribute : Attribute
     {
     }
 }

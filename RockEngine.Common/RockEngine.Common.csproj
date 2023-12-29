@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ImGui.NET" Version="1.89.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="OpenTK.Core">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Graphics">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Graphics.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Mathematics">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.Common">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Windowing.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.Desktop">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Windowing.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenTK.Windowing.GraphicsLibraryFramework">
+      <HintPath>..\RockEngine\runtimes\OpenTK.Windowing.GraphicsLibraryFramework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

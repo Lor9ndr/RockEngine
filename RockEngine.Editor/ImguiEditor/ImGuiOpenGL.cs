@@ -5,8 +5,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using OpenTK.Graphics.OpenGL4;
-using RockEngine.OpenGL.Textures;
-using RockEngine.OpenGL.Buffers;
+using RockEngine.Rendering.OpenGL.Textures;
+using RockEngine.Rendering.OpenGL.Buffers;
 
 namespace RockEngine.Editor.ImguiEditor
 {
@@ -219,7 +219,7 @@ void main()
             io.Fonts.GetTexDataAsRGBA32(out nint pixels, out int width, out int height, out _);
 
             fontTexture?.Dispose();
-            var settings = new OpenGL.Settings.TextureSettings()
+            var settings = new RockEngine.Rendering.OpenGL.Settings.TextureSettings()
             {
                 TextureTarget = TextureTarget.Texture2D,
                 SizedInternalFormat = SizedInternalFormat.Rgba8,
