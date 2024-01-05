@@ -150,5 +150,16 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public override bool IsBinded()
            => GL.GetInteger(GetPName.FramebufferBinding) == Handle;
+
+        internal void ReadPixel(int x, int y, ref PixelInfo[ ] info)
+        {
+            BindAsReadBuffer();
+            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+
+            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float,  info);
+
+            GL.ReadBuffer(ReadBufferMode.None);
+            UnbindAsReadBuffer();
+        }
     }
 }

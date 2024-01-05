@@ -3,6 +3,7 @@ using RockEngine.Common.Vertices;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Shaders;
 using RockEngine.ECS.Assets;
+using RockEngine.Rendering.OpenGL.Textures;
 
 namespace RockEngine.Tests
 {

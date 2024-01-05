@@ -17,6 +17,7 @@ using RockEngine.ECS.Layers;
 using RockEngine.Common;
 using RockEngine.Common.Utils;
 using RockEngine.Common.Vertices;
+using RockEngine.Physics.Colliders;
 
 namespace RockEngine.Editor
 {
@@ -90,6 +91,7 @@ namespace RockEngine.Editor
 
         protected override void Load()
         {
+            MainWindow.VSync = VSyncMode.On;
             Physics = IoC.Get<PhysicsManager>();
 
             DefaultShader = ShaderProgram.GetOrCreate("TestShaderVert", new VertexShader("Resources/Shaders/TestVertex.vert"), new FragmentShader("Resources/Shaders/TestFragment.frag"));
@@ -103,32 +105,43 @@ namespace RockEngine.Editor
                  Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"), scene);
           
 
-            var material = AssetManager.CreateMaterialAsset(DefaultShader,PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
+            Material material;
             var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
 
             var floor = new GameObject("Floor", new Transform(new Vector3(0, -50, 0), new Vector3(0), new Vector3(100, 1, 100)), new MeshComponent(testMesh), new MaterialComponent(AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")));
             floor.AddComponent(
                 Physics.LocalCreateRigidBody(0,
                     floor.Transform.Position,
-                    new BoxCollider(floor.Transform.Position, floor.Transform.Scale * Vertex3D.GetMaxPosition(testMesh.Vertices))));
+                    new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices)*floor.Transform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * floor.Transform.Scale)));
             scene.Add(floor);
 
-            for(int i = 0; i < 500; i++)
-            {
-                var testTransform = new Transform(new Vector3(i, i, i));
-                var testGameObject = new GameObject(
-                    "TestGameObject",
-                    testTransform,
-                    new MeshComponent(testMesh),
-                    new MaterialComponent(material));
+            Random rd = new Random();
 
-                testGameObject.AddComponent(
-                    Physics.LocalCreateRigidBody(1,
-                    testTransform.Position,
-                    new BoxCollider(testTransform.Position , testTransform.Scale * Vertex3D.GetMaxPosition(testMesh.Vertices)))
-                    );
-                scene.Add(testGameObject);
+            for(int i = 0; i > -5; i--)
+            {
+                for(int j = 0; j > -5; j--)
+                {
+                    for(int k = 0; k > -5; k--)
+                    {
+                        material = AssetManager.CreateMaterialAsset(DefaultShader,PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
+                        material.ShaderData["material.albedo"] = new Vector3(-i,-j,-k);
+                        var testTransform = new Transform(new Vector3(i, j, k));
+                        var testGameObject = new GameObject(
+                            "TestGameObject",
+                            testTransform,
+                            new MeshComponent(testMesh),
+                            new MaterialComponent(material));
+
+                        testGameObject.AddComponent(
+                            Physics.LocalCreateRigidBody(rd.Next(100,100),
+                            testTransform.Position,
+                            new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices) * testTransform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * testTransform.Scale))
+                            );
+                        scene.Add(testGameObject);
+                    }
+                }
             }
+
             scene.Add(new GameObject("MainCamera", new Camera(MainWindow.Size.X / (float)MainWindow.Size.Y)));
 
             Scene.MainCamera!.GetComponent<Camera>()!.LookAt(new Vector3(25), new Vector3(0), Vector3.UnitY);

@@ -1,5 +1,8 @@
 ﻿using OpenTK.Mathematics;
 
+using RockEngine.Common.Editor;
+using RockEngine.Physics.Colliders;
+
 namespace RockEngine.Physics
 {
     public class RigidBody
@@ -7,14 +10,62 @@ namespace RockEngine.Physics
         public Vector3 Position;
         public Quaternion Rotation;
         public Vector3 Velocity;
-        public float Mass;
-        public Collider? Collider;
-        public Vector3 TotalForce;
+        public Vector3 CenterOfMass;
         public Vector3 AngularVelocity;
-        public float FrictionCoefficient = 0.3f;
+        public float FrictionCoefficient = 0.99f;
+        public MotionState MotionState;
 
-        public bool IsStatic => Mass == 0.0f;
-        public bool IsMovable => !IsStatic;
+        private Vector3 _totalForce;
+        internal Vector3 InverseInertiaTensor;
+        private Collider? _collider;
+        private Vector3 _totalTorque;
+        private float _inverseMass;
+        [UI]
+        private float _mass;
+        private bool _isStatic;
+
+        public Collider? Collider
+        {
+            get => _collider;
+            set
+            {
+                _collider = value;
+                CalculateInertiaTensor();
+            }
+        }
+
+        public float InverseMass => _inverseMass;
+
+        public bool IsStatic => _isStatic;
+        public bool IsMovable =>  !_isStatic;
+
+        public float Mass
+        {
+            get => _mass;
+            set
+            {
+                _mass = value;
+                UpdateFields();
+            }
+        }
+
+        private void UpdateFields()
+        {
+            bool isStatic = Mass == 0;
+            if(isStatic)
+            {
+                _inverseMass = 0;
+            }
+            else
+            {
+                _inverseMass = 1 / _mass;
+            }
+            _isStatic = isStatic;
+            CalculateInertiaTensor();
+        }
+
+        private const float sleepThreshold = 0.01f; // Пороговое значение скорости для сна
+        private const float wakeThreshold = 0.1f; // Пороговое значение скорости для пробуждения
 
         public RigidBody(Vector3 position, Vector3 velocity, float mass)
         {
@@ -22,64 +73,118 @@ namespace RockEngine.Physics
             Velocity = velocity;
             Mass = mass;
             Rotation = Quaternion.Identity;
+            MotionState = new MotionState();
         }
 
         public void ApplyForce(Vector3 force)
         {
-            TotalForce += force;
+            ApplyForce(force, CenterOfMass);
         }
 
-        public void ApplyTorque(Vector3 torque)
+        public void ApplyTorque(Vector3 force)
         {
-            AngularVelocity += torque / Mass;
+            if(IsStatic)
+            {
+                return; // No need to apply torque to a static body
+            }
+            _totalTorque += force;
+        }
+
+        public void ApplyImpulse(Vector3 impulse)
+        {
+            ApplyImpulse(impulse, CenterOfMass);
+        }
+
+        public void ApplyForce(Vector3 force, Vector3 point)
+        {
+            if(IsStatic)
+            {
+                return; // No need to apply force to a static body
+            }
+            _totalForce += force;
+            // Calculate the torque and add it to the total torque
+            Vector3 torque = Vector3.Cross(point, force);
+            _totalTorque += torque;
+        }
+
+        public void ApplyImpulse(Vector3 impulse, Vector3 point)
+        {
+            if(IsStatic)
+            {
+                return; // No need to apply impulse to a static body
+            }
+
+            // Apply the impulse to the velocity
+            _totalForce += impulse * InverseMass;
+
+            // Calculate the angular impulse and apply it to the angular velocity
+            Vector3 angularImpulse = Vector3.Cross(point, impulse);
+            AngularVelocity += InverseInertiaTensor * angularImpulse;
+        }
+
+        private void CalculateInertiaTensor()
+        {
+            if(IsStatic)
+            {
+                return;
+            }
+            if(Collider is BoxCollider boxCollider)
+            {
+                // Assuming the object is a box with dimensions x, y, z
+                float x = boxCollider.Extents.X;
+                float y = boxCollider.Extents.Y;
+                float z = boxCollider.Extents.Z;
+
+                // Calculate the inertia tensor for a box
+                float ix = (1f / 12f) * Mass * (y * y + z * z);
+                float iy = (1f / 12f) * Mass * (x * x + z * z);
+                float iz = (1f / 12f) * Mass * (x * x + y * y);
+
+                // The inverse inertia tensor is the inverse of the inertia tensor
+                InverseInertiaTensor = new Vector3(1 / ix, 1 / iy, 1 / iz);
+            }
+            else if(Collider is SphereCollider sphereCollider)
+            {
+                // Assuming the object is a sphere with radius r
+                float r = sphereCollider.Radius;
+
+                // Calculate the inertia tensor for a sphere
+                float i = (2f / 5f) * Mass * r * r;
+
+                // The inverse inertia tensor is the inverse of the inertia tensor
+                InverseInertiaTensor = new Vector3(1 / i, 1 / i, 1 / i);
+            }
         }
 
         public void Update(float deltaTime, Vector3 gravity)
         {
-            if(Mass > 0)
+            if(!IsMovable)
             {
-                // Apply gravity force
-                ApplyForce(gravity * Mass);
-
-                // Calculate the normal force (assuming the object is on a flat surface)
-                Vector3 normalForce = -gravity * Mass;
-
-                // Calculate the maximum friction force based on the coefficient of friction
-                float maxFrictionForceMagnitude = FrictionCoefficient * normalForce.Length;
-
-                // Calculate the friction force direction
-                Vector3 frictionDirection = Velocity.Length == 0 ? Velocity : -Velocity.Normalized(); // Opposes the direction of motion
-
-                // Calculate the friction force magnitude
-                float frictionForceMagnitude = Math.Min(maxFrictionForceMagnitude, TotalForce.Length); // Limit the friction force
-
-                // Calculate the friction force vector
-                Vector3 frictionForce = frictionDirection * frictionForceMagnitude;
-
-                // Apply the friction force
-                ApplyForce(frictionForce);
-
-                // Update the velocity based on the total force applied
-                Vector3 acceleration = TotalForce / Mass;
-                Velocity += acceleration * deltaTime;
-             
-                // Update the position based on the new velocity
-                Position += Velocity * deltaTime;
-
-                // Calculate the angular acceleration based on the torque applied
-                Vector3 angularAcceleration = AngularVelocity / deltaTime;
-
-                // Update the angular velocity based on the angular acceleration
-                AngularVelocity += angularAcceleration * deltaTime;
-
-                // Calculate the rotation quaternion based on the angular velocity
-                Quaternion deltaRotation = new Quaternion(AngularVelocity * deltaTime, 1); // Assuming the w component is 0 for angular velocity
-                Rotation = Quaternion.Normalize(Rotation * deltaRotation); // Apply the new rotation after the previous rotation
-
-                // Reset the total force for the next simulation step
-                TotalForce = Vector3.Zero;
-                
+                return;
             }
+
+            // Apply gravity
+            _totalForce += Mass * gravity;
+
+            // Update linear velocity
+            Velocity += _totalForce * InverseMass * deltaTime;
+            Velocity *= FrictionCoefficient;
+            // Update position
+            Position += Velocity * deltaTime;
+
+            // Update angular velocity
+            AngularVelocity += InverseInertiaTensor * _totalTorque * deltaTime;
+            AngularVelocity *= FrictionCoefficient;
+
+            // Update rotation
+            Quaternion angularVelocityQuaternion = new Quaternion(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z, 0);
+            Quaternion deltaRotation = angularVelocityQuaternion * Rotation *  (deltaTime * 0.5f);
+            Rotation += deltaRotation;
+            Rotation.Normalize();
+
+            // Reset total force and torque for the next frame
+            _totalForce = Vector3.Zero;
+            _totalTorque = Vector3.Zero;
         }
     }
 }

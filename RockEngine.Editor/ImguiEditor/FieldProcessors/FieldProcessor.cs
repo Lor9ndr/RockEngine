@@ -45,7 +45,8 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             { typeof(Dictionary<,>), new DictionaryFieldProcessor() },
             { typeof(Dictionary<string,object>), new DictionaryFieldProcessor() },
             { typeof(Tuple), new TupleFieldProcessor() },
-            { typeof(string), new StringFieldProcessor() }
+            { typeof(string), new StringFieldProcessor() },
+            { typeof(bool), new BoolFieldProcessor() }
         };
 
         public static void ProcessField(ref object obj, string alias = UIAttribute.UNKNOWN)
@@ -92,6 +93,8 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                 }
                 if(!isProcessed)
                 {
+                    ImGui.Text(fieldInfo.Name);
+                    ImGui.Separator();
                     ProcessField(ref value);
                     fieldSetter(obj, value);
                 }

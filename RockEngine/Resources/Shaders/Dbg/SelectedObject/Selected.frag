@@ -9,5 +9,5 @@ uniform vec3 outlineColor = vec3(0.2, 1, 1);
 
 void main()
 {
-    FragColor = vec4(outlineColor, 1);
+    FragColor = vec4(outlineColor, 0.6f);
 }

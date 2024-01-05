@@ -114,20 +114,27 @@ namespace RockEngine.Common.Vertices
             return indices;
         }
 
-        public static Vector3 GetMaxPosition(Vertex3D[ ] vertices)
+        public static Vector3 GetMaxPosition(Vertex3D[] vertices)
         {
-            float x = float.MinValue;
-            float y = float.MinValue;
-            float z = float.MinValue;
+            Vector3 vector = new Vector3(float.MinValue);
 
             foreach(var vertex in vertices)
             {
-                x = MathF.Max(x, vertex.Position.X);
-                y = MathF.Max(y, vertex.Position.Y);
-                z = MathF.Max(z, vertex.Position.Z);
+                vector = Vector3.ComponentMax(vertex.Position, vector);
             }
 
-            return new Vector3(x, y, z);
+            return vector;
+        }
+        public static Vector3 GetMinPosition(Vertex3D[] vertices)
+        {
+            Vector3 vector = new Vector3(float.MaxValue);
+
+            foreach(var vertex in vertices)
+            {
+                vector = Vector3.ComponentMin(vertex.Position, vector);
+            }
+
+            return vector;
         }
     }
 }

@@ -74,6 +74,11 @@ namespace RockEngine.Rendering.OpenGL
             _fbo.ReadPixel(x, y, ref info);
         }
 
+        public void ReadPixel(int x, int y, ref PixelInfo[] info)
+        {
+            _fbo.ReadPixel(x, y, ref info);
+        }
+
         public void CheckSize(Vector2i size)
         {
             if(size != Size)

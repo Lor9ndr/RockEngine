@@ -1,13 +1,14 @@
 ﻿using OpenTK.Mathematics;
 
-using System;
-
 namespace RockEngine.Physics
 {
     public class PhysicsWorld
     {
+        private const float PERCENT = 0.2f;
+        private const float SLOP = 0.01f;
+
         public List<RigidBody> RigidBodies { get; set; }
-        public Vector3 Gravity { get; set; } = new Vector3(0, 0f, 0);
+        public Vector3 Gravity { get; set; } = new Vector3(0, -9.8f, 0); // Updated gravity value
 
         public PhysicsWorld()
         {
@@ -21,15 +22,11 @@ namespace RockEngine.Physics
 
         public void Simulate(float deltaTime)
         {
-            const float penetrationSlop = 0.01f;
+            int rigidBodyCount = RigidBodies.Count;
             // Check for collisions and resolve them
-/*            for(int i = 0; i < RigidBodies.Count; i++)
+            for(int i = 0; i < rigidBodyCount; i++)
             {
-
-            }*/
-            Parallel.For(0, RigidBodies.Count, i =>
-            {
-                for(int j = i + 1; j < RigidBodies.Count; j++)
+                for(int j = i + 1; j < rigidBodyCount; j++)
                 {
                     RigidBody bodyA = RigidBodies[i];
                     RigidBody bodyB = RigidBodies[j];
@@ -37,81 +34,98 @@ namespace RockEngine.Physics
                     {
                         continue;
                     }
+
                     if(bodyA.IsStatic && bodyB.IsStatic)
                     {
-                        // Both bodies are static, skip collision resolution
-                        continue;
-                    }
-                    if(bodyA.IsStatic && bodyB.IsStatic)
-                    {
-                        // Both bodies are static, skip collision resolution
                         continue;
                     }
 
                     if(bodyA.IsStatic || bodyB.IsStatic)
                     {
-                        // One of the bodies is static, resolve collision with static body
                         RigidBody movableBody = bodyA.IsMovable ? bodyA : bodyB;
                         RigidBody staticBody = bodyA.IsStatic ? bodyA : bodyB;
 
-                        ResolveStaticVsMovable(penetrationSlop, movableBody, staticBody);
-                        continue;
+                        ResolveStaticVsMovable(movableBody, staticBody);
                     }
-
-                    ResolveMovableVsMovableObjects(penetrationSlop, bodyA, bodyB);
+                    else
+                    {
+                        ResolveMovableVsMovableObjects(bodyA, bodyB);
+                    }
                 }
-            });
-            /*            for(int i = 0; i < RigidBodies.Count; i++)
-                        {
-
-                        }*/
-
-            // Update the positions of the rigid bodies
-            Parallel.For(0, RigidBodies.Count, i =>
-            {
                 RigidBodies[i].Update(deltaTime, Gravity);
-            });
-        }
-
-        private static void ResolveStaticVsMovable(float penetrationSlop, RigidBody movableBody, RigidBody staticBody)
-        {
-            if(movableBody.Collider.CheckCollision(staticBody.Collider, out Vector3 collisionPoint, out Vector3 normal))
-            {
-                Vector3 separationVector = normal * penetrationSlop;
-                movableBody.Position += separationVector;
-                movableBody.Velocity = movableBody.Velocity.Reflect(normal);
-                float velocityAlongNormal = Vector3.Dot(movableBody.Velocity, normal);
-                float impulseMagnitude = velocityAlongNormal * movableBody.Mass;
-                Vector3 impulse = normal * impulseMagnitude;
-                movableBody.ApplyForce(impulse);
             }
         }
 
-        private static void ResolveMovableVsMovableObjects(float penetrationSlop, RigidBody bodyA, RigidBody bodyB)
+        private static void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody)
         {
-            if(bodyA.Collider.CheckCollision(bodyB.Collider, out Vector3 collisionPoint, out Vector3 normal))
+            if(movableBody.Collider.CheckCollision(staticBody.Collider, out CollisionResult collisionResult))
             {
-                // Calculate separation vector
-                Vector3 separationVector = normal * penetrationSlop;
+                Vector3 relativeVelocity = movableBody.Velocity;
+                float velocityAlongNormal = Vector3.Dot(relativeVelocity, collisionResult.Normal);
 
-                // Move bodies away from each other
-                bodyA.Position += separationVector / 2;
-                bodyB.Position -= separationVector / 2;
+                // Calculate impulse scalar
+                float j = -(1 + staticBody.Collider.Restitution) * velocityAlongNormal / movableBody.InverseMass;
+                Vector3 impulse = j * collisionResult.Normal;
 
-                // Reflect velocity vectors
-                bodyA.Velocity = bodyA.Velocity.Reflect(normal);
-                bodyB.Velocity = bodyB.Velocity.Reflect(normal);
+                // Apply impulse
+                movableBody.Velocity += impulse * movableBody.InverseMass;
 
-                // Calculate impulses
-                float velocityAlongNormalA = Vector3.Dot(bodyA.Velocity, normal);
-                float impulseMagnitudeA = velocityAlongNormalA * bodyA.Mass;
-                Vector3 impulseA = normal * impulseMagnitudeA;
-                bodyA.ApplyForce(impulseA);
+                // Position correction
+                float penetrationDepth = collisionResult.PenetrationDepth - SLOP;
+                Vector3 correction = Math.Max(penetrationDepth, 0.0f) / (movableBody.InverseMass) * collisionResult.Normal;
+                movableBody.Position += correction * movableBody.InverseMass;
 
-                float velocityAlongNormalB = Vector3.Dot(bodyB.Velocity, normal);
-                float impulseMagnitudeB = velocityAlongNormalB * bodyB.Mass;
-                Vector3 impulseB = normal * impulseMagnitudeB;
-                bodyB.ApplyForce(impulseB);
+                // If we have rotation
+                //if(movableBody.HasRotation)
+                //{
+                    // Calculate rotational impulse using cross product
+                    Vector3 r = collisionResult.ContactPoint - movableBody.CenterOfMass;
+                    Vector3 impulsePerpendicular = Vector3.Cross(r, impulse);
+                    Vector3 angularImpulse = impulsePerpendicular / movableBody.InverseInertiaTensor;
+
+                    // Apply rotational impulse
+                    movableBody.ApplyTorque(angularImpulse);
+                //}
+            }
+        }
+
+        private static void ResolveMovableVsMovableObjects(RigidBody bodyA, RigidBody bodyB)
+        {
+            if(bodyA.Collider.CheckCollision(bodyB.Collider, out CollisionResult collisionResult))
+            {
+                Vector3 relativeVelocity = bodyA.Velocity - bodyB.Velocity;
+                float velocityAlongNormal = Vector3.Dot(relativeVelocity, collisionResult.Normal);
+
+                // Calculate impulse scalar
+                float j = -(1 + Math.Min(bodyA.Collider.Restitution, bodyB.Collider.Restitution)) * velocityAlongNormal;
+                j /= (bodyA.InverseMass + bodyB.InverseMass);
+                Vector3 impulse = j * collisionResult.Normal;
+
+                // Apply impulse
+                bodyA.Velocity += impulse * bodyA.InverseMass;
+                bodyB.Velocity -= impulse * bodyA.InverseMass;
+
+                // Position correction
+                float penetrationDepth = collisionResult.PenetrationDepth - SLOP;
+                Vector3 correction = Math.Max(penetrationDepth, 0.0f) / (bodyA.InverseMass + bodyB.InverseMass) * collisionResult.Normal;
+                bodyA.Position += correction * bodyA.InverseMass;
+                bodyB.Position -= correction * bodyB.InverseMass;
+
+                // If we have rotation
+                //if(bodyA.HasRotation || bodyB.HasRotation)
+                //{
+                    // Calculate rotational impulse using cross product
+                    Vector3 rA = collisionResult.ContactPoint - bodyA.CenterOfMass;
+                    Vector3 rB = collisionResult.ContactPoint - bodyB.CenterOfMass;
+                    Vector3 impulsePerpendicularA = Vector3.Cross(rA, impulse);
+                    Vector3 impulsePerpendicularB = Vector3.Cross(rB, -impulse);
+                    Vector3 angularImpulseA = impulsePerpendicularA / bodyA.InverseInertiaTensor;
+                    Vector3 angularImpulseB = impulsePerpendicularB / bodyB.InverseInertiaTensor;
+
+                    // Apply rotational impulse
+                    //bodyA.ApplyTorque(angularImpulseA);
+                    //bodyB.ApplyTorque(angularImpulseB);
+                //}
             }
         }
     }
