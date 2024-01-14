@@ -36,6 +36,11 @@ namespace RockEngine.ECS
             }
         }
 
+        public void Render()
+        {
+            Mesh?.Render();
+        }
+
         public void OnUpdate()
         {
         }
@@ -49,14 +54,11 @@ namespace RockEngine.ECS
             Mesh?.Dispose();
         }
 
-        public void Render()
-        {
-            Mesh?.Render();
-        }
+
 
         public dynamic GetState()
         {
-            return new 
+            return new
             {
                 Mesh = Mesh
             };

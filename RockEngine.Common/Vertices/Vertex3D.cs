@@ -1,6 +1,5 @@
 ﻿using OpenTK.Mathematics;
 
-using System;
 using System.Runtime.InteropServices;
 
 namespace RockEngine.Common.Vertices
@@ -114,7 +113,7 @@ namespace RockEngine.Common.Vertices
             return indices;
         }
 
-        public static Vector3 GetMaxPosition(Vertex3D[] vertices)
+        public static Vector3 GetMaxPosition(Vertex3D[ ] vertices)
         {
             Vector3 vector = new Vector3(float.MinValue);
 
@@ -125,7 +124,7 @@ namespace RockEngine.Common.Vertices
 
             return vector;
         }
-        public static Vector3 GetMinPosition(Vertex3D[] vertices)
+        public static Vector3 GetMinPosition(Vertex3D[ ] vertices)
         {
             Vector3 vector = new Vector3(float.MaxValue);
 

@@ -1,6 +1,4 @@
-﻿using BulletSharp;
-
-using RockEngine.ECS;
+﻿using RockEngine.ECS;
 
 namespace RockEngine.Engine.EngineStates
 {
@@ -10,18 +8,18 @@ namespace RockEngine.Engine.EngineStates
 
         public override void OnEnterState()
         {
-            foreach (var item in Scene.CurrentScene.GetGameObjects())
+            foreach(var item in Scene.CurrentScene.GetGameObjects())
             {
                 foreach(var component in item.GetComponents())
                 {
                     if(component is EngineRigidBody rb)
                     {
-                       /* rb.ForceActivationState(ActivationState.ActiveTag);
-                        rb.ForceActivationState(ActivationState.DisableDeactivation);
-                        rb.ForceActivationState(ActivationState.ActiveTag);
-                        rb.Activate(true);
+                        /* rb.ForceActivationState(ActivationState.ActiveTag);
+                         rb.ForceActivationState(ActivationState.DisableDeactivation);
+                         rb.ForceActivationState(ActivationState.ActiveTag);
+                         rb.Activate(true);
 
-                        rb.SetMassProps(rb.Mass, new BulletSharp.Math.Vector3(0));*/
+                         rb.SetMassProps(rb.Mass, new BulletSharp.Math.Vector3(0));*/
                     }
                     component.OnStart();
                 }
@@ -30,9 +28,9 @@ namespace RockEngine.Engine.EngineStates
 
         public override void OnExitState()
         {
-            foreach (var go in Scene.CurrentScene.GetGameObjects())
+            foreach(var go in Scene.CurrentScene.GetGameObjects())
             {
-                foreach (var component in go.GetComponents())
+                foreach(var component in go.GetComponents())
                 {
                     component.OnDestroy();
                 }
@@ -41,7 +39,7 @@ namespace RockEngine.Engine.EngineStates
 
         public override void OnUpdateState()
         {
-            foreach (var item in Scene.CurrentScene.GetGameObjects())
+            foreach(var item in Scene.CurrentScene.GetGameObjects())
             {
                 item.Update();
             }

@@ -1,31 +1,36 @@
 ﻿
-using OpenMath = OpenTK.Mathematics;
-using System.Numerics;
-using ImGuiNET;
-using OpenTK.Graphics.OpenGL4;
 using FontAwesome.Constants;
+
+using ImGuiNET;
 //using ImGuizmoNET;
 using NativeFileDialogSharp;
-using RockEngine.Inputs;
-using RockEngine.Engine.EngineStates;
+
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RockEngine.Editor.ImguiEditor;
-using RockEngine.Editor.Layers;
-using RockEngine.Physics;
-using RockEngine.Editor;
-using RockEngine.ECS.GameObjects;
-using RockEngine.ECS;
+
 using RockEngine.Common;
 using RockEngine.Common.Utils;
-using RockEngine.ECS.Layers;
+using RockEngine.ECS;
 using RockEngine.ECS.Assets;
+using RockEngine.ECS.GameObjects;
+using RockEngine.ECS.Layers;
+using RockEngine.Editor;
+using RockEngine.Editor.ImguiEditor;
+using RockEngine.Editor.Layers;
+using RockEngine.Engine.EngineStates;
+using RockEngine.Inputs;
+using RockEngine.Physics;
+
+using System.Numerics;
+
+using OpenMath = OpenTK.Mathematics;
 
 namespace RockEngine.Rendering.Layers
 {
     public partial class ImGuiRenderer : IDisposable
     {
-        public static bool IsMouseOnEditorScreen { get; private set;}
-        public static Vector2 EditorScreenMousePos { get; private set;}
+        public static bool IsMouseOnEditorScreen { get; private set; }
+        public static Vector2 EditorScreenMousePos { get; private set; }
 
         private readonly ImGuiOpenGL _controller;
 
@@ -37,7 +42,7 @@ namespace RockEngine.Rendering.Layers
         public GameObject? SelectedGameObject = null;
         private int _currentFontIndex;
 
-        private readonly string[] _fontsPaths =
+        private readonly string[ ] _fontsPaths =
         [
             "Resources\\Fonts\\Roboto-Regular.ttf",
             "Resources\\Fonts\\InclusiveSans-Regular.ttf"
@@ -68,11 +73,12 @@ namespace RockEngine.Rendering.Layers
             _gameLayer = app.Layers.GetLayer<DefaultGameLayer>()!;
             _editorScreen = _editorLayer.Screen;
             _gameScreen = _gameLayer.Screen;
+            _physicsManager = physics;
 
             ImguiHelper.Config(_controller);
             ImguiHelper.SetupImGuiStyle();
 
-            if (File.Exists(LAYOUT_FILE))
+            if(File.Exists(LAYOUT_FILE))
             {
                 // Calling OnRender to initilize the gui and user no longer should press "Load layout" on first launch
                 // i think it is should be reworked
@@ -100,10 +106,10 @@ namespace RockEngine.Rendering.Layers
             IsMouseOnEditorScreen = false;
             ImGui.NewFrame();
             GL.Viewport(0, 0, _window.Size.X, _window.Size.Y);
-            var dockID = ImGui.DockSpaceOverViewport(ImGui.GetMainViewport(),  ImGuiDockNodeFlags.PassthruCentralNode | ImGuiDockNodeFlags.AutoHideTabBar);
+            var dockID = ImGui.DockSpaceOverViewport(ImGui.GetMainViewport(), ImGuiDockNodeFlags.PassthruCentralNode | ImGuiDockNodeFlags.AutoHideTabBar);
             ImGui.PushFont(ImguiHelper.Mainfont);
             TopBar();
-            
+
             ImGui.DockSpace(dockID, Vector2.Zero, ImGuiDockNodeFlags.PassthruCentralNode);
             Logger.DrawDebugLogWindow();
 
@@ -150,9 +156,9 @@ namespace RockEngine.Rendering.Layers
 
         private void SelectProjectWindow()
         {
-            if (_projectWindowIsOpened && ImGui.Begin("Select project", ref _projectWindowIsOpened))
+            if(_projectWindowIsOpened && ImGui.Begin("Select project", ref _projectWindowIsOpened))
             {
-                if (ImguiHelper.FaIconButton(FA.FILE))
+                if(ImguiHelper.FaIconButton(FA.FILE))
                 {
                     var result = Dialog.FileOpen("asset");
                     if(!string.IsNullOrEmpty(result.Path))
@@ -160,7 +166,7 @@ namespace RockEngine.Rendering.Layers
                         AssetManager.LoadProject(result.Path);
                     }
                 }
-               
+
                 ImGui.End();
             }
         }
@@ -168,7 +174,7 @@ namespace RockEngine.Rendering.Layers
         private void EditorScreen()
         {
             // TODO: FIX BUG WITH RESIZING THAT SCREEN
-            if(ImGui.Begin("EDITOR SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar ))
+            if(ImGui.Begin("EDITOR SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar))
             {
                 CheckMouseIsOnEditorScreen();
                 var mousePos = ImGui.GetMousePos();
@@ -184,7 +190,7 @@ namespace RockEngine.Rendering.Layers
             }
         }
 
-        private static Vector2  GetActualWindowMousePos(Vector2 mousePos, Vector2 padding, Vector2 winPos, Vector2 winSize)
+        private static Vector2 GetActualWindowMousePos(Vector2 mousePos, Vector2 padding, Vector2 winPos, Vector2 winSize)
         {
             float x, y;
 
@@ -198,7 +204,7 @@ namespace RockEngine.Rendering.Layers
 
         private void GameScreen()
         {
-            if (ImGui.Begin("GAME SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar))
+            if(ImGui.Begin("GAME SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar))
             {
                 var size = ImGui.GetWindowContentRegionMax();
                 //_gameScreen.Resize(new OpenMath.Vector2i((int)size.X, (int)size.Y));
@@ -209,17 +215,19 @@ namespace RockEngine.Rendering.Layers
 
         private void TopBar()
         {
-            if (ImGui.BeginMainMenuBar())
+            if(ImGui.BeginMainMenuBar())
             {
-                ImGui.Columns(5, "TopBarColumns", true);
-                ImGui.SetColumnWidth(0, 100);
+                ImGui.Columns(8, "TopBarColumns", true);
+/*                ImGui.SetColumnWidth(0, 100);
                 ImGui.SetColumnWidth(1, 100);
-                ImGui.SetColumnWidth(2, ImGui.GetWindowSize().X / 2 - 100);
+                ImGui.SetColumnWidth(2, 100);
                 ImGui.SetColumnWidth(3, 100);
+                ImGui.SetColumnWidth(4, 100);
+                ImGui.SetColumnWidth(5, 100);*/
 
-                if (ImGui.BeginMenu("Project"))
+                if(ImGui.BeginMenu("Project"))
                 {
-                    if (ImGui.Button("Open project"))
+                    if(ImGui.Button("Open project"))
                     {
                         _projectWindowIsOpened = true;
                     }
@@ -228,15 +236,21 @@ namespace RockEngine.Rendering.Layers
                 ImGui.NextColumn();
 
                 ImGui.Text($"FPS:{_window.FPS}");
-                
                 ImGui.NextColumn();
-                if (ImGui.BeginMenu("Layouts"))
+                ImGui.Text($"Physics: {_physicsManager.World.Watcher.ElapsedMilliseconds} ms");
+                ImGui.NextColumn();
+                ImGui.Text($"EditorDraw: {_editorLayer.Watcher.ElapsedMilliseconds} ms");
+                ImGui.NextColumn();
+                ImGui.Text($"Game Draw: {_gameLayer.Watcher.ElapsedMilliseconds} ms");
+                ImGui.NextColumn();
+
+                if(ImGui.BeginMenu("Layouts"))
                 {
-                    if (ImGui.Button("Save layout"))
+                    if(ImGui.Button("Save layout"))
                     {
                         ImGui.SaveIniSettingsToDisk(LAYOUT_FILE);
                     }
-                    if (ImGui.Button("Load layout"))
+                    if(ImGui.Button("Load layout"))
                     {
                         ImGui.LoadIniSettingsFromDisk(LAYOUT_FILE);
                     }
@@ -246,24 +260,24 @@ namespace RockEngine.Rendering.Layers
                     }
                     ImGui.EndMenu();
                 }
+              
                 ImGui.PushFont(ImguiHelper.IconsFont);
                 ImGui.NextColumn();
 
-                if (EngineStateManager.GetCurrentStateKey() != "play")
+                if(EngineStateManager.GetCurrentStateKey() != "play")
                 {
-                    if (ImGui.SmallButton(FA.PLAY))
+                    if(ImGui.SmallButton(FA.PLAY))
                     {
                         EngineStateManager.SetNextState("play");
                     }
                 }
                 else
                 {
-                    if (ImGui.SmallButton(FA.STOP))
+                    if(ImGui.SmallButton(FA.STOP))
                     {
                         EngineStateManager.SetNextState("dev");
                     }
                 }
-                
 
                 ImGui.PopFont();
 
@@ -278,20 +292,17 @@ namespace RockEngine.Rendering.Layers
             }
         }
 
-    
-     
-
         private void DisplayScene()
         {
             var scene = Scene.CurrentScene;
-            
-            if (ImGui.Begin(scene.Name + "##SCENE_WINDOW"))
+
+            if(ImGui.Begin(scene.Name + "##SCENE_WINDOW"))
             {
                 ImGui.Text("Current Scene: " + scene.Name);
                 ImGui.Separator();
-                foreach (var gameObject in scene.GetGameObjects())
+                foreach(var gameObject in scene.GetGameObjects())
                 {
-                    if (ImGui.Selectable(gameObject.Name, SelectedGameObject == gameObject))
+                    if(ImGui.Selectable(gameObject.Name, SelectedGameObject == gameObject))
                     {
                         SelectedGameObject = gameObject;
                     }
@@ -307,9 +318,9 @@ namespace RockEngine.Rendering.Layers
 
         private void DisplaySelectedGameObjectProperties()
         {
-            if (ImGui.Begin("Field window"))
+            if(ImGui.Begin("Field window"))
             {
-                if (SelectedGameObject is null)
+                if(SelectedGameObject is null)
                 {
                     return;
                 }

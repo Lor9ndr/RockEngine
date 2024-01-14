@@ -1,8 +1,8 @@
-﻿using RockEngine.ECS;
-using RockEngine.Common.Vertices;
+﻿using RockEngine.Common.Vertices;
+using RockEngine.ECS;
+using RockEngine.ECS.Assets;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Shaders;
-using RockEngine.ECS.Assets;
 using RockEngine.Rendering.OpenGL.Textures;
 
 namespace RockEngine.Tests
@@ -106,7 +106,7 @@ namespace RockEngine.Tests
             Assert.That(loadedAsset.Name, Is.EqualTo("Material"));
             Assert.That(loadedAsset.Path, Is.EqualTo(TestAssetsPath));
             Assert.That(loadedAsset.ID, Is.EqualTo(assetToSave.ID));
-           
+
         }
 
         [Test]

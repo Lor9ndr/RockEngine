@@ -1,10 +1,10 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
+using RockEngine.Common.Utils;
 using RockEngine.Rendering.OpenGL.Buffers;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Textures;
-using RockEngine.Common.Utils;
 
 namespace RockEngine.Rendering.OpenGL
 {
@@ -74,7 +74,7 @@ namespace RockEngine.Rendering.OpenGL
             _fbo.ReadPixel(x, y, ref info);
         }
 
-        public void ReadPixel(int x, int y, ref PixelInfo[] info)
+        public void ReadPixel(int x, int y, ref PixelInfo[ ] info)
         {
             _fbo.ReadPixel(x, y, ref info);
         }

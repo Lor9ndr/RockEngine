@@ -1,29 +1,33 @@
-﻿namespace RockEngine.Physics.Colliders
+﻿using OpenTK.Mathematics;
+
+namespace RockEngine.Physics.Colliders
 {
     public abstract class Collider
     {
-        public RigidBody? Body { get; set; }
+        public RigidBody Body { get; set; }
         public float Restitution = 0.5f;
+        public Vector3 Center => Body.Position;
 
         public Collider()
         {
         }
 
-        public abstract bool CheckCollision(BoxCollider otherCollider, out CollisionResult result);
-        public abstract bool CheckCollision(SphereCollider otherCollider, out CollisionResult result);
+        public abstract ref Vector3[ ] GetVertices();
 
-        internal bool CheckCollision(Collider collider, out CollisionResult result)
+        public abstract CollisionResult CheckCollision(BoxCollider otherCollider);
+        public abstract CollisionResult CheckCollision(SphereCollider otherCollider);
+
+        internal CollisionResult CheckCollision(Collider collider)
         {
             if(collider is BoxCollider bx)
             {
-                return CheckCollision(bx, out result);
+                return CheckCollision(bx);
             }
             else if(collider is SphereCollider sc)
             {
-                return CheckCollision(sc, out result);
+                return CheckCollision(sc);
             }
-            result = new CollisionResult();
-            return false;
+            return new CollisionResult();
         }
     }
 }

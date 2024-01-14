@@ -21,7 +21,7 @@ namespace RockEngine.ShaderGenerator
                     shaderBuilder.AppendLine(shaderVar.GetString(property.Name));
                 }
             }
-            var methods = type.GetMethods(BindingFlags.Public| BindingFlags.Instance);
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
             for(int i = 0; i < methods.Length; i++)
             {
                 var method = methods[i];
@@ -30,7 +30,7 @@ namespace RockEngine.ShaderGenerator
                     shaderBuilder.AppendLine(GetMethodBodyAsString(method));
                 }
             }
-          
+
 
             return shaderBuilder.ToString();
         }

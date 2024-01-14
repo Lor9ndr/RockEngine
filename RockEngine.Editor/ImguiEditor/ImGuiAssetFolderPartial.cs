@@ -2,11 +2,11 @@
 
 using ImGuiNET;
 
+using RockEngine.Common.Utils;
 using RockEngine.ECS;
 using RockEngine.ECS.Assets;
 using RockEngine.Editor.ImguiEditor;
 using RockEngine.Editor.ImguiEditor.DragDrop;
-using RockEngine.Common.Utils;
 
 namespace RockEngine.Rendering.Layers
 {
@@ -83,12 +83,12 @@ namespace RockEngine.Rendering.Layers
                 throw new DirectoryNotFoundException("Directory not found: " + path);
             }
 
-           /* if(selectedFolder == directory)
-            {
-                bool isSelected = ImGui.Selectable(directory.Name, selectedFolder == directory.FullName, ImGuiSelectableFlags.AllowDoubleClick);
-            }*/
+            /* if(selectedFolder == directory)
+             {
+                 bool isSelected = ImGui.Selectable(directory.Name, selectedFolder == directory.FullName, ImGuiSelectableFlags.AllowDoubleClick);
+             }*/
             bool isNodeOpen = ImGui.TreeNode(directory.Name);
-            
+
             if(ImGui.BeginDragDropTarget())
             {
                 var payload = ImGui.AcceptDragDropPayload(SELECTED_ASSET_PAYLOAD, ImGuiDragDropFlags.AcceptPeekOnly);
@@ -110,7 +110,7 @@ namespace RockEngine.Rendering.Layers
             {
                 selectedFolder = directory.FullName;
             }
-         
+
 
             if(isNodeOpen)
             {
@@ -118,7 +118,7 @@ namespace RockEngine.Rendering.Layers
                 {
                     DisplayFolderTree(subdirectory.FullName);
                 }
-               
+
 
                 ImGui.TreePop();
             }

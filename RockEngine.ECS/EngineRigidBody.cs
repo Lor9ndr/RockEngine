@@ -7,7 +7,7 @@ namespace RockEngine.ECS
 {
     public sealed class EngineRigidBody : RigidBody, IComponent
     {
-        public EngineRigidBody(Vector3 position, float mass) 
+        public EngineRigidBody(Vector3 position, float mass)
             : base(position, new Vector3(0), mass)
         {
         }

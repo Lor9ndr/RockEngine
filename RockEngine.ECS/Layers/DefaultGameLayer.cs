@@ -1,7 +1,8 @@
 ﻿using OpenTK.Mathematics;
 
-using RockEngine.ECS;
 using RockEngine.ECS.GameObjects;
+
+using System.Diagnostics;
 
 namespace RockEngine.ECS.Layers
 {
@@ -11,16 +12,21 @@ namespace RockEngine.ECS.Layers
 
         public CameraTexture Screen;
 
+        public Stopwatch Watcher;
+
         public DefaultGameLayer()
         {
             Screen = new CameraTexture(new Vector2i(1280, 720));
+            Watcher = new Stopwatch();
         }
 
         public override void OnRender(Scene scene)
         {
+            Watcher.Restart();
             Screen.BeginRenderToScreen();
             scene.Render();
             Screen.EndRenderToScreen();
+            Watcher.Stop();
         }
 
         public void Dispose()

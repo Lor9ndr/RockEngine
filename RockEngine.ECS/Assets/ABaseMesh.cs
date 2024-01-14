@@ -1,6 +1,7 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+
 using RockEngine.Common.Vertices;
-using OpenTK.Graphics.OpenGL4;
 
 namespace RockEngine.ECS.Assets
 {

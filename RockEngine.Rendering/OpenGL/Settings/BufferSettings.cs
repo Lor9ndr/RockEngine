@@ -1,6 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 
-using RockEngine.Rendering.OpenGL;
 using RockEngine.Common.Vertices;
 
 namespace RockEngine.Rendering.OpenGL.Settings

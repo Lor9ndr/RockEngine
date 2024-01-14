@@ -3,11 +3,11 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Common.Input;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using RockEngine.Rendering.Layers;
-using RockEngine.Inputs;
 using RockEngine.Common;
-using RockEngine.ECS.GameObjects;
 using RockEngine.Common.Utils;
+using RockEngine.ECS.GameObjects;
+using RockEngine.Inputs;
+using RockEngine.Rendering.Layers;
 
 namespace RockEngine.Editor.GameObjects
 {

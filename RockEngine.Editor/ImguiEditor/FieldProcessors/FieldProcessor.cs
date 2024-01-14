@@ -1,8 +1,10 @@
 ﻿using ImGuiNET;
+
+using RockEngine.Common.Editor;
 using RockEngine.ECS;
+using RockEngine.ECS.Assets;
 using RockEngine.Editor.ImguiEditor.FieldProcessors.Processors;
 using RockEngine.Rendering.Layers;
-using RockEngine.Common.Editor;
 
 using System.Collections;
 using System.Reflection;
@@ -10,7 +12,6 @@ using System.Reflection.Emit;
 using System.Text;
 
 using OpenMath = OpenTK.Mathematics;
-using RockEngine.ECS.Assets;
 
 namespace RockEngine.Editor.ImguiEditor.FieldProcessors
 {
@@ -24,7 +25,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
         private static readonly Dictionary<FieldInfo, Action<object, object>> _fieldSettersCache = new Dictionary<FieldInfo, Action<object, object>>();
         private static readonly Dictionary<PropertyInfo, Action<object, object>> _propertySettersCache = new Dictionary<PropertyInfo, Action<object, object>>();
 
-        private static readonly Type _keyValuePairType  = typeof(KeyValuePair<,>);
+        private static readonly Type _keyValuePairType = typeof(KeyValuePair<,>);
 
         #endregion
 
@@ -71,7 +72,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             ProcessFieldInfos(ref obj, alias, fieldInfos);
         }
 
-        private static void ProcessFieldInfos(ref object obj, string alias, FieldInfo[]? fieldInfos)
+        private static void ProcessFieldInfos(ref object obj, string alias, FieldInfo[ ]? fieldInfos)
         {
             foreach(var fieldInfo in fieldInfos)
             {
@@ -108,7 +109,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             component = (IComponent)value;
         }
 
-        public static FieldInfo[]? GetCachedFieldInfo(Type type)
+        public static FieldInfo[ ]? GetCachedFieldInfo(Type type)
         {
             if(!_cachedFields.TryGetValue(type, out var fields))
             {
@@ -127,7 +128,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                         .Where(field => !Attribute.IsDefined(field, typeof(DiableUIAttribute)))
                         .ToArray();
                 }
-                
+
 
                 _cachedFields[type] = fields;
                 return fields;
@@ -153,7 +154,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             {
                 alias = $"##{Guid.NewGuid()}";
             }
-            
+
             if(obj is IAsset asset)
             {
                 alias += $"##{asset.ID}";
@@ -263,7 +264,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
             _propertySettersCache[property] = setterDelegate;
             return setterDelegate;
         }
-            
+
         public static Func<object, object> GetOrCreateFieldGetter(FieldInfo field)
         {
             if(_fieldGettersCache.TryGetValue(field, out var getter))

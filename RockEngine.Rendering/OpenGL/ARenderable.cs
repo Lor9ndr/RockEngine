@@ -14,7 +14,7 @@ namespace RockEngine.Rendering.OpenGL
 
         public bool HasIndices => Indices is not null && Indices.Length != 0;
 
-        public Matrix4[]? Models;
+        public Matrix4[ ]? Models;
 
         public int InstanceCount
         {
@@ -75,7 +75,7 @@ namespace RockEngine.Rendering.OpenGL
         {
             Models = matrices;
         }
-        public void SetInstanceMatrices(Matrix4[] matrices)
+        public void SetInstanceMatrices(Matrix4[ ] matrices)
         {
             Models = matrices;
         }

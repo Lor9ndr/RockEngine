@@ -3,9 +3,7 @@ using Microsoft.CodeAnalysis.Text;
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -211,14 +209,14 @@ namespace RockEngine.OpenGL.Buffers.UBOBuffers
             }
             else if(fieldType == "Vector3")
             {
-                return 4*3;
+                return 4 * 3;
             }
 
-            else if (fieldType == "Matrix4")
+            else if(fieldType == "Matrix4")
             {
                 return 64;
             }
-            else 
+            else
             {
                 throw new ArgumentException("Unknown fieldType");
             }

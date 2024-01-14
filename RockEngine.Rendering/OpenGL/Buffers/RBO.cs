@@ -1,8 +1,8 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
-using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Common.Utils;
+using RockEngine.Rendering.OpenGL.Settings;
 
 namespace RockEngine.Rendering.OpenGL.Buffers
 {

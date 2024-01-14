@@ -1,20 +1,23 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RockEngine.Inputs;
-using RockEngine.Rendering.Layers;
-using RockEngine.Editor.GameObjects;
-using RockEngine.DI;
-using RockEngine.Physics;
-using RockEngine.Editor.Rendering.Gizmo;
-using RockEngine.ECS.GameObjects;
-using RockEngine.Rendering.OpenGL;
-using RockEngine.ECS;
+
 using RockEngine.Common;
-using RockEngine.Rendering.OpenGL.Shaders;
 using RockEngine.Common.Utils;
+using RockEngine.DI;
+using RockEngine.ECS;
+using RockEngine.ECS.GameObjects;
 using RockEngine.ECS.Layers;
+using RockEngine.Editor.GameObjects;
+using RockEngine.Editor.Rendering.Gizmo;
+using RockEngine.Inputs;
+using RockEngine.Physics;
+using RockEngine.Rendering.Layers;
+using RockEngine.Rendering.OpenGL;
 using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
+using RockEngine.Rendering.OpenGL.Shaders;
+
+using System.Diagnostics;
 
 namespace RockEngine.Editor.Layers
 {
@@ -23,6 +26,8 @@ namespace RockEngine.Editor.Layers
         public CameraTexture Screen;
         public PickingTexture PickingTexture;
         public GameObject DebugCamera;
+        public Stopwatch Watcher;
+
         public override int Order => 1;
 
         private readonly EngineWindow _window;
@@ -34,6 +39,7 @@ namespace RockEngine.Editor.Layers
 
         public DefaultEditorLayer()
         {
+            Watcher = new Stopwatch();
             _window = WindowManager.GetMainWindow();
             Screen = new CameraTexture(WindowManager.GetMainWindow().Size);
             PickingTexture = new PickingTexture(WindowManager.GetMainWindow().Size);
@@ -56,12 +62,13 @@ namespace RockEngine.Editor.Layers
             DebugCamera.OnStart();
             _physicsManager = IoC.Get<PhysicsManager>();
             _physicsManager.SetDebugRender(camera);
-            _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!,this, _physicsManager);
+            _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!, this, _physicsManager);
             _gizmoRenderer = new GizmoRenderer(Screen);
         }
 
         public override void OnRender(Scene scene)
         {
+            Watcher.Restart();
             DebugCamera.Update();
             DebugCamera.Render();
             PickingObjectPass(scene);
@@ -69,6 +76,7 @@ namespace RockEngine.Editor.Layers
             MainRenderPass(scene);
 
             GettingObjectFromPicked(scene);
+            Watcher.Stop();
             _imguiRenderer.OnRender();
         }
 
@@ -85,12 +93,12 @@ namespace RockEngine.Editor.Layers
                 PixelInfo pi = new PixelInfo();
                 PickingTexture.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref pi);
                 GameObject? selected = null;
-                if((uint)pi.PrimID != 0 )
+                if((uint)pi.PrimID != 0)
                 {
                     var objID = (uint)pi.ObjectID;
                     selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
                 }
-                
+
                 _imguiRenderer.SelectedGameObject = selected;
             }
         }
@@ -111,11 +119,11 @@ namespace RockEngine.Editor.Layers
             }
             if(EditorSettings.DrawCollisions)
             {
-               // _physicsManager.DebugRenderer.DebugRender();
+                // _physicsManager.DebugRenderer.DebugRender();
             }
 
             Screen.EndRenderToScreen();
-           
+
         }
 
         private void OutlineSelectedGameObject(GameObject selected)

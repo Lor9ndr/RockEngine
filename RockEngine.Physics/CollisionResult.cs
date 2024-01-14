@@ -2,15 +2,16 @@
 
 namespace RockEngine.Physics
 {
-    public struct CollisionResult
+    public ref struct CollisionResult
     {
+        public bool IsCollided;
         public Vector3 ContactPoint;
         public Vector3 Normal;
         public float PenetrationDepth;
-        public float ImpulseMagnitude;
 
-        public CollisionResult(Vector3 collisionPoint, Vector3 normal, float penetrationDepth)
+        public CollisionResult(bool isCollided, Vector3 collisionPoint, Vector3 normal,  float penetrationDepth)
         {
+             IsCollided  = isCollided;
             ContactPoint = collisionPoint;
             Normal = normal;
             PenetrationDepth = penetrationDepth;

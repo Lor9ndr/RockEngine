@@ -2,9 +2,9 @@
 
 namespace RockEngine.ShaderGenerator
 {
-    internal sealed class LayoutIn<T> :Variable where T : struct
+    internal sealed class LayoutIn<T> : Variable where T : struct
     {
-        public int Location { get;set;}
+        public int Location { get; set; }
 
         public LayoutIn(int location)
         {
@@ -25,7 +25,7 @@ namespace RockEngine.ShaderGenerator
             Location = location;
         }
 
-        public override string GetString([CallerMemberName]string fieldName = "")
+        public override string GetString([CallerMemberName] string fieldName = "")
         {
             return $"layout (location = {Location}) out {this.ConvertToGLSLType(typeof(T))} {fieldName};";
         }

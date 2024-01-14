@@ -1,7 +1,8 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using RockEngine.Rendering.OpenGL.Settings;
+
 using RockEngine.Common.Utils;
+using RockEngine.Rendering.OpenGL.Settings;
 
 namespace RockEngine.Rendering.OpenGL.Textures
 {
@@ -23,7 +24,7 @@ namespace RockEngine.Rendering.OpenGL.Textures
             size = new Vector2i(Math.Clamp(size.X, 1, int.MaxValue), Math.Clamp(size.Y, 1, int.MaxValue));
             _size = size;
         }
-     
+
         public Texture()
             : base(TextureSettings.DefaultSettings)
         {

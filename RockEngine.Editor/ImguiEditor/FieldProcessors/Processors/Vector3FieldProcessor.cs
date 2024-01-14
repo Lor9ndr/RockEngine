@@ -15,7 +15,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             return fieldType == typeof(Vector3);
         }
 
-      
+
         public void Process(ref object value, FieldInfo field, UIAttribute attribute)
         {
             var alias = FieldProcessor.CreateAlias(value, field, attribute);

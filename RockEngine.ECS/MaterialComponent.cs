@@ -33,7 +33,7 @@ namespace RockEngine.ECS
 
         public dynamic GetState()
         {
-            return new 
+            return new
             {
                 Material = Material,
             };

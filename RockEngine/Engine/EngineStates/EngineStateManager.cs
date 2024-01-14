@@ -11,7 +11,7 @@ namespace RockEngine.Engine.EngineStates
         private static readonly Stack<Memento> _undoStack = new Stack<Memento>();
         private static readonly Stack<Memento> _redoStack = new Stack<Memento>();
 
-        public static void RegisterStates(params BaseEngineState[] states)
+        public static void RegisterStates(params BaseEngineState[ ] states)
         {
             foreach(var item in states)
             {
@@ -26,7 +26,7 @@ namespace RockEngine.Engine.EngineStates
         {
             Logger.AddWarn($"Changing state to:{key}");
 
-            if(_baseEngineState is DevepolerEngineState )
+            if(_baseEngineState is DevepolerEngineState)
             {
                 _memento.SaveState(Scene.CurrentScene);
                 _undoStack.Push(_memento);

@@ -3,8 +3,8 @@ namespace RockEngine.Physics
 {
     public class MotionState
     {
-        public float SleepThreshold = 1f; 
-        public ActivationState State { get; private set;} = ActivationState.Active;
+        public float SleepThreshold = 1f;
+        public ActivationState State { get; private set; } = ActivationState.Active;
 
         public void Sleep()
         {

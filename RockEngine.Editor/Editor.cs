@@ -1,23 +1,26 @@
-﻿using OpenTK.Mathematics;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
-using RockEngine.DI;
-using RockEngine.Engine.EngineStates;
-using RockEngine.Physics;
-using OpenTK.Graphics.OpenGL4;
-using RockEngine.Editor.Layers;
 using OpenTK.Windowing.GraphicsLibraryFramework;
-using RockEngine.Inputs;
-using RockEngine.Editor.ImguiEditor;
-using System.ComponentModel;
-using RockEngine.ECS;
-using RockEngine.ECS.GameObjects;
-using RockEngine.Rendering.OpenGL.Shaders;
-using RockEngine.ECS.Assets;
-using RockEngine.ECS.Layers;
+
 using RockEngine.Common;
 using RockEngine.Common.Utils;
 using RockEngine.Common.Vertices;
+using RockEngine.DI;
+using RockEngine.ECS;
+using RockEngine.ECS.Assets;
+using RockEngine.ECS.GameObjects;
+using RockEngine.ECS.Layers;
+using RockEngine.Editor.ImguiEditor;
+using RockEngine.Editor.Layers;
+using RockEngine.Engine.EngineStates;
+using RockEngine.Inputs;
+using RockEngine.Physics;
 using RockEngine.Physics.Colliders;
+using RockEngine.Rendering.OpenGL.Shaders;
+
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace RockEngine.Editor
 {
@@ -29,7 +32,7 @@ namespace RockEngine.Editor
         private readonly ProjectSelectorGUI _projectSelectingGUI;
 
         public Editor(string name, int width = 1280, int height = 720)
-            : base(name, width,height)
+            : base(name, width, height)
         {
             MainWindow.IsVisible = false;
             MainWindow.KeyDown += MainWindow_KeyDown;
@@ -98,12 +101,11 @@ namespace RockEngine.Editor
 
             // Mock to load default project
             Scene scene = AssetManager.CreateScene("Test scene",
-              "C:\\Users\\Администратор\\Desktop\\LEProject\\Assets\\Scenes",
+              "..\\LEProject\\Assets\\Scenes",
               Guid.Parse("36CC1F73-C5E7-4D83-8448-855306097C1C"));
             var project = AssetManager.CreateProject("Lor9nEngine",
-                 "C:\\Users\\Администратор\\Desktop\\LEProject",
+                 "..\\LEProject",
                  Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"), scene);
-          
 
             Material material;
             var testMesh = AssetManager.CreateMesh(ref Vertex3D.CubeVertices);
@@ -112,19 +114,19 @@ namespace RockEngine.Editor
             floor.AddComponent(
                 Physics.LocalCreateRigidBody(0,
                     floor.Transform.Position,
-                    new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices)*floor.Transform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * floor.Transform.Scale)));
+                    new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices) * floor.Transform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * floor.Transform.Scale)));
             scene.Add(floor);
 
             Random rd = new Random();
 
-            for(int i = 0; i > -5; i--)
+            for(int i = 0; i > -1; i--)
             {
-                for(int j = 0; j > -5; j--)
+                for(int j = 0; j > -1; j--)
                 {
-                    for(int k = 0; k > -5; k--)
+                    for(int k = 0; k > -1; k--)
                     {
-                        material = AssetManager.CreateMaterialAsset(DefaultShader,PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
-                        material.ShaderData["material.albedo"] = new Vector3(-i,-j,-k);
+                        material = AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
+                        material.ShaderData["material.albedo"] = new Vector3(-i+10, -j+5, -k+7);
                         var testTransform = new Transform(new Vector3(i, j, k));
                         var testGameObject = new GameObject(
                             "TestGameObject",
@@ -133,7 +135,7 @@ namespace RockEngine.Editor
                             new MaterialComponent(material));
 
                         testGameObject.AddComponent(
-                            Physics.LocalCreateRigidBody(rd.Next(100,100),
+                            Physics.LocalCreateRigidBody(1f,
                             testTransform.Position,
                             new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices) * testTransform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * testTransform.Scale))
                             );
@@ -167,14 +169,14 @@ namespace RockEngine.Editor
         {
             if(EditorSettings.DrawCollisions)
             {
-               /* foreach(var item in Scene.CurrentScene.GetGameObjects())
-                {
-                    var rb = item.GetComponent<EngineRigidBody>();
-                    if(rb is not null)
-                    {
-                        Physics.World.DebugDrawObject(rb.WorldTransform, rb.CollisionShape, Vector3.UnitX);
-                    }
-                }*/
+                /* foreach(var item in Scene.CurrentScene.GetGameObjects())
+                 {
+                     var rb = item.GetComponent<EngineRigidBody>();
+                     if(rb is not null)
+                     {
+                         Physics.World.DebugDrawObject(rb.WorldTransform, rb.CollisionShape, Vector3.UnitX);
+                     }
+                 }*/
             }
             Physics.Update((float)args.Time);
             EngineStateManager.UpdateState();

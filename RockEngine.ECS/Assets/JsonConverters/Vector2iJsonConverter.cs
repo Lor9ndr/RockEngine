@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 using OpenTK.Mathematics;
 
 namespace RockEngine.ECS.Assets.JsonConverters

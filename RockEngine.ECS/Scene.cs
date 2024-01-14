@@ -1,8 +1,8 @@
-﻿using RockEngine.ECS.GameObjects;
-using RockEngine.Common.Utils;
+﻿using RockEngine.Common.Utils;
+using RockEngine.ECS.Assets;
+using RockEngine.ECS.GameObjects;
 
 using System.Collections;
-using RockEngine.ECS.Assets;
 
 namespace RockEngine.ECS
 {

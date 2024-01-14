@@ -2,10 +2,10 @@
 
 using ImGuiNET;
 
+using RockEngine.Common.Utils;
 using RockEngine.ECS;
 using RockEngine.ECS.Assets;
 using RockEngine.ECS.GameObjects;
-using RockEngine.Common.Utils;
 using RockEngine.Editor.ImguiEditor;
 using RockEngine.Editor.ImguiEditor.DragDrop;
 using RockEngine.Editor.ImguiEditor.FieldProcessors;
@@ -26,7 +26,7 @@ namespace RockEngine.Rendering.Layers
             { typeof(EngineRigidBody), FA.RSS_SQUARE }
         };
 
-        private static readonly Type[] _componentTypes = new Type[]
+        private static readonly Type[ ] _componentTypes = new Type[ ]
         {
             typeof(Camera),
             typeof(DirectLight),
@@ -52,16 +52,16 @@ namespace RockEngine.Rendering.Layers
                 var endPosX = winSizeX - 30;
                 ImGui.SetCursorPosX(endPosX);
 
-                if (ImguiHelper.FaIconButton($"{FA.BARS}##{type}"))
+                if(ImguiHelper.FaIconButton($"{FA.BARS}##{type}"))
                 {
                     ImGui.CloseCurrentPopup();
                     ImGui.OpenPopup($"ComponentContextMenu##{type}");
                 }
 
                 ContextMenuComponents(type, component);
-                
+
                 FieldProcessor.ProcessComponent(ref component);
-                
+
                 //DrawProperties(component, type);
 
                 ImGui.Separator();
@@ -166,7 +166,7 @@ namespace RockEngine.Rendering.Layers
         {
             _gameObjectName = gameObject.Name;
 
-            if (ImGui.InputText("GameObject name", ref _gameObjectName, 120, ImGuiInputTextFlags.AutoSelectAll | ImGuiInputTextFlags.EnterReturnsTrue))
+            if(ImGui.InputText("GameObject name", ref _gameObjectName, 120, ImGuiInputTextFlags.AutoSelectAll | ImGuiInputTextFlags.EnterReturnsTrue))
             {
                 gameObject.Name = _gameObjectName;
             }
@@ -185,9 +185,9 @@ namespace RockEngine.Rendering.Layers
 
         private static void ContextMenuComponents(Type type, IComponent component)
         {
-            if (ImGui.BeginPopupContextItem($"ComponentContextMenu##{type}"))
+            if(ImGui.BeginPopupContextItem($"ComponentContextMenu##{type}"))
             {
-                if (ImGui.MenuItem($"Remove Component##{type}", component is not Transform))
+                if(ImGui.MenuItem($"Remove Component##{type}", component is not Transform))
                 {
                     component.Parent.RemoveComponent(component);
                 }
@@ -204,22 +204,22 @@ namespace RockEngine.Rendering.Layers
             var centerPosX = (winSizeX - ImGui.CalcTextSize(text).X) / 2.0f;
 
             ImGui.SetCursorPosX(centerPosX);
-            if (ImGui.Button("Add component"))
+            if(ImGui.Button("Add component"))
             {
                 ImGui.CloseCurrentPopup();
                 ImGui.OpenPopup("Components");
             }
-            if (ImGui.BeginPopup("Components"))
+            if(ImGui.BeginPopup("Components"))
             {
                 // Array of component type names
-                string[] componentTypeNames = new string[_componentTypes.Length];
-                for (int i = 0; i < _componentTypes.Length; i++)
+                string[ ] componentTypeNames = new string[_componentTypes.Length];
+                for(int i = 0; i < _componentTypes.Length; i++)
                 {
                     componentTypeNames[i] = _componentTypes[i].Name;
                 }
 
                 int selectedComponentIndex = -1;
-                if (ImGui.ListBox(string.Empty, ref selectedComponentIndex, componentTypeNames, componentTypeNames.Length))
+                if(ImGui.ListBox(string.Empty, ref selectedComponentIndex, componentTypeNames, componentTypeNames.Length))
                 {
                     Type selectedComponentType = _componentTypes[selectedComponentIndex];
                     IComponent selectedComponent = (IComponent)Activator.CreateInstance(selectedComponentType);

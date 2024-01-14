@@ -63,7 +63,7 @@ namespace RockEngine.ECS.GameObjects
 
         public dynamic GetState()
         {
-            return new 
+            return new
             {
                 Intensity = Intensity,
                 LightColor = LightColor,

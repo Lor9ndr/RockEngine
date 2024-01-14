@@ -19,7 +19,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
     public class GizmoRenderer : IRenderer, IDisposable
     {
         private readonly AShaderProgram _selectingShader;
-        private readonly Vertex3D[] _axisVertices =
+        private readonly Vertex3D[ ] _axisVertices =
         new Vertex3D[ ]
         {
             // X-axis
@@ -148,9 +148,9 @@ namespace RockEngine.Editor.Rendering.Gizmo
                 _gizmoPosGameObject.Transform.RotationQuaternion = Quaternion.Identity;
                 // Picking pass
                 _pickingRenderer.Begin();
-                _pickingRenderer.ResizeTexture( _screen.ScreenTexture.Size);
+                _pickingRenderer.ResizeTexture(_screen.ScreenTexture.Size);
                 _gizmoPosGameObject.Update();
-                _pickingRenderer.Render( _gizmoPosGameObject);
+                _pickingRenderer.Render(_gizmoPosGameObject);
                 _pickingRenderer.End();
 
                 // DefaultRender pass to render gizmos

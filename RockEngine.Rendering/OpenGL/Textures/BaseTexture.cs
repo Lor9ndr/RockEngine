@@ -4,7 +4,7 @@ namespace RockEngine.Rendering.OpenGL.Textures
 {
     public abstract class BaseTexture : ASetuppableGLObject<TextureSettings>, IGLObject
     {
-        public BaseTexture(TextureSettings settings):base(settings)
+        public BaseTexture(TextureSettings settings) : base(settings)
         {
         }
     }

@@ -1,8 +1,8 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 
+using RockEngine.Common.Utils;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Shaders;
-using RockEngine.Common.Utils;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;

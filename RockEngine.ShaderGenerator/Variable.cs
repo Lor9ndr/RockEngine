@@ -5,7 +5,7 @@ namespace RockEngine.ShaderGenerator
 {
     public class Variable
     {
-        public dynamic Value { get;set;}
+        public dynamic Value { get; set; }
         public virtual string GetString([CallerMemberName] string fieldName = "")
         {
             return Value.ToString();
@@ -16,7 +16,7 @@ namespace RockEngine.ShaderGenerator
             {
                 return "vec3";
             }
-            else if (t == typeof(Vector4))
+            else if(t == typeof(Vector4))
             {
                 return "vec4";
             }

@@ -14,7 +14,6 @@
     <ProjectReference Include="..\RockEngine.Physics\RockEngine.Physics.csproj" />
     <ProjectReference Include="..\RockEngine.Rendering\RockEngine.Rendering.csproj" />
     <ProjectReference Include="..\RockEngine.Common\RockEngine.Common.csproj" />
-    <ProjectReference Include="..\RockEngine.Shared\RockEngine.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

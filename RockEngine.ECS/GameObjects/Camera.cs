@@ -1,9 +1,10 @@
-﻿using OpenTK.Mathematics;
-using OpenTK.Graphics.OpenGL4;
-using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
+﻿using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+
 using RockEngine.Common.Editor;
 using RockEngine.Common.Utils;
 using RockEngine.ECS.Figures;
+using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.ECS.GameObjects
 {

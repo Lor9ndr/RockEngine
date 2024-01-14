@@ -1,8 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+
+using RockEngine.Common.Utils;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Textures;
-using RockEngine.Common.Utils;
 
 namespace RockEngine.Rendering.OpenGL.Buffers
 {
@@ -156,7 +157,7 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             BindAsReadBuffer();
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
 
-            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float,  info);
+            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, info);
 
             GL.ReadBuffer(ReadBufferMode.None);
             UnbindAsReadBuffer();

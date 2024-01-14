@@ -15,7 +15,7 @@ namespace RockEngine.ECS
 
         public Vector3 Scale;
 
-        
+
         public Vector3 Rotation
         {
             get => RotationQuaternion.ToEulerAngles() * (180f / MathF.PI);
@@ -62,7 +62,7 @@ namespace RockEngine.ECS
             var t = Matrix4.CreateTranslation(Position);
             var r = Matrix4.CreateFromQuaternion(RotationQuaternion);
             var s = Matrix4.CreateScale(Scale);
-            
+
             model = s * r * t;
 
             return model;
@@ -76,7 +76,7 @@ namespace RockEngine.ECS
 
         public void OnStart()
         {
-            var rb = Parent.GetComponent<EngineRigidBody>(); 
+            var rb = Parent.GetComponent<EngineRigidBody>();
             if(rb is not null)
             {
                 rb.Position = Position;
@@ -113,7 +113,7 @@ namespace RockEngine.ECS
 
         public dynamic GetState()
         {
-            return new 
+            return new
             {
                 Position = Position,
                 RotationQuaternion = RotationQuaternion,

@@ -25,13 +25,13 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
             for(int i = 0; i < items.Length; i++)
             {
                 var item = items[i];
-                
+
                 FieldProcessor.ProcessField(ref item);
                 items[i] = item; // Update the modified item in the array
                 var kv = (KeyValuePair<object, object>)item;
                 dict.Add(kv.Key, kv.Value);
             }
-            
+
             value = dict;
         }
     }

@@ -21,8 +21,8 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
                 return;
             }
             string alias = FieldProcessor.CreateAlias(value, field, attribute);
-            var valueType  = value.GetType();
-            var fieldInfo  = valueType.GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
+            var valueType = value.GetType();
+            var fieldInfo = valueType.GetField("_items", BindingFlags.NonPublic | BindingFlags.Instance);
             ImGui.Text(alias);
             // Convert the enumerable to an array to avoid modifying it while iterating
             object[ ] items = ((IEnumerable)value).Cast<object>().ToArray();

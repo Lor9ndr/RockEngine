@@ -13,7 +13,7 @@ namespace RockEngine.Rendering.OpenGL.Textures
         internal SKBitmap? Bitmap { get; set; }
 
         public Texture2D(TextureSettings settings)
-            : base(new Vector2i(512,512), settings)
+            : base(new Vector2i(512, 512), settings)
         {
         }
         public Texture2D()

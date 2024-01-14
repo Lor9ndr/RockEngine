@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace RockEngine.ECS.Assets
+﻿namespace RockEngine.ECS.Assets
 {
     public class BaseAsset : AAsset
     {

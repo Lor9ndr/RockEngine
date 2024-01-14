@@ -1,8 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 
+using RockEngine.Rendering.OpenGL.Settings;
+
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using RockEngine.Rendering.OpenGL.Settings;
 
 namespace RockEngine.Rendering.OpenGL.Buffers.UBOBuffers
 {

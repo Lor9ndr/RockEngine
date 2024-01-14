@@ -1,5 +1,6 @@
 ﻿
 using OpenTK.Mathematics;
+
 using RockEngine.ECS;
 using RockEngine.ECS.GameObjects;
 using RockEngine.Physics.Colliders;
@@ -19,7 +20,7 @@ namespace RockEngine.Physics
 
         public void Update(float elapsedTime)
         {
-            World.Simulate(elapsedTime);
+            World.Simulate();
         }
 
         public void SetDebugRender(Camera debugCamera)

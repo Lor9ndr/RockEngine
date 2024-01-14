@@ -1,6 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 
-using RockEngine.Rendering.OpenGL;
 using RockEngine.Common.Utils;
 
 namespace RockEngine.Rendering.OpenGL.Shaders

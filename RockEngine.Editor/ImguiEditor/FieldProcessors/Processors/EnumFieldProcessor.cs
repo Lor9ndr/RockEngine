@@ -8,7 +8,7 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors.Processors
 {
     internal sealed class EnumFieldProcessor : IUIFieldProcessor
     {
-        public  bool CanProcess(Type fieldType)
+        public bool CanProcess(Type fieldType)
         {
             return fieldType.BaseType == typeof(Enum);
         }

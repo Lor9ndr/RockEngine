@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis;
+
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using System.Diagnostics;
+using System.Text;
 
 namespace RockEngine.Generator
 {

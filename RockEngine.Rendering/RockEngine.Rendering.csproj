@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RockEngine.Common\RockEngine.Common.csproj" />
-    <ProjectReference Include="..\RockEngine.Shared\RockEngine.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@ namespace RockEngine.ShaderGenerator
 {
     internal sealed class TestShader : BaseVertexShader
     {
-        public LayoutIn<Vector3> aPos { get;set;} = new LayoutIn<Vector3>(0);
+        public LayoutIn<Vector3> aPos { get; set; } = new LayoutIn<Vector3>(0);
         public LayoutIn<Vector3> aNormal { get; set; } = new LayoutIn<Vector3>(1);
         public LayoutIn<Vector3> aTexCoords { get; set; } = new LayoutIn<Vector3>(2);
 

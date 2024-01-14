@@ -1,12 +1,15 @@
 ﻿using ImGuiNET;
+
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-using System.Diagnostics.CodeAnalysis;
+
+using RockEngine.Rendering.OpenGL.Buffers;
+using RockEngine.Rendering.OpenGL.Textures;
+
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using OpenTK.Graphics.OpenGL4;
-using RockEngine.Rendering.OpenGL.Textures;
-using RockEngine.Rendering.OpenGL.Buffers;
 
 namespace RockEngine.Editor.ImguiEditor
 {
