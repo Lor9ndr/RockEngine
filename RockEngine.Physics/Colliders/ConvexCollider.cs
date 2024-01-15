@@ -2,7 +2,7 @@
 
 namespace RockEngine.Physics.Colliders
 {
-    internal class ConvexCollider : Collider
+    internal sealed class ConvexCollider : Collider
     {
         /*  public override bool CheckCollision(BoxCollider otherCollider, out CollisionResult result)
           {

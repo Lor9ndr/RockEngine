@@ -124,26 +124,22 @@ namespace RockEngine.Physics
             }
 
             // Update linear velocity with gravity and damping
-            Velocity += gravity * deltaTime;
-            Velocity *= 1 - CoefficientOfFrictionDynamic; // Apply friction to linear velocity
+            Velocity += gravity * deltaTime; // Update velocity with acceleration
+            Position += Velocity * deltaTime; // Then update position with the new velocity
 
-            // Update position with velocity
-            Position += Velocity * deltaTime;
+            // Quadratic damping
+            Velocity -= 0.5f * CoefficientOfFrictionDynamic * Velocity * Velocity.Length * deltaTime;
 
             // Update angular velocity with damping
-            AngularVelocity *= 1 - CoefficientOfFrictionDynamic; // Apply friction to angular velocity
+            AngularVelocity -= 0.5f * CoefficientOfFrictionDynamic * AngularVelocity * AngularVelocity.Length * deltaTime;
 
             // Update the world-space inverse inertia tensor
             Matrix3 rotationMatrix = Matrix3.CreateFromQuaternion(Rotation);
             InverseInertiaTensorWorld = rotationMatrix * InverseInertiaTensor * Matrix3.Transpose(rotationMatrix);
 
-            // Integrate angular velocity to update rotation
+            // Semi-implicit Euler update for rotation
             Quaternion angularVelocityQuaternion = new Quaternion(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z, 0);
-            Quaternion spin = Quaternion.Multiply(angularVelocityQuaternion, Rotation) * 0.5f;
-
-            // Integrate rotation using the spin
-            Rotation += spin * deltaTime;
-            Rotation = Quaternion.Normalize(Rotation);
+            Rotation = Quaternion.Normalize(Rotation + Quaternion.Multiply(angularVelocityQuaternion, Rotation) * 0.5f * deltaTime);
         }
 
         private void CalculateInertiaTensor()

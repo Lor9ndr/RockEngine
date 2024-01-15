@@ -2,7 +2,7 @@
 
 namespace RockEngine.Renderers
 {
-    internal class Batch
+    internal sealed class Batch
     {
         public MaterialComponent Material;
         public Mesh Mesh;

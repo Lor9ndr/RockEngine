@@ -134,11 +134,12 @@ namespace RockEngine.Editor
                             new MeshComponent(testMesh),
                             new MaterialComponent(material));
 
-                        testGameObject.AddComponent(
+                        var body = testGameObject.AddComponent(
                             Physics.LocalCreateRigidBody(1f,
                             testTransform.Position,
                             new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices) * testTransform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * testTransform.Scale))
                             );
+                        body.AngularVelocity += new Vector3(100,100,100);
                         scene.Add(testGameObject);
                     }
                 }

@@ -1,6 +1,6 @@
 ﻿namespace RockEngine.Renderers
 {
-    internal class BatchRenderer
+    internal sealed class BatchRenderer
     {
     }
 }

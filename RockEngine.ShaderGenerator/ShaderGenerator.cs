@@ -1,9 +1,14 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using dnlib.DotNet;
+
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
 namespace RockEngine.ShaderGenerator
 {
+    /// <summary>
+    /// TODO: rewrite that as .netstandard app to be able to create SourceGenerator and process it
+    /// </summary>
     public static class ShaderGenerator
     {
         [RequiresUnreferencedCode("")]
@@ -31,20 +36,11 @@ namespace RockEngine.ShaderGenerator
                 }
             }
 
-
             return shaderBuilder.ToString();
         }
         private static string GetMethodBodyAsString(MethodInfo method)
         {
-            var methodBody = method.GetMethodBody();
-            if(methodBody == null)
-            {
-                return string.Empty;
-            }
-
-            var ilBytes = methodBody.GetILAsByteArray();
-            var ilString = BitConverter.ToString(ilBytes).Replace("-", string.Empty);
-            return ilString;
+           return string.Empty;
         }
     }
 }

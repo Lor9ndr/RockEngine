@@ -48,7 +48,7 @@ namespace RockEngine.Physics
                     {
                         RigidBody movableBody = bodyA.IsMovable ? bodyA : bodyB;
                         RigidBody staticBody = bodyA.IsStatic ? bodyA : bodyB;
-                        ResolveStaticVsMovable(movableBody, staticBody, deltaTime);
+                        ResolveStaticVsMovable(movableBody, staticBody);
                     }
                     else
                     {
@@ -64,7 +64,7 @@ namespace RockEngine.Physics
             Watcher.Stop();
         }
 
-        private static void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody, float deltaTime)
+        private static void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody)
         {
             var movableCollider = movableBody.Collider;
             var staticCollider = staticBody.Collider;
@@ -142,6 +142,26 @@ namespace RockEngine.Physics
 
                 // Apply friction impulse
                 movableBody.ApplyImpulse(tangentImpulse, collisionResult.ContactPoint);
+
+                Quaternion stableOrientation = Quaternion.Identity; // This should be the desired stable orientation
+                Quaternion currentOrientation = movableBody.Rotation;
+
+                // Calculate the angular deviation from the stable orientation
+                Quaternion deviation = currentOrientation * Quaternion.Invert(stableOrientation);
+
+                // Convert the quaternion to angle-axis representation
+                deviation.ToAxisAngle(out Vector3 deviationAxis, out float deviationAngle);
+
+                // Normalize the axis
+                deviationAxis.Normalize();
+
+                // Calculate the corrective torque
+                // The correctiveTorqueMagnitude can be tuned to control the strength of the correction
+                float correctiveTorqueMagnitude = deviationAngle * movableBody.Mass; // Simple proportional controller
+                Vector3 correctiveTorque = correctiveTorqueMagnitude * deviationAxis;
+
+                // Apply the corrective torque
+                movableBody.ApplyTorque(-correctiveTorque); // Negative sign to apply torque in the direction to reduce deviation
             }
         }
 
@@ -157,34 +177,85 @@ namespace RockEngine.Physics
 
             if(result.IsCollided)
             {
-                // Calculate the relative velocity
-                Vector3 relativeVelocity = bodyB.Velocity - bodyA.Velocity;
+                Vector3 rA = result.ContactPoint - bodyA.CenterOfMassGlobal;
+                Vector3 rB = result.ContactPoint - bodyB.CenterOfMassGlobal;
 
-                // Calculate the velocity along the normal
-                float velAlongNormal = Vector3.Dot(relativeVelocity, result.Normal);
+                Vector3 relativeVelocity = bodyA.Velocity + Vector3.Cross(bodyA.AngularVelocity, rA) -
+                                           bodyB.Velocity - Vector3.Cross(bodyB.AngularVelocity, rB);
 
-                // Do nothing if velocities are separating
-                if(velAlongNormal > 0)
+                float velocityAlongNormal = Vector3.Dot(relativeVelocity, result.Normal);
+
+                if(velocityAlongNormal > 0)
                 {
                     return;
                 }
 
-                // Calculate the restitution
+                float invMassSum = bodyA.InverseMass + bodyB.InverseMass;
+
                 float e = Math.Min(bodyA.Collider.Restitution, bodyB.Collider.Restitution);
 
-                // Calculate the impulse scalar
-                float j = -(1 + e) * velAlongNormal;
-                j /= bodyA.InverseMass + bodyB.InverseMass;
+                Vector3 RA_cross_N = Vector3.Cross(rA, result.Normal);
+                Vector3 RB_cross_N = Vector3.Cross(rB, result.Normal);
+                float denominator = bodyA.InverseMass + bodyB.InverseMass + Vector3.Dot(result.Normal, Vector3.Cross(bodyA.InverseInertiaTensorWorld * RA_cross_N, rA) + Vector3.Cross(bodyB.InverseInertiaTensorWorld * RB_cross_N, rB));
+                Vector3 correction = Math.Max(result.PenetrationDepth - SLOP, 0.0001f) / invMassSum * PERCENT * result.Normal;
 
-                // Apply the impulse
+                bodyA.Position += correction * bodyA.InverseMass / invMassSum;
+                bodyB.Position -= correction * bodyB.InverseMass / invMassSum;
+
+                float j = -(1 + e) * velocityAlongNormal;
+                j /= denominator;
+
                 Vector3 impulse = j * result.Normal;
-                bodyA.Velocity -= bodyA.InverseMass * impulse;
-                bodyB.Velocity += bodyB.InverseMass * impulse;
+                bodyA.ApplyImpulse(impulse, result.ContactPoint);
+                bodyB.ApplyImpulse(-impulse, result.ContactPoint);
 
-                // Position correction
-                Vector3 correction = Math.Max(result.PenetrationDepth - SLOP, 0.0f) / (bodyA.InverseMass + bodyB.InverseMass) * PERCENT * result.Normal;
-                bodyA.Position -= bodyA.InverseMass * correction;
-                bodyB.Position += bodyB.InverseMass * correction;
+                Vector3 t = relativeVelocity - (velocityAlongNormal * result.Normal);
+                if(t.LengthSquared <= 0)
+                {
+                    return;
+                }
+
+                t.Normalize();
+
+                float jt = -Vector3.Dot(relativeVelocity, t);
+                jt /= invMassSum;
+
+                if(Math.Abs(jt) < 0.01f)
+                {
+                    return;
+                }
+
+                Vector3 tangentImpulse;
+                if(Math.Abs(jt) < j * bodyB.CoefficientOfFrictionStatic)
+                {
+                    tangentImpulse = jt * t;
+                }
+                else
+                {
+                    tangentImpulse = -j * bodyA.CoefficientOfFrictionDynamic * t;
+                }
+
+                bodyA.ApplyImpulse(tangentImpulse, result.ContactPoint);
+                bodyB.ApplyImpulse(-tangentImpulse, result.ContactPoint);
+                // Corrective orientation for bodyA
+                Quaternion stableOrientationA = Quaternion.Identity;
+                Quaternion currentOrientationA = bodyA.Rotation;
+                Quaternion deviationA = currentOrientationA * Quaternion.Invert(stableOrientationA);
+                deviationA.ToAxisAngle(out Vector3 deviationAxisA, out float deviationAngleA);
+                deviationAxisA.Normalize();
+                float correctiveTorqueMagnitudeA = deviationAngleA * bodyA.Mass;
+                Vector3 correctiveTorqueA = correctiveTorqueMagnitudeA * deviationAxisA;
+                bodyA.ApplyTorque(-correctiveTorqueA);
+
+                // Corrective orientation for bodyB
+                Quaternion stableOrientationB = Quaternion.Identity;
+                Quaternion currentOrientationB = bodyB.Rotation;
+                Quaternion deviationB = currentOrientationB * Quaternion.Invert(stableOrientationB);
+                deviationB.ToAxisAngle(out Vector3 deviationAxisB, out float deviationAngleB);
+                deviationAxisB.Normalize();
+                float correctiveTorqueMagnitudeB = deviationAngleB * bodyB.Mass;
+                Vector3 correctiveTorqueB = correctiveTorqueMagnitudeB * deviationAxisB;
+                bodyB.ApplyTorque(-correctiveTorqueB);
             }
         }
     }
