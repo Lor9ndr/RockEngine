@@ -15,6 +15,8 @@ namespace RockEngine.Physics.Colliders
 
         public Vector3 Min;
         public Vector3 Max;
+        public Vector3 MinGlobal => Vector3.Transform(Min, Body.Rotation) + Body.Position;
+        public Vector3 MaxGlobal => Vector3.Transform(Max, Body.Rotation) + Body.Position;
         public Vector3 Extents => (Max - Min) / 2.0f;
 
         public BoxCollider(Vector3 min, Vector3 max)
@@ -29,9 +31,9 @@ namespace RockEngine.Physics.Colliders
 
             // Get the axes of the box
             Vector3[ ] boxAxes = axisPool.Rent(3);
-            boxAxes[0] = Vector3.Transform(Vector3.UnitX, this.Body.Rotation);
-            boxAxes[1] = Vector3.Transform(Vector3.UnitY, this.Body.Rotation);
-            boxAxes[2] = Vector3.Transform(Vector3.UnitZ, this.Body.Rotation);
+            boxAxes[0] = Vector3.Transform(Vector3.UnitX, Body.Rotation);
+            boxAxes[1] = Vector3.Transform(Vector3.UnitY, Body.Rotation);
+            boxAxes[2] = Vector3.Transform(Vector3.UnitZ, Body.Rotation);
 
             // Get the axes of the other box
             Vector3[ ] otherBoxAxes = axisPool.Rent(3);
@@ -89,12 +91,12 @@ namespace RockEngine.Physics.Colliders
             float penetrationDepth = Math.Abs(minOverlap);
 
             // calculate collision point as the closest points between the two boxes along
-            Vector3 collisionPoint = CalculateContactPoint(this, otherCollider);
+            var collisionPoints = CalculateContactPoints(this, otherCollider);
 
             axisPool.Return(axes);
             axisPool.Return(boxAxes);
             axisPool.Return(otherBoxAxes);
-            return new CollisionResult(true, collisionPoint, normal, penetrationDepth);
+            return new CollisionResult(true, collisionPoints, normal, penetrationDepth);
         }
 
         private float IsOverlapOnAxis(BoxCollider box1, BoxCollider box2, Vector3 axis)
@@ -127,42 +129,54 @@ namespace RockEngine.Physics.Colliders
             }
 
             // Return the overlap
-            return box1Max > box2Max ? overlap : -overlap;
-        }
-        private Vector3 CalculateContactPoint(BoxCollider box1, BoxCollider box2)
-        {
-            // Transform the local min and max points to global space
-            Vector3 box1MinGlobal = Vector3.Transform(box1.Min, box1.Body.Rotation) + box1.Body.Position;
-            Vector3 box1MaxGlobal = Vector3.Transform(box1.Max, box1.Body.Rotation) + box1.Body.Position;
-            Vector3 box2MinGlobal = Vector3.Transform(box2.Min, box2.Body.Rotation) + box2.Body.Position;
-            Vector3 box2MaxGlobal = Vector3.Transform(box2.Max, box2.Body.Rotation) + box2.Body.Position;
-
-            // Calculate the overlapping min and max points along each axis in global space
-            Vector3 overlapMin = Vector3.ComponentMax(box1MinGlobal, box2MinGlobal);
-            Vector3 overlapMax = Vector3.ComponentMin(box1MaxGlobal, box2MaxGlobal);
-
-            // Calculate the contact point as the center of the overlapping volume in global space
-            Vector3 contactPoint = (overlapMin + overlapMax) / 2.0f;
-
-            return contactPoint;
+            return Math.Abs(overlap); // Always return a positive overlap
         }
 
-        private Vector3 CalculateNormal(BoxCollider box1, BoxCollider box2)
+        private Vector3[] CalculateContactPoints(BoxCollider box1, BoxCollider box2)
         {
-            // Calculate the difference between the centers of the two boxes
-            Vector3 diff = box2.Body.Position - box1.Body.Position;
+            List<Vector3> contactPoints = new List<Vector3>();
+            foreach(Vector3 vertex in box1.GetPoints())
+            {
+                if(IsPointInsideBox(vertex, box2))
+                {
+                    contactPoints.Add(vertex);
+                }
+            }
 
-            // Normalize the difference to get the collision normal
-            Vector3 normal = Vector3.Normalize(diff);
+            // Clip the vertices of box2 against the faces of box1
+            foreach(Vector3 vertex in box2.GetPoints())
+            {
+                if(IsPointInsideBox(vertex, box1))
+                {
+                    contactPoints.Add(vertex);
+                }
+            }
 
-            return normal;
+            return contactPoints.ToArray();
         }
 
-        private Vector3[ ] GetPoints()
+        private bool IsValidContactPoint(Vector3 point, BoxCollider box1, BoxCollider box2)
+        {
+            // Check if the point is within the bounds of both boxes
+            return IsPointInsideBox(point, box1) && IsPointInsideBox(point, box2);
+        }
+
+        private bool IsPointInsideBox(Vector3 point, BoxCollider box)
+        {
+            // Transform the point to the box's local space
+            Vector3 localPoint = Vector3.Transform(point - box.Body.Position, box.Body.Rotation);
+
+            // Check if the point is within the box's bounds
+            return localPoint.X >= box.Min.X && localPoint.X <= box.Max.X &&
+                   localPoint.Y >= box.Min.Y && localPoint.Y <= box.Max.Y &&
+                   localPoint.Z >= box.Min.Z && localPoint.Z <= box.Max.Z;
+        }
+
+        private Vector3[] GetPoints()
         {
 
-            Vector3[ ] points = new Vector3[8];
-            Vector3[ ] localPoints =
+            Vector3[] points = new Vector3[8];
+            Vector3[] localPoints =
             [
                     new Vector3(-Extents.X, -Extents.Y, -Extents.Z),
                     new Vector3(-Extents.X, -Extents.Y, Extents.Z),
@@ -193,72 +207,3 @@ namespace RockEngine.Physics.Colliders
     }
 }
 
-/*        private float CalculatePenetrationDepth(BoxCollider box1, BoxCollider box2, Vector3 collisionNormal)
-        {
-            float box1Min = float.MaxValue, box1Max = float.MinValue;
-            float box2Min = float.MaxValue, box2Max = float.MinValue;
-
-            foreach(Vector3 point in box1.GetPoints())
-            {
-                float val = Vector3.Dot(point, collisionNormal);
-                box1Min = Math.Min(box1Min, val);
-                box1Max = Math.Max(box1Max, val);
-            }
-
-            foreach(Vector3 point in box2.GetPoints())
-            {
-                float val = Vector3.Dot(point, collisionNormal);
-                box2Min = Math.Min(box2Min, val);
-                box2Max = Math.Max(box2Max, val);
-            }
-
-            // Calculate the overlap distance
-            float overlap = Math.Min(box1Min, box2Min) - Math.Max(box1Min, box2Min);
-
-            // Return the absolute value of the overlap as the penetration depth
-            return Math.Abs(overlap);
-        }
-
-        private Vector3 CalculateContactPoint(BoxCollider box1, BoxCollider box2, Vector3 collisionNormal)
-        {
-            // Find the contact point on box1
-            Vector3 contactPoint1 = Vector3.Zero;
-            float minProjection1 = float.MaxValue;
-
-            foreach(Vector3 point in box1.GetPoints())
-            {
-                float projection = Vector3.Dot(point, -collisionNormal);
-                if(projection < minProjection1)
-                {
-                    minProjection1 = projection;
-                    contactPoint1 = point;
-                }
-            }
-
-            // Find the contact point on box2
-            Vector3 contactPoint2 = Vector3.Zero;
-            float minProjection2 = float.MaxValue;
-
-            foreach(Vector3 point in box2.GetPoints())
-            {
-                float projection = Vector3.Dot(point, collisionNormal);
-                if(projection < minProjection2)
-                {
-                    minProjection2 = projection;
-                    contactPoint2 = point;
-                }
-            }
-
-            // Return the midpoint of the two contact points
-            return (contactPoint1 + contactPoint2) / 2;
-        }
-
-        private Vector3 CalculateNormal(BoxCollider box1, BoxCollider box2)
-        {
-            // Calculate the vector from box1 to box2
-            Vector3 vector = box2.Body.Position - box1.Body.Position;
-
-            vector.Normalize();
-
-            return vector;
-        }*/

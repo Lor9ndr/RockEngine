@@ -93,7 +93,7 @@ csharp_style_expression_bodied_lambdas = true:silent
 csharp_style_expression_bodied_local_functions = false:silent
 csharp_space_between_method_declaration_parameter_list_parentheses = false
 csharp_space_between_method_call_parameter_list_parentheses = false
-csharp_space_between_empty_square_brackets = true
+csharp_space_between_empty_square_brackets = false
 csharp_indent_labels = one_less_than_current
 csharp_style_prefer_primary_constructors = true:suggestion
 csharp_style_prefer_readonly_struct_member = true:suggestion
@@ -105,6 +105,7 @@ dotnet_diagnostic.CA1855.severity = error
 dotnet_diagnostic.CA1820.severity = error
 dotnet_diagnostic.CA1001.severity = error
 csharp_space_after_keywords_in_control_flow_statements = false
+csharp_space_after_comma = true
 
 [*.vb]
 #### Стили именования ####
@@ -230,3 +231,4 @@ dotnet_diagnostic.CA2013.severity = error
 dotnet_diagnostic.CA2012.severity = error
 dotnet_diagnostic.CA2018.severity = error
 dotnet_diagnostic.CA2019.severity = error
+dotnet_style_prefer_collection_expression = true:suggestion

@@ -14,7 +14,7 @@ namespace RockEngine.Physics
         public Vector3 CenterOfMassGlobal => Position + Vector3.Transform(CenterOfMass, Rotation);
 
         public MotionState MotionState;
-        public float CoefficientOfFrictionDynamic { get; set; }  = 0.001f;
+        public float CoefficientOfFrictionDynamic { get; set; }  = 0.01f;
         public float CoefficientOfFrictionStatic { get; set; }  = 0.1f;
         public Collider Collider
         {
@@ -87,7 +87,7 @@ namespace RockEngine.Physics
 
         public void ApplyTorque(Vector3 torque)
         {
-            AngularVelocity = InverseInertiaTensorWorld * torque;
+            AngularVelocity += InverseInertiaTensorWorld * torque;
         }
 
         public void ApplyImpulse(Vector3 impulse)
@@ -113,7 +113,7 @@ namespace RockEngine.Physics
             Vector3 torque = Vector3.Cross(contactVector, impulse);
 
             // Apply the torque to the angular velocity, taking into account the body's inertia tensor
-            AngularVelocity += InverseInertiaTensorWorld * torque;
+            ApplyTorque(torque);
         }
 
         public void Update(float deltaTime, Vector3 gravity)
@@ -123,14 +123,20 @@ namespace RockEngine.Physics
                 return;
             }
 
+            // Runge-Kutta 4th order method
+            Vector3 k1 = deltaTime * Velocity;
+            Vector3 k2 = deltaTime * (Velocity + 0.5f * k1);
+            Vector3 k3 = deltaTime * (Velocity + 0.5f * k2);
+            Vector3 k4 = deltaTime * (Velocity + k3);
+            Position += (k1 + 2f * (k2 + k3) + k4) / 6f;
+
             // Update linear velocity with gravity and damping
             Velocity += gravity * deltaTime; // Update velocity with acceleration
-            Position += Velocity * deltaTime; // Then update position with the new velocity
 
             // Quadratic damping
-            Velocity -= 0.5f * CoefficientOfFrictionDynamic * Velocity * Velocity.Length * deltaTime;
+            Velocity += 0.5f * CoefficientOfFrictionDynamic * Velocity * Velocity.Length * deltaTime;
 
-            // Update angular velocity with damping
+            // Rotational friction
             AngularVelocity -= 0.5f * CoefficientOfFrictionDynamic * AngularVelocity * AngularVelocity.Length * deltaTime;
 
             // Update the world-space inverse inertia tensor

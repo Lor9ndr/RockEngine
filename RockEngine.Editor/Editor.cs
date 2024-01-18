@@ -20,7 +20,6 @@ using RockEngine.Physics.Colliders;
 using RockEngine.Rendering.OpenGL.Shaders;
 
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace RockEngine.Editor
 {
@@ -117,13 +116,11 @@ namespace RockEngine.Editor
                     new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices) * floor.Transform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * floor.Transform.Scale)));
             scene.Add(floor);
 
-            Random rd = new Random();
-
-            for(int i = 0; i > -1; i--)
+            for(int i = 0; i > -7; i--)
             {
-                for(int j = 0; j > -1; j--)
+                for(int j = 0; j > -5; j--)
                 {
-                    for(int k = 0; k > -1; k--)
+                    for(int k = 0; k > -2; k--)
                     {
                         material = AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
                         material.ShaderData["material.albedo"] = new Vector3(-i+10, -j+5, -k+7);
@@ -139,7 +136,6 @@ namespace RockEngine.Editor
                             testTransform.Position,
                             new BoxCollider(Vertex3D.GetMinPosition(testMesh.Vertices) * testTransform.Scale, Vertex3D.GetMaxPosition(testMesh.Vertices) * testTransform.Scale))
                             );
-                        body.AngularVelocity += new Vector3(100,100,100);
                         scene.Add(testGameObject);
                     }
                 }
