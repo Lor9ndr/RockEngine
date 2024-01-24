@@ -135,6 +135,11 @@ namespace RockEngine.Physics.Colliders
             throw new NotImplementedException();
         }
 
+        public override Vector3 GetLocalInertiaTensor(float mass)
+        {
+            throw new NotImplementedException();
+        }
+
         public override ref Vector3[ ] GetVertices()
         {
             throw new NotImplementedException();

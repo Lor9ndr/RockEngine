@@ -13,7 +13,7 @@ namespace RockEngine.Physics.Colliders
 
        
 
-        public override ref Vector3[ ] GetVertices()
+        public override ref Vector3[] GetVertices()
         {
             throw new NotImplementedException();
         }
@@ -26,6 +26,18 @@ namespace RockEngine.Physics.Colliders
         public override CollisionResult CheckCollision(SphereCollider otherCollider)
         {
             throw new NotImplementedException();
+        }
+
+        public override Vector3 GetLocalInertiaTensor(float mass)
+        {
+            // Assuming the object is a sphere with radius r
+            float r = Radius;
+
+            // Calculate the inertia tensor for a sphere
+            float i = 2f / 5f * mass * r * r;
+
+            // The inverse inertia tensor is the inverse of the inertia tensor
+            return new Vector3(i);
         }
     }
 }

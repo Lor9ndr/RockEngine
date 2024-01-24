@@ -5,17 +5,21 @@ namespace RockEngine.Physics.Colliders
     public abstract class Collider
     {
         public RigidBody Body { get; set; }
-        public float Restitution = 0.5f;
-        public Vector3 Center => Body.Position;
-
+        public ColliderMaterial Material;
         public Collider()
         {
+            Material = ColliderMaterial.Default;
+        }
+        public Collider(ColliderMaterial material)
+        {
+            Material = material;
         }
 
-        public abstract ref Vector3[ ] GetVertices();
-
+        public abstract ref Vector3[] GetVertices();
         public abstract CollisionResult CheckCollision(BoxCollider otherCollider);
         public abstract CollisionResult CheckCollision(SphereCollider otherCollider);
+
+        public abstract Vector3 GetLocalInertiaTensor(float mass);
 
         internal CollisionResult CheckCollision(Collider collider)
         {

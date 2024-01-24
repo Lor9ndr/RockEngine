@@ -6,7 +6,7 @@ namespace RockEngine.Physics
 {
     public class PhysicsWorld
     {
-        private const float PERCENT = 0.7f;
+        private const float PERCENT = 0.2f;
         private const float SLOP = 0.01f;
         public Stopwatch Watcher;
 
@@ -48,11 +48,11 @@ namespace RockEngine.Physics
                     {
                         RigidBody movableBody = bodyA.IsMovable ? bodyA : bodyB;
                         RigidBody staticBody = bodyA.IsStatic ? bodyA : bodyB;
-                        ResolveStaticVsMovable(movableBody, staticBody);
+                        ResolveStaticVsMovable(movableBody, staticBody,deltaTime);
                     }
                     else
                     {
-                        ResolveMovableVsMovable(bodyA, bodyB);
+                        ResolveMovableVsMovable(bodyA, bodyB, deltaTime);
                     }
                 }
             });
@@ -64,14 +64,14 @@ namespace RockEngine.Physics
             Watcher.Stop();
         }
 
-        private static void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody)
+        private  void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody, float deltaTime)
         {
-            // Check for collision between movable and static colliders
             var result = movableBody.Collider.CheckCollision(staticBody.Collider);
             if(!result.IsCollided)
             {
                 return;
             }
+
             float invMassSum = movableBody.InverseMass;
             Vector3 correction = Math.Max(result.PenetrationDepth - SLOP, 0.0001f) / invMassSum * PERCENT * result.Normal;
             movableBody.Position += correction * movableBody.InverseMass / invMassSum;
@@ -86,7 +86,7 @@ namespace RockEngine.Physics
                     continue;
                 }
 
-                float e = Math.Min(movableBody.Collider.Restitution, staticBody.Collider.Restitution);
+                float e = Math.Min(movableBody.Collider.Material.Restitution, staticBody.Collider.Material.Restitution);
                 Vector3 RA_cross_N = Vector3.Cross(rA, result.Normal);
                 float denominator = invMassSum + Vector3.Dot(result.Normal, Vector3.Cross(movableBody.InverseInertiaTensorWorld * RA_cross_N, rA));
 
@@ -108,7 +108,7 @@ namespace RockEngine.Physics
                     return;
                 }
                 Vector3 tangentImpulse;
-                if(Math.Abs(jt) < j * staticBody.Collider.Restitution)
+                if(Math.Abs(jt) < j * e)
                 {
                     tangentImpulse = jt * t;
                 }
@@ -120,9 +120,8 @@ namespace RockEngine.Physics
             }
         }
 
-        private static void ResolveMovableVsMovable(RigidBody bodyA, RigidBody bodyB)
+        private void ResolveMovableVsMovable(RigidBody bodyA, RigidBody bodyB, float deltaTime)
         {
-            // Check for collision between the two colliders
             var result = bodyA.Collider.CheckCollision(bodyB.Collider);
             if(!result.IsCollided)
             {
@@ -131,8 +130,8 @@ namespace RockEngine.Physics
 
             float invMassSum = bodyA.InverseMass + bodyB.InverseMass;
             Vector3 correction = Math.Max(result.PenetrationDepth - SLOP, 0.0001f) / invMassSum * PERCENT * result.Normal;
-            bodyA.Position += correction * bodyA.InverseMass / invMassSum;
-            bodyB.Position -= correction * bodyB.InverseMass / invMassSum;
+            bodyA.Position += correction * bodyA.InverseMass;
+            bodyB.Position -= correction * bodyB.InverseMass;
 
             foreach(var contactPoint in result.ContactPoints)
             {
@@ -145,7 +144,7 @@ namespace RockEngine.Physics
                     continue;
                 }
 
-                float e = Math.Min(bodyA.Collider.Restitution, bodyB.Collider.Restitution);
+                float e = Math.Min(bodyA.Collider.Material.Restitution, bodyB.Collider.Material.Restitution);
                 Vector3 RA_cross_N = Vector3.Cross(rA, result.Normal);
                 Vector3 RB_cross_N = Vector3.Cross(rB, result.Normal);
 
@@ -172,7 +171,7 @@ namespace RockEngine.Physics
                     return;
                 }
                 Vector3 tangentImpulse;
-                if(Math.Abs(jt) < j * Math.Min(bodyA.Collider.Restitution, bodyB.Collider.Restitution))
+                if(Math.Abs(jt) < j * e)
                 {
                     tangentImpulse = jt * t;
                 }

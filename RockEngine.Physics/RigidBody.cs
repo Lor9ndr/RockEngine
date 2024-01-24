@@ -16,6 +16,7 @@ namespace RockEngine.Physics
         public MotionState MotionState;
         public float CoefficientOfFrictionDynamic { get; set; }  = 0.01f;
         public float CoefficientOfFrictionStatic { get; set; }  = 0.1f;
+        public bool IsSleeping { get; private set; }
         public Collider Collider
         {
             get => _collider;
@@ -23,7 +24,7 @@ namespace RockEngine.Physics
             {
                 _collider = value;
                 _collider.Body = this;
-                CalculateInertiaTensor();
+                UpdateFields();
             }
         }
 
@@ -32,7 +33,11 @@ namespace RockEngine.Physics
         private float _inverseMass;
         private float _mass;
         private bool _isStatic;
-        private Matrix3 InertiaTensor;
+        private Vector3 InertiaTensor;
+
+        private const float SleepThreshold = 0.2f;
+        private const float SleepTime = 1.0f; // Time in seconds
+        private float _timeSinceLastMovement = 0.0f;
 
         public float InverseMass => _inverseMass;
 
@@ -70,7 +75,7 @@ namespace RockEngine.Physics
         {
             Position = position;
             Velocity = velocity;
-            Mass = mass;
+            _mass = mass;
             Rotation = Quaternion.Identity;
             MotionState = new MotionState();
         }
@@ -116,12 +121,39 @@ namespace RockEngine.Physics
             ApplyTorque(torque);
         }
 
+        public void PutToSleep()
+        {
+            IsSleeping = true;
+            Velocity = Vector3.Zero;
+            AngularVelocity = Vector3.Zero;
+        }
+
+        public void WakeUp()
+        {
+            IsSleeping = false;
+        }
+
         public void Update(float deltaTime, Vector3 gravity)
         {
-            if(!IsMovable)
+            if(Velocity.LengthSquared < SleepThreshold * SleepThreshold &&
+            AngularVelocity.LengthSquared < SleepThreshold * SleepThreshold)
+            {
+                _timeSinceLastMovement += deltaTime;
+                if(_timeSinceLastMovement >= SleepTime)
+                {
+                    PutToSleep();
+                }
+            }
+            else
+            {
+                _timeSinceLastMovement = 0.0f;
+                WakeUp();
+            }
+            if(IsSleeping || !IsMovable)
             {
                 return;
             }
+            //deltaTime = CalculateTimeStep(deltaTime);
 
             // Runge-Kutta 4th order method
             Vector3 k1 = deltaTime * Velocity;
@@ -143,60 +175,28 @@ namespace RockEngine.Physics
             Matrix3 rotationMatrix = Matrix3.CreateFromQuaternion(Rotation);
             InverseInertiaTensorWorld = rotationMatrix * InverseInertiaTensor * Matrix3.Transpose(rotationMatrix);
 
-            // Semi-implicit Euler update for rotation
+            // Quaternion-based rotation update
             Quaternion angularVelocityQuaternion = new Quaternion(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z, 0);
-            Rotation = Quaternion.Normalize(Rotation + Quaternion.Multiply(angularVelocityQuaternion, Rotation) * 0.5f * deltaTime);
+            Quaternion spin = 0.5f * Quaternion.Multiply(angularVelocityQuaternion, Rotation);
+            Quaternion newRotation = new Quaternion(Rotation.X + spin.X * deltaTime,
+                                                    Rotation.Y + spin.Y * deltaTime,
+                                                    Rotation.Z + spin.Z * deltaTime,
+                                                    Rotation.W + spin.W * deltaTime);
+            Rotation = Quaternion.Normalize(newRotation);
         }
 
         private void CalculateInertiaTensor()
         {
+            InertiaTensor = Vector3.One;
+            InverseInertiaTensor = Matrix3.Identity;
+
             if(IsStatic)
             {
                 return;
             }
-            InverseInertiaTensor = Matrix3.Identity;
-            if(Collider is BoxCollider boxCollider)
-            {
-                // Assuming the object is a box with dimensions x, y, z
-                float x = boxCollider.Extents.X * 2;
-                float y = boxCollider.Extents.Y * 2;
-                float z = boxCollider.Extents.Z * 2;
 
-                // Calculate the inertia tensor for a box
-                float Ixx = (1.0f / 12.0f) * Mass * (y * y + z * z);
-                float Iyy = (1.0f / 12.0f) * Mass * (x * x + z * z);
-                float Izz = (1.0f / 12.0f) * Mass * (x * x + y * y);
-
-                // Calculate the inverse inertia tensor
-                InverseInertiaTensor = new Matrix3(
-                    1.0f / Ixx, 0, 0,
-                    0, 1.0f / Iyy, 0,
-                    0, 0, 1.0f / Izz
-                );
-                InertiaTensor = Matrix3.Identity;
-                InertiaTensor.M11 = Ixx;
-                InertiaTensor.M22 = Iyy;
-                InertiaTensor.M33 = Izz;
-            }
-            else if(Collider is SphereCollider sphereCollider)
-            {
-                // Assuming the object is a sphere with radius r
-                float r = sphereCollider.Radius;
-
-                // Calculate the inertia tensor for a sphere
-                float i = 2f / 5f * Mass * r * r;
-
-                // The inverse inertia tensor is the inverse of the inertia tensor
-                InverseInertiaTensor = Matrix3.Identity;
-                InverseInertiaTensor.M11 = 1 / i;
-                InverseInertiaTensor.M22 = 1 / i;
-                InverseInertiaTensor.M33 = 1 / i;
-
-                InertiaTensor = Matrix3.Identity;
-                InertiaTensor.M11 = i;
-                InertiaTensor.M22 = i;
-                InertiaTensor.M33 = i;
-            }
+            InertiaTensor = Collider.GetLocalInertiaTensor(Mass);
+            InverseInertiaTensor.Diagonal = new Vector3(1.0f / InertiaTensor.X, 1.0f / InertiaTensor.Y, 1.0f / InertiaTensor.Z);
         }
     }
 }

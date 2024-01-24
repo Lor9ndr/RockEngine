@@ -118,9 +118,9 @@ namespace RockEngine.Editor
 
             for(int i = 0; i > -7; i--)
             {
-                for(int j = 0; j > -5; j--)
+                for(int j = 0; j > -7; j--)
                 {
-                    for(int k = 0; k > -2; k--)
+                    for(int k = 0; k > -7; k--)
                     {
                         material = AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial");
                         material.ShaderData["material.albedo"] = new Vector3(-i+10, -j+5, -k+7);
