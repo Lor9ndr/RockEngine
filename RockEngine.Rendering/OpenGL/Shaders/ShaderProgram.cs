@@ -17,11 +17,11 @@ namespace RockEngine.Rendering.OpenGL.Shaders
 
         #endregion
 
-        public static AShaderProgram GetOrCreate(string name, params BaseShaderType[ ] baseShaders)
+        public static ShaderProgram GetOrCreate(string name, params BaseShaderType[ ] baseShaders)
         {
             if(AllShaders.TryGetValue(name, out var shader))
             {
-                return shader;
+                return (ShaderProgram)shader;
             }
             return new ShaderProgram(name, baseShaders);
         }

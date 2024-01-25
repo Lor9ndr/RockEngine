@@ -1,17 +1,19 @@
-﻿using System.Reflection;
+﻿using Ninject;
+
+using System.Reflection;
 
 namespace RockEngine.DI
 {
     public class RegistratorLoader
     {
-        public static void LoadRegistrators(Assembly assembly)
+        public static void LoadRegistrators(Assembly assembly, StandardKernel kernel)
         {
             var registratorTypes = assembly.GetTypes()
-                .Where(t => typeof(IRegistrator).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+                .Where(t => typeof(ARegistrator).IsAssignableFrom(t)  && !t.IsAbstract);
 
             foreach(var registratorType in registratorTypes)
             {
-                var registrator = (IRegistrator)Activator.CreateInstance(registratorType);
+                var registrator = (ARegistrator)Activator.CreateInstance(registratorType, kernel);
                 registrator.Register();
             }
         }

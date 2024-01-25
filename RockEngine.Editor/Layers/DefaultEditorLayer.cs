@@ -68,6 +68,17 @@ namespace RockEngine.Editor.Layers
 
         public override void OnRender(Scene scene)
         {
+            if(EditorSettings.DrawCollisions)
+            {
+                foreach(var item in scene)
+                {
+                    var body = item.GetComponent<EngineRigidBody>();
+                    if(body is not null && body.Collider is not null)
+                    {
+                        _physicsManager.World.DebugWorld.DrawCollider(body.Collider, body.Position, body.Rotation);
+                    }
+                }
+            }
             Watcher.Restart();
             DebugCamera.Update();
             DebugCamera.Render();
@@ -76,6 +87,7 @@ namespace RockEngine.Editor.Layers
             MainRenderPass(scene);
 
             GettingObjectFromPicked(scene);
+           
             Watcher.Stop();
             _imguiRenderer.OnRender();
         }
@@ -119,7 +131,7 @@ namespace RockEngine.Editor.Layers
             }
             if(EditorSettings.DrawCollisions)
             {
-                // _physicsManager.DebugRenderer.DebugRender();
+               _physicsManager.World.DebugWorld.Render();
             }
 
             Screen.EndRenderToScreen();

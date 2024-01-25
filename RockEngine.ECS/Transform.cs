@@ -15,23 +15,22 @@ namespace RockEngine.ECS
 
         public Vector3 Scale;
 
-
         public Vector3 Rotation
         {
             get => RotationQuaternion.ToEulerAngles() * (180f / MathF.PI);
             set => RotationQuaternion = Quaternion.FromEulerAngles(value * (MathF.PI / 180f));
         }
 
-        public GameObject? Parent { get => _parent; set => _parent = value; }
+        public GameObject Parent { get => _parent; set => _parent = value; }
 
         public int Order => 0;
 
-        private HashSet<Transform> _childTransforms;
-        private GameObject? _parent;
+        private List<Transform> _childTransforms;
+        private GameObject _parent;
 
         public Transform()
         {
-            _childTransforms = new HashSet<Transform>();
+            _childTransforms = new List<Transform>();
             Position = Vector3.Zero;
             RotationQuaternion = Quaternion.Identity;
             Scale = Vector3.One;
@@ -104,7 +103,7 @@ namespace RockEngine.ECS
         public void ClearChildrenTransforms()
             => _childTransforms.Clear();
 
-        public HashSet<Transform> GetChildTransforms()
+        public List<Transform> GetChildTransforms()
             => _childTransforms;
 
         public void OnDestroy()

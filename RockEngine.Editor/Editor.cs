@@ -36,12 +36,12 @@ namespace RockEngine.Editor
             MainWindow.IsVisible = false;
             MainWindow.KeyDown += MainWindow_KeyDown;
 
-            _projectSelectingWindow = WindowManager.CreateWindow("Select a project", 200, 200);
-            _projectSelectingWindow.Closing += SelectProjectClose;
-            _projectSelectingWindow.RenderFrame += SelectProjectRenderFrame;
-            _projectSelectingGUI = new ProjectSelectorGUI(_projectSelectingWindow);
-            _projectSelectingWindow.CenterWindow();
-            _projectSelectingWindow.WindowBorder = WindowBorder.Hidden;
+           // _projectSelectingWindow = WindowManager.CreateWindow("Select a project", 200, 200);
+           // _projectSelectingWindow.Closing += SelectProjectClose;
+           // _projectSelectingWindow.RenderFrame += SelectProjectRenderFrame;
+           // _projectSelectingGUI = new ProjectSelectorGUI(_projectSelectingWindow);
+           // _projectSelectingWindow.CenterWindow();
+           // _projectSelectingWindow.WindowBorder = WindowBorder.Hidden;
         }
 
         private void SelectProjectClose(CancelEventArgs args)
@@ -195,7 +195,6 @@ namespace RockEngine.Editor
                 shader.Value.Dispose();
             }
             GC.SuppressFinalize(this);
-            Physics.Dispose();
         }
     }
 }

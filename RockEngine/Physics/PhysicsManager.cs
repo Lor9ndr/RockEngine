@@ -7,14 +7,15 @@ using RockEngine.Physics.Colliders;
 
 namespace RockEngine.Physics
 {
-    public sealed class PhysicsManager : IDisposable
+    public sealed class PhysicsManager 
     {
+        private Camera _camera;
+
         public PhysicsWorld World { get; set; }
 
-        public PhysicsManager()
+        public PhysicsManager(IWorldRenderer worldRenderer)
         {
-
-            World = new PhysicsWorld();
+            World = new PhysicsWorld(worldRenderer);
             World.Gravity = new Vector3(0, -9.8f, 0);
         }
 
@@ -25,12 +26,10 @@ namespace RockEngine.Physics
 
         public void SetDebugRender(Camera debugCamera)
         {
+            _camera = debugCamera;
         }
 
-        private void ExitPhysics()
-        {
-        }
-
+     
         public EngineRigidBody LocalCreateRigidBody(float mass, Vector3 startPos, Collider collider)
         {
             var rb = new EngineRigidBody(startPos, mass);
@@ -38,11 +37,6 @@ namespace RockEngine.Physics
             rb.Collider = collider;
             collider.Body = rb;
             return rb;
-        }
-
-        public void Dispose()
-        {
-            ExitPhysics();
         }
     }
 }

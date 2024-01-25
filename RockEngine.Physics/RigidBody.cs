@@ -17,6 +17,7 @@ namespace RockEngine.Physics
         public float CoefficientOfFrictionDynamic { get; set; }  = 0.01f;
         public float CoefficientOfFrictionStatic { get; set; }  = 0.1f;
         public bool IsSleeping { get; private set; }
+
         public Collider Collider
         {
             get => _collider;

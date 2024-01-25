@@ -18,7 +18,12 @@ namespace RockEngine.DI
             _kernel = new StandardKernel();
             _kernel.Load(new AssetModule(), new ManagersModule());
 
-            RegistratorLoader.LoadRegistrators(Assembly.GetExecutingAssembly());
+            RegistratorLoader.LoadRegistrators(Assembly.GetEntryAssembly(), _kernel);
+        }
+
+        public static void Load(NinjectModule module)
+        {
+            _kernel.Load(module);
         }
 
         public static T Get<T>()
@@ -39,11 +44,6 @@ namespace RockEngine.DI
         public static T Get<T>(ConstructorArgument argument)
         {
             return _kernel.Get<T>(argument);
-        }
-
-        public static void Load(NinjectModule module)
-        {
-            _kernel.Load(module);
         }
     }
 }

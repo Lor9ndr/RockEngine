@@ -6,6 +6,9 @@ namespace RockEngine.Physics.Colliders
     {
         public RigidBody Body { get; set; }
         public ColliderMaterial Material;
+        public bool WasCollided { get; set;}
+
+        public readonly bool IsConvex;
         public Collider()
         {
             Material = ColliderMaterial.Default;

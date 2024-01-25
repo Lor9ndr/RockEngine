@@ -12,11 +12,13 @@ namespace RockEngine.Physics
 
         public List<RigidBody> RigidBodies { get; set; }
         public Vector3 Gravity { get; set; } = new Vector3(0, -9.8f, 0); // Updated gravity value
+        public DebugWorld DebugWorld;
 
-        public PhysicsWorld()
+        public PhysicsWorld(IWorldRenderer worldRenderer)
         {
             RigidBodies = new List<RigidBody>();
             Watcher = new Stopwatch();
+            DebugWorld = new DebugWorld(worldRenderer);
         }
 
         public void AddRigidBody(RigidBody rigidBody)
@@ -31,6 +33,7 @@ namespace RockEngine.Physics
             Parallel.For(0, cnt, i =>
             {
                 var bodyA = RigidBodies[i];
+                bodyA.Collider.WasCollided = false;
                 for(int j = i + 1; j < cnt; j++)
                 {
                     var bodyB = RigidBodies[j];
@@ -60,18 +63,19 @@ namespace RockEngine.Physics
             {
                 RigidBodies[i].Update(deltaTime, Gravity);
             });
-
+            DebugWorld.Update();
             Watcher.Stop();
         }
 
-        private  void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody, float deltaTime)
+        private void ResolveStaticVsMovable(RigidBody movableBody, RigidBody staticBody, float deltaTime)
         {
             var result = movableBody.Collider.CheckCollision(staticBody.Collider);
             if(!result.IsCollided)
             {
                 return;
             }
-
+            movableBody.Collider.WasCollided = true;
+            staticBody.Collider.WasCollided = true;
             float invMassSum = movableBody.InverseMass;
             Vector3 correction = Math.Max(result.PenetrationDepth - SLOP, 0.0001f) / invMassSum * PERCENT * result.Normal;
             movableBody.Position += correction * movableBody.InverseMass / invMassSum;
@@ -127,6 +131,8 @@ namespace RockEngine.Physics
             {
                 return;
             }
+            bodyA.Collider.WasCollided = true;
+            bodyB.Collider.WasCollided = true;
 
             float invMassSum = bodyA.InverseMass + bodyB.InverseMass;
             Vector3 correction = Math.Max(result.PenetrationDepth - SLOP, 0.0001f) / invMassSum * PERCENT * result.Normal;
