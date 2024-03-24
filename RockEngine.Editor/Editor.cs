@@ -20,7 +20,6 @@ using RockEngine.Inputs;
 using RockEngine.Physics;
 using RockEngine.Physics.Colliders;
 using RockEngine.Rendering;
-using RockEngine.Rendering.Commands;
 using RockEngine.Rendering.OpenGL.Shaders;
 
 namespace RockEngine.Editor
@@ -125,35 +124,7 @@ namespace RockEngine.Editor
                 scene.Add(floor);
             });
 
-            // Nested loops for GameObject creation
-            for(int i = 0; i > -2; i--)
-            {
-                for(int j = 0; j > -2; j--)
-                {
-                    for(int k = 0; k > -2; k--)
-                    {
-                        material = await AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial")
-                            .ConfigureAwait(false);
-                        IRenderingContext.Update(ctx =>
-                        {
-                            material.ShaderData["material.albedo"] = new Vector3(Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle());
-                            var testTransform = new Transform(new Vector3(Random.Shared.NextSingle() * 10, Random.Shared.NextSingle() * 10, Random.Shared.NextSingle() * 10));
-                            var testGameObject = new GameObject(
-                                "TestGameObject",
-                                testTransform,
-                                new MeshComponent(testMesh),
-                                new MaterialComponent(material));
-
-                            var body = testGameObject.AddComponent(
-                                Physics.LocalCreateRigidBody(10f,
-                                testTransform.Position,
-                                new OBB(testTransform.Position, testTransform.Scale))
-                                );
-                            scene.Add(testGameObject);
-                        });
-                    }
-                }
-            }
+            await InitCubesBox(scene, testMesh).ConfigureAwait(false);
 
             IRenderingContext.Update(ctx =>
             {
@@ -176,6 +147,8 @@ namespace RockEngine.Editor
                 Layers.AddLayer(new DefaultEditorLayer());
             });
         }
+
+      
 
         protected override void Update(FrameEventArgs args)
         {
@@ -254,6 +227,40 @@ namespace RockEngine.Editor
             });
             //Force load shaders
             OpenGLDispatcher.ExecuteUpdateCommands();
+        }
+
+        private async Task InitCubesBox(Scene scene, Mesh testMesh)
+        {
+            Material material;
+            // Nested loops for GameObject creation
+            for(int i = 0; i > -2; i--)
+            {
+                for(int j = 0; j > -2; j--)
+                {
+                    for(int k = 0; k > -2; k--)
+                    {
+                        material = await AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial")
+                            .ConfigureAwait(false);
+                        IRenderingContext.Update(ctx =>
+                        {
+                            material.ShaderData["material.albedo"] = new Vector3(Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle());
+                            var testTransform = new Transform(new Vector3(Random.Shared.NextSingle() * 10, Random.Shared.NextSingle() * 10, Random.Shared.NextSingle() * 10));
+                            var testGameObject = new GameObject(
+                                "TestGameObject",
+                                testTransform,
+                                new MeshComponent(testMesh),
+                                new MaterialComponent(material));
+
+                            var body = testGameObject.AddComponent(
+                                Physics.LocalCreateRigidBody(10f,
+                                testTransform.Position,
+                                new OBB(testTransform.Position, testTransform.Scale))
+                                );
+                            scene.Add(testGameObject);
+                        });
+                    }
+                }
+            }
         }
 
         public override void Dispose()
