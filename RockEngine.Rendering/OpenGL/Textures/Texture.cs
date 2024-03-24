@@ -73,9 +73,8 @@ namespace RockEngine.Rendering.OpenGL.Textures
                 {
                     Setup(context)
                         .SetLabel(context);
+                    Logger.AddLog($"Resized Texture ({Handle}) with new size: {Size}");
                 });
-
-                Logger.AddLog($"Resized Texture ({Handle}) with new size: {Size}");
             }
             _size = size;
 

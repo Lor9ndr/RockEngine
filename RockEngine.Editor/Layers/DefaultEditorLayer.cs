@@ -103,12 +103,12 @@ namespace RockEngine.Editor.Layers
             Watcher.Restart();
             DebugCamera.Update();
             IRenderingContext.Render(DebugCamera.Render);
-
+            
             MainRenderPass(scene);
 
-            PickingObjectPass(scene);
-            GettingObjectFromPicked(scene);
-           
+             PickingObjectPass(scene);
+             GettingObjectFromPicked(scene);
+            
             Watcher.Stop();
             await _imguiRenderer.OnRender().ConfigureAwait(false);
         }
@@ -144,12 +144,15 @@ namespace RockEngine.Editor.Layers
         {
             IRenderingContext.Render(context =>
             {
+                context.Enable(EnableCap.CullFace)
+                .Enable(EnableCap.DepthTest);
                 var selected = _imguiRenderer.SelectedGameObject;
                 if(selected != null)
                 {
                     selected.IsActive = false;
                 }
                 Screen.BeginRenderToScreen(context);
+
                 scene.EditorLayerRender(context);
                 if(selected != null)
                 {

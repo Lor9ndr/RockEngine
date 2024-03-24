@@ -85,6 +85,7 @@ namespace RockEngine.ECS.GameObjects
 
         public void DisplayScreen(IRenderingContext context)
         {
+            
             _screenShader.Bind(context);
             _screenShader.SetShaderData(context, "sampler", 1);
             _screenSprite.SpriteTexture.SetTextureUnit(context, 1);

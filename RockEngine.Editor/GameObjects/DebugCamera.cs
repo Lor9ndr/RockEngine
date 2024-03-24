@@ -57,8 +57,7 @@ namespace RockEngine.Editor.GameObjects
         private void Window_MouseWheel(MouseWheelEventArgs obj)
         {
             CameraSpeed += obj.OffsetY;
-            CameraSpeed = Math.Clamp(CameraSpeed, 0, MAX_CAM_SPEED);
-            Logger.AddLog($"Change mouse speed to {CameraSpeed}");
+            CameraSpeed = Math.Clamp(CameraSpeed, 1, MAX_CAM_SPEED);
         }
 
         private void Window_MouseDown(MouseButtonEventArgs obj)

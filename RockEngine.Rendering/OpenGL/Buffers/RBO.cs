@@ -57,7 +57,7 @@ namespace RockEngine.Rendering.OpenGL.Buffers
         {
             Size = size;
             Dispose();
-            Setup(context);
+            IRenderingContext.Update(ctx=>Setup(ctx));
         }
         protected override void Dispose(bool disposing)
         {

@@ -48,7 +48,6 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             {
                 context.NamedFramebufferRenderbuffer(Handle, ((FrameBufferRenderBufferSettings)Settings).RenderBufferAttachment, _rbo.Settings.RenderbufferTarget, _rbo.Handle);
                 CheckBuffer(context);
-
             });
             return this;
         }
