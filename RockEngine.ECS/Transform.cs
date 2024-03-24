@@ -1,6 +1,8 @@
 ﻿
 using OpenTK.Mathematics;
 
+using RockEngine.Common;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.ECS
@@ -89,9 +91,9 @@ namespace RockEngine.ECS
             _transformData.Model = GetModelMatrix();
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            _transformData.SendData();
+            _transformData.SendData(context);
         }
 
         public void AddChildTransform(Transform t)

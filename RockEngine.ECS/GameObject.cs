@@ -1,4 +1,6 @@
-﻿using RockEngine.Common.Utils;
+﻿using RockEngine.Common;
+using RockEngine.Common.Utils;
+using RockEngine.Rendering;
 
 namespace RockEngine.ECS
 {
@@ -78,7 +80,7 @@ namespace RockEngine.ECS
         /// <summary>
         /// Render the components of the gameobject
         /// </summary>
-        public virtual void Render()
+        public virtual void Render(IRenderingContext context)
         {
             if(!IsActive)
             {
@@ -89,7 +91,7 @@ namespace RockEngine.ECS
                 IComponent? component = _components[i];
                 if(component is IRenderable renderable)
                 {
-                    renderable.Render();
+                    renderable.Render(context);
                 }
             }
         }
@@ -205,12 +207,12 @@ namespace RockEngine.ECS
             }
         }
 
-        public void RenderMeshWithoutMaterial()
+        public void RenderMeshWithoutMaterial(IRenderingContext context)
         {
             if(IsActive)
             {
-                Transform.Render();
-                GetComponent<MeshComponent>()?.Render();
+                Transform.Render(context);
+                GetComponent<MeshComponent>()?.Render(context);
             }
         }
 

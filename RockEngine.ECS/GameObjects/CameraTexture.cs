@@ -1,7 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
+using RockEngine.Common;
 using RockEngine.Common.Vertices;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Buffers;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Shaders;
@@ -42,53 +44,60 @@ namespace RockEngine.ECS.GameObjects
             {
                 TextureParameters = _screenParameters,
                 FramebufferAttachment = FramebufferAttachment.ColorAttachment0
-            }).Setup();
+            });
+            var fboSettings = new FrameBufferRenderBufferSettings(FramebufferAttachment.DepthStencilAttachment, FramebufferTarget.Framebuffer);
 
             _screenShader = ShaderProgram.GetOrCreate("Lit2DShader",
                 new VertexShader("Resources\\Shaders\\Screen\\Screen.vert"),
                 new FragmentShader("Resources\\Shaders\\Screen\\Screen.frag"));
 
-            _screenRenderBuffer = new RBO(new RenderBufferSettings(RenderbufferStorage.Depth32fStencil8, RenderbufferTarget.Renderbuffer), size).Setup();
-
-            _screenFrameBuffer = ((FBORBO)new FBORBO(new FrameBufferRenderBufferSettings(FramebufferAttachment.DepthStencilAttachment, FramebufferTarget.Framebuffer),
-                                            size,
-                                            _screenRenderBuffer,
-                                            ScreenTexture).Setup()).SetLabel();
-
+            _screenRenderBuffer = new RBO(new RenderBufferSettings(RenderbufferStorage.Depth32fStencil8, RenderbufferTarget.Renderbuffer), size);
+            _screenFrameBuffer = new FBORBO(
+    fboSettings,
+            size,
+            _screenRenderBuffer,
+            ScreenTexture);
             _screenSprite = new Sprite(ScreenTexture, in _vertices);
+
+            IRenderingContext.Update(context =>
+            {
+                ScreenTexture.Setup(context).SetLabel(context);
+                _screenShader.Setup(context);
+                _screenRenderBuffer.Setup(context).SetLabel(context);
+                _screenFrameBuffer.Setup(context).SetLabel(context);
+                _screenFrameBuffer.SetLabel(context).SetLabel(context);
+                _screenSprite.Setup(context);
+            });
+
         }
 
-        public void BeginRenderToScreen()
+        public void BeginRenderToScreen(IRenderingContext context)
         {
-            _screenFrameBuffer.Bind();
-            GL.Enable(EnableCap.DepthTest);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            GL.Viewport(0, 0, _screenFrameBuffer.Size.X, _screenFrameBuffer.Size.Y);
+            _screenFrameBuffer.Bind(context);
+            context.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit)
+                .Viewport(0, 0, _screenFrameBuffer.Size.X, _screenFrameBuffer.Size.Y);
         }
 
-        public void EndRenderToScreen()
+        public void EndRenderToScreen(IRenderingContext context)
         {
-            _screenFrameBuffer.Unbind();
-            GL.Disable(EnableCap.DepthTest);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+            _screenFrameBuffer.Unbind(context);
         }
 
-        public void DisplayScreen()
+        public void DisplayScreen(IRenderingContext context)
         {
-            _screenShader.Bind();
-            _screenShader.SetShaderData("sampler", 1);
-            _screenSprite.SpriteTexture.SetTextureUnit(1);
-            _screenSprite.Render();
-            _screenShader.Unbind();
+            _screenShader.Bind(context);
+            _screenShader.SetShaderData(context, "sampler", 1);
+            _screenSprite.SpriteTexture.SetTextureUnit(context, 1);
+            _screenSprite.Render(context);
+            _screenShader.Unbind(context);
         }
 
-        public void Resize(Vector2i size)
+        public void Resize(IRenderingContext context, Vector2i size)
         {
             if(_screenFrameBuffer.Size != size)
             {
                 size = new Vector2i(Math.Clamp(size.X, 1, int.MaxValue), Math.Clamp(size.Y, 1, int.MaxValue));
-                _screenFrameBuffer.Resize(size);
+                _screenFrameBuffer.Resize(context, size);
             }
         }
 

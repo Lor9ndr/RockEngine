@@ -10,10 +10,66 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
-        public override VAO Bind()
+        public override VAO Bind(IRenderingContext context)
         {
-            GL.BindVertexArray(Handle);
+            context.Bind(this);
             return this;
+        }
+
+      
+        public override VAO SetLabel(IRenderingContext context)
+        {
+            string label = $"VAO: ({Handle})";
+            Logger.AddLog($"Setupped {label}");
+            context.ObjectLabel(ObjectLabelIdentifier.VertexArray, Handle, label.Length, label);
+            return this;
+        }
+
+        /// <summary>
+        /// Creating in DSA style vertex array
+        /// </summary>
+        /// <returns>fluid syntax</returns>
+        public override VAO Setup(IRenderingContext context)
+        {
+            context.CreateVertexArray(out int handle);
+            Handle = handle;
+            return this;
+        }
+
+        public override VAO Unbind(IRenderingContext context)
+        {
+            context.BindVAO(IGLObject.EMPTY_HANDLE);
+            return this;
+        }
+
+        public VAO EnableVertexArrayAttrib(IRenderingContext context, int attribute)
+        {
+            context.EnableVertexArrayAttrib(Handle, attribute);
+            return this;
+        }
+
+        public VAO VertexAttribDivisor(IRenderingContext context, int binding, int divisor)
+        {
+            context.VertexArrayAttribDivisor(Handle, binding, divisor);
+            return this;
+        }
+
+        public VAO VertexAttribPointer(IRenderingContext context, int index, int size, VertexAttribPointerType type, bool normalized, int stride, nint offset)
+        {
+            context.VertexAttribPointer(index, size, type, normalized, stride, offset);
+            return this;
+        }
+
+        public VAO VertexAttribPointer(IRenderingContext context, int index, int size, VertexAttribPointerType type, bool normalized, int stride, int offset)
+        {
+            context.VertexAttribPointer(index, size, type, normalized, stride, offset);
+            return this;
+        }
+
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.VertexArrayBinding, out int value);
+            return value == Handle;
         }
 
         protected override void Dispose(bool disposing)
@@ -44,56 +100,5 @@ namespace RockEngine.Rendering.OpenGL.Buffers
         {
             Dispose();
         }
-        public override VAO SetLabel()
-        {
-            string label = $"VAO: ({Handle})";
-            Logger.AddLog($"Setupped {label}");
-            GL.ObjectLabel(ObjectLabelIdentifier.VertexArray, Handle, label.Length, label);
-            return this;
-        }
-
-        /// <summary>
-        /// Creating in DSA style vertex array
-        /// </summary>
-        /// <returns>fluid syntax</returns>
-        public override VAO Setup()
-        {
-            GL.CreateVertexArrays(1, out int handle);
-            Handle = handle;
-            return this;
-        }
-
-        public override VAO Unbind()
-        {
-            GL.BindVertexArray(IGLObject.EMPTY_HANDLE);
-            return this;
-        }
-
-        public VAO EnableVertexArrayAttrib(int attribute)
-        {
-            GL.EnableVertexArrayAttrib(Handle, attribute);
-            return this;
-        }
-
-        public VAO VertexAttribDivisor(int binding, int divisor)
-        {
-            GL.VertexArrayBindingDivisor(Handle, binding, divisor);
-            return this;
-        }
-
-        public VAO VertexAttribPointer(int index, int size, VertexAttribPointerType type, bool normalized, int stride, nint offset)
-        {
-            GL.VertexAttribPointer(index, size, type, normalized, stride, offset);
-            return this;
-        }
-
-        public VAO VertexAttribPointer(int index, int size, VertexAttribPointerType type, bool normalized, int stride, int offset)
-        {
-            GL.VertexAttribPointer(index, size, type, normalized, stride, offset);
-            return this;
-        }
-
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.VertexArrayBinding) == Handle;
     }
 }

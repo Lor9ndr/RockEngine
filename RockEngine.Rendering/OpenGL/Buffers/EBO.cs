@@ -11,74 +11,77 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public EBO(BufferSettings settings) : base(settings) { }
 
-        public override EBO Bind()
+        public override EBO Bind(IRenderingContext context)
         {
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
+            context.BindBuffer(BufferTarget.ElementArrayBuffer, Handle);
             return this;
         }
 
         protected override void Dispose(bool disposing)
         {
-            if(_disposed)
+            IRenderingContext.Update(context =>
             {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 64, out int length, out string name);
-            if(name.Length == 0)
-            {
-                name = $"IBO: ({Handle})";
-            }
-            Logger.AddLog($"Disposing {name}");
-            GL.DeleteBuffers(1, ref _handle);
-            // now Handle is 0 
-            _handle = IGLObject.EMPTY_HANDLE;
+                if(!IsSetupped)
+                {
+                    return;
+                }
 
-            _disposed = true;
+                context.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 64, out _, out string name);
+                if(name.Length == 0)
+                {
+                    name = $"IBO: ({Handle})";
+                }
+                Logger.AddLog($"Disposing {name}");
+                context.DeleteBuffer(_handle);
+                // now Handle is 0 
+                _handle = IGLObject.EMPTY_HANDLE;
+
+                _disposed = true;
+            });
+            
         }
 
-        public override EBO SetLabel()
+        public override EBO SetLabel(IRenderingContext context)
         {
             string label = $"EBO: ({Handle})";
             Logger.AddLog($"Setupped {label}");
 
-            GL.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, label.Length, label);
+            context.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, label.Length, label);
             return this;
         }
 
-        public override EBO Setup()
+        public override EBO Setup(IRenderingContext context)
         {
-            GL.CreateBuffers(1, out int handle);
+            context.CreateBuffer(out int handle);
             Handle = handle;
             return this;
         }
 
-        public EBO SendData<T>(T[ ] data) where T : struct
+        public EBO SendData<T>(IRenderingContext context, T[] data) where T : struct
         {
-            GL.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
-            return this;
-        }
-        public EBO SendData<T>(in T[ ] data) where T : struct
-        {
-            GL.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
+            context.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
             return this;
         }
 
-        public override EBO Unbind()
+        public override EBO Unbind(IRenderingContext context)
         {
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, IGLObject.EMPTY_HANDLE);
+            context.BindBuffer(BufferTarget.ElementArrayBuffer, IGLObject.EMPTY_HANDLE);
             return this;
         }
 
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.ElementArrayBufferBinding) == Handle;
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.ElementArrayBufferBinding, out int value);
+            return value == Handle;
+        }
     }
 }

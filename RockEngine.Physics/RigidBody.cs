@@ -1,5 +1,4 @@
 ﻿using OpenTK.Mathematics;
-
 using RockEngine.Physics.Colliders;
 
 namespace RockEngine.Physics
@@ -7,197 +6,121 @@ namespace RockEngine.Physics
     public class RigidBody
     {
         public Vector3 Position;
-        public Quaternion Rotation;
-        public Vector3 Velocity;
-        public Vector3 CenterOfMass;
-        public Vector3 AngularVelocity;
-        public Vector3 CenterOfMassGlobal => Position + Vector3.Transform(CenterOfMass, Rotation);
-
-        public MotionState MotionState;
-        public float CoefficientOfFrictionDynamic { get; set; }  = 0.01f;
-        public float CoefficientOfFrictionStatic { get; set; }  = 0.1f;
-        public bool IsSleeping { get; private set; }
-
-        public Collider Collider
-        {
-            get => _collider;
-            set
-            {
-                _collider = value;
-                _collider.Body = this;
-                UpdateFields();
-            }
-        }
-
-        internal Matrix3 InverseInertiaTensor;
-        private Collider _collider;
-        private float _inverseMass;
-        private float _mass;
-        private bool _isStatic;
-        private Vector3 InertiaTensor;
-
-        private const float SleepThreshold = 0.2f;
-        private const float SleepTime = 1.0f; // Time in seconds
-        private float _timeSinceLastMovement = 0.0f;
-
-        public float InverseMass => _inverseMass;
-
-        public bool IsStatic => _isStatic;
-        public bool IsMovable => !_isStatic;
-
+        public Quaternion Rotation = Quaternion.Identity;
+        public ICollider Collider { get; private set;}
         public float Mass
         {
             get => _mass;
             set
             {
                 _mass = value;
-                UpdateFields();
+                UpdateMassDependencies();
             }
         }
+        public bool IsStatic => _isStatic;
+        public float InverseMass => _inverseMass;
 
-        public Matrix3 InverseInertiaTensorWorld { get; private set; }
+        public Vector3 Velocity;
+        public Vector3 AngularVelocity;
 
-        private void UpdateFields()
-        {
-            bool isStatic = Mass == 0;
-            if(isStatic)
-            {
-                _inverseMass = 0;
-            }
-            else
-            {
-                _inverseMass = 1 / _mass;
-            }
-            _isStatic = isStatic;
-            CalculateInertiaTensor();
-        }
+        public Matrix3 InertiaTensor { get; private set;}
 
-        public RigidBody(Vector3 position, Vector3 velocity, float mass)
+        public Matrix3 InverseInertiaTensor { get; private set; }
+
+        public float LinearDamping = 0.98f;
+        public float AngularDamping = 0.95f;
+        private float _inverseMass;
+        private float _mass;
+        private bool _isStatic;
+
+        public RigidBody(Vector3 position, float mass, ICollider collider)
         {
             Position = position;
-            Velocity = velocity;
-            _mass = mass;
-            Rotation = Quaternion.Identity;
-            MotionState = new MotionState();
+            InertiaTensor = Matrix3.Identity; // Placeholder, will be updated in UpdateMassDependencies
+            InverseInertiaTensor = Matrix3.Identity; // Placeholder, will be updated in UpdateMassDependencies
+            Collider = collider;
+            Mass = mass; // Define mass last because it is calling UpdateMassDependencies(); 
+
         }
 
-        public void ApplyForce(Vector3 force)
+        private void UpdateMassDependencies()
         {
-            if(IsStatic)
-            {
-                return; // No need to apply force to a static body
-            }
-            // Change in velocity is given by F = ma, or DeltaV = F/m
+            _inverseMass = Mass != 0 ? 1 / Mass : 0;
+            _isStatic = Mass == 0;
+
+            // Use the collider's CalculateInertiaTensor method
+            InertiaTensor = Collider.CalculateInertiaTensor(Mass);
+            InverseInertiaTensor = InertiaTensor.Inverted();
+        }
+
+        public void ApplyForce(Vector3 force, Vector3 point)
+        {
             Velocity += force * InverseMass;
+            AngularVelocity += InverseInertiaTensor * Vector3.Cross(point - Position, force);
         }
 
-        public void ApplyTorque(Vector3 torque)
+        public void Simulate(float deltaTime, Vector3 gravity)
         {
-            AngularVelocity += InverseInertiaTensorWorld * torque;
-        }
-
-        public void ApplyImpulse(Vector3 impulse)
-        {
-            // F = ma, so a = F/m. We can add this acceleration to the velocity.
-            Velocity += impulse * _inverseMass;
-        }
-        public void ApplyImpulse(Vector3 impulse, Vector3 contactPoint)
-        {
-            if(IsStatic)
-            {
-                return; // No need to apply impulse to a static body
-            }
-
-            // Linear impulse application
-            Velocity += InverseMass * impulse;
-
-            // Convert the contact point to be relative to the center of mass
-            Vector3 contactVector = contactPoint - CenterOfMassGlobal;
-
-            // Angular impulse application
-            // Calculate the torque induced by the impulse relative to the center of mass
-            Vector3 torque = Vector3.Cross(contactVector, impulse);
-
-            // Apply the torque to the angular velocity, taking into account the body's inertia tensor
-            ApplyTorque(torque);
-        }
-
-        public void PutToSleep()
-        {
-            IsSleeping = true;
-            Velocity = Vector3.Zero;
-            AngularVelocity = Vector3.Zero;
-        }
-
-        public void WakeUp()
-        {
-            IsSleeping = false;
-        }
-
-        public void Update(float deltaTime, Vector3 gravity)
-        {
-            if(Velocity.LengthSquared < SleepThreshold * SleepThreshold &&
-            AngularVelocity.LengthSquared < SleepThreshold * SleepThreshold)
-            {
-                _timeSinceLastMovement += deltaTime;
-                if(_timeSinceLastMovement >= SleepTime)
-                {
-                    PutToSleep();
-                }
-            }
-            else
-            {
-                _timeSinceLastMovement = 0.0f;
-                WakeUp();
-            }
-            if(IsSleeping || !IsMovable)
-            {
-                return;
-            }
-            //deltaTime = CalculateTimeStep(deltaTime);
-
-            // Runge-Kutta 4th order method
-            Vector3 k1 = deltaTime * Velocity;
-            Vector3 k2 = deltaTime * (Velocity + 0.5f * k1);
-            Vector3 k3 = deltaTime * (Velocity + 0.5f * k2);
-            Vector3 k4 = deltaTime * (Velocity + k3);
-            Position += (k1 + 2f * (k2 + k3) + k4) / 6f;
-
-            // Update linear velocity with gravity and damping
-            Velocity += gravity * deltaTime; // Update velocity with acceleration
-
-            // Quadratic damping
-            Velocity += 0.5f * CoefficientOfFrictionDynamic * Velocity * Velocity.Length * deltaTime;
-
-            // Rotational friction
-            AngularVelocity -= 0.5f * CoefficientOfFrictionDynamic * AngularVelocity * AngularVelocity.Length * deltaTime;
-
-            // Update the world-space inverse inertia tensor
-            Matrix3 rotationMatrix = Matrix3.CreateFromQuaternion(Rotation);
-            InverseInertiaTensorWorld = rotationMatrix * InverseInertiaTensor * Matrix3.Transpose(rotationMatrix);
-
-            // Quaternion-based rotation update
-            Quaternion angularVelocityQuaternion = new Quaternion(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z, 0);
-            Quaternion spin = 0.5f * Quaternion.Multiply(angularVelocityQuaternion, Rotation);
-            Quaternion newRotation = new Quaternion(Rotation.X + spin.X * deltaTime,
-                                                    Rotation.Y + spin.Y * deltaTime,
-                                                    Rotation.Z + spin.Z * deltaTime,
-                                                    Rotation.W + spin.W * deltaTime);
-            Rotation = Quaternion.Normalize(newRotation);
-        }
-
-        private void CalculateInertiaTensor()
-        {
-            InertiaTensor = Vector3.One;
-            InverseInertiaTensor = Matrix3.Identity;
-
+            Collider.GetUpdatesFromBody(this);
             if(IsStatic)
             {
                 return;
             }
 
-            InertiaTensor = Collider.GetLocalInertiaTensor(Mass);
-            InverseInertiaTensor.Diagonal = new Vector3(1.0f / InertiaTensor.X, 1.0f / InertiaTensor.Y, 1.0f / InertiaTensor.Z);
+            // RK4 integration for linear motion
+            Vector3 initialPosition = Position;
+            Vector3 initialVelocity = Velocity;
+
+            // Calculate the four derivatives for position
+            Vector3 k1Vel = deltaTime * initialVelocity;
+            Vector3 k2Vel = deltaTime * (initialVelocity + 0.5f * k1Vel);
+            Vector3 k3Vel = deltaTime * (initialVelocity + 0.5f * k2Vel);
+            Vector3 k4Vel = deltaTime * (initialVelocity + k3Vel);
+
+            // Update position based on the weighted sum of derivatives
+            Position += (k1Vel + 2.0f * (k2Vel + k3Vel) + k4Vel) / 6.0f;
+
+            // RK4 integration for velocity
+            Vector3 acceleration = gravity; // This can be more complex if other forces are involved
+
+            // Calculate the four derivatives for velocity
+            Vector3 k1Acc = deltaTime * acceleration;
+            Vector3 k2Acc = deltaTime * (acceleration + 0.5f * k1Acc);
+            Vector3 k3Acc = deltaTime * (acceleration + 0.5f * k2Acc);
+            Vector3 k4Acc = deltaTime * (acceleration + k3Acc);
+
+            // Update velocity based on the weighted sum of derivatives
+            Velocity += (k1Acc + 2.0f * (k2Acc + k3Acc) + k4Acc) / 6.0f;
+
+            // Apply linear damping
+            Velocity *= MathF.Pow(LinearDamping, deltaTime);
+
+            // RK4 integration for angular motion
+            Quaternion initialRotation = Rotation;
+            Vector3 initialAngularVelocity = AngularVelocity;
+
+            // Calculate the four derivatives for rotation (quaternion)
+            Quaternion k1Rot = deltaTime * new Quaternion(initialAngularVelocity.X, initialAngularVelocity.Y, initialAngularVelocity.Z, 0) * initialRotation * 0.5f;
+            Quaternion k2Rot = deltaTime * new Quaternion((initialAngularVelocity + 0.5f * k1Rot.Xyz).X, (initialAngularVelocity + 0.5f * k1Rot.Xyz).Y, (initialAngularVelocity + 0.5f * k1Rot.Xyz).Z, 0) * initialRotation * 0.5f;
+            Quaternion k3Rot = deltaTime * new Quaternion((initialAngularVelocity + 0.5f * k2Rot.Xyz).X, (initialAngularVelocity + 0.5f * k2Rot.Xyz).Y, (initialAngularVelocity + 0.5f * k2Rot.Xyz).Z, 0) * initialRotation * 0.5f;
+            Quaternion k4Rot = deltaTime * new Quaternion((initialAngularVelocity + k3Rot.Xyz).X, (initialAngularVelocity + k3Rot.Xyz).Y, (initialAngularVelocity + k3Rot.Xyz).Z, 0) * initialRotation * 0.5f;
+
+            // Update rotation based on the weighted sum of derivatives
+            Quaternion deltaRotation = (k1Rot + 2.0f * (k2Rot + k3Rot) + k4Rot) * (1.0f / 6.0f);
+            Rotation += deltaRotation;
+            Rotation.Normalize();
+
+            // Apply angular damping
+            AngularVelocity *= MathF.Pow(AngularDamping, deltaTime);
+        }
+
+        private void UpdateRotation(float deltaTime)
+        {
+            Quaternion w = new Quaternion(AngularVelocity.X, AngularVelocity.Y, AngularVelocity.Z, 0);
+            Quaternion qDot = 0.5f * w * Rotation;
+            Quaternion newRotation = Rotation + qDot * deltaTime;
+            newRotation.Normalize();
+            Rotation = newRotation;
         }
     }
 }

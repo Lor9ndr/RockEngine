@@ -1,4 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using RockEngine.Common;
+using RockEngine.Rendering;
+
+using System.Text.Json.Serialization;
 
 namespace RockEngine.ECS
 {
@@ -23,22 +26,26 @@ namespace RockEngine.ECS
 
         public void OnStart()
         {
-            if(Mesh is not null && !Mesh.IsSetupped)
+            IRenderingContext.Update(context =>
             {
-                if(Mesh.HasIndices)
+                if(Mesh is not null && !Mesh.IsSetupped)
                 {
-                    Mesh.SetupMeshIndicesVertices(ref Mesh.Indices!, ref Mesh.Vertices!);
+                    if(Mesh.HasIndices)
+                    {
+                        Mesh.SetupMeshIndicesVertices(context,Mesh.Indices!, Mesh.Vertices!);
+                    }
+                    else
+                    {
+                        Mesh.SetupMeshVertices(context, Mesh.Vertices!);
+                    }
                 }
-                else
-                {
-                    Mesh.SetupMeshVertices(ref Mesh.Vertices!);
-                }
-            }
+            });
+            
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            Mesh?.Render();
+            Mesh?.Render(context);
         }
 
         public void OnUpdate()
@@ -53,8 +60,6 @@ namespace RockEngine.ECS
         {
             Mesh?.Dispose();
         }
-
-
 
         public dynamic GetState()
         {

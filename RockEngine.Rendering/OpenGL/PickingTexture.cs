@@ -46,37 +46,44 @@ namespace RockEngine.Rendering.OpenGL
                 FramebufferAttachment = FramebufferAttachment.DepthAttachment
             });
 
-            _fbo = new FBO(new FrameBufferSettings(FramebufferTarget.Framebuffer), Size, _pickingTexture, _depthTexture)
-                .Setup()
-                .SetLabel()
-                .Bind();
-            GL.ReadBuffer(ReadBufferMode.None);
-            GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
-            _fbo.CheckBuffer();
-            _fbo.Unbind();
+            IRenderingContext.Update(context =>
+            {
+                _fbo = new FBO(new FrameBufferSettings(FramebufferTarget.Framebuffer), Size, _pickingTexture, _depthTexture)
+                .Setup(context)
+                .SetLabel(context)
+                .Bind(context);
+
+                context.ReadBuffer(ReadBufferMode.None)
+                    .DrawBuffer(DrawBufferMode.ColorAttachment0);
+
+                _fbo.CheckBuffer(context);
+                _fbo.Unbind(context);
+
+            });
+           
         }
 
-        public void BeginWrite()
+        public void BeginWrite(IRenderingContext context)
         {
-            _fbo.BindAsDrawBuffer();
-            GL.Viewport(0, 0, Size.X, Size.Y);
-            GL.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
-            GL.ClearColor(0, 0, 0, 0);
+            _fbo.BindAsDrawBuffer(context);
+            context.Viewport(0, 0, Size.X, Size.Y)
+                .Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit)
+                .ClearColor(0, 0, 0, 0);
         }
 
-        public void EndWrite()
+        public void EndWrite(IRenderingContext context)
         {
-            _fbo.UnbindAsDrawBuffer();
+            _fbo.UnbindAsDrawBuffer(context);
         }
 
-        public void ReadPixel(int x, int y, ref PixelInfo info)
+        public void ReadPixel(IRenderingContext context, int x, int y, ref PixelInfo info)
         {
-            _fbo.ReadPixel(x, y, ref info);
+            _fbo.ReadPixel(context, x, y, ref info);
         }
 
-        public void ReadPixel(int x, int y, ref PixelInfo[ ] info)
+        public void ReadPixel(IRenderingContext context, int x, int y, ref PixelInfo[ ] info)
         {
-            _fbo.ReadPixel(x, y, ref info);
+            _fbo.ReadPixel(context,x, y, ref info);
         }
 
         public void CheckSize(Vector2i size)

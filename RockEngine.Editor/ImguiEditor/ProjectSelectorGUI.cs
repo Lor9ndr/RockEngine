@@ -6,6 +6,7 @@ using NativeFileDialogSharp;
 
 using RockEngine.Common;
 using RockEngine.ECS.Assets;
+using RockEngine.Rendering;
 
 namespace RockEngine.Editor.ImguiEditor
 {
@@ -13,6 +14,7 @@ namespace RockEngine.Editor.ImguiEditor
     {
         private readonly EngineWindow _window;
         private readonly ImGuiOpenGL _controller;
+        private  Task TaskToWait;
 
         public ProjectSelectorGUI(EngineWindow window)
         {
@@ -37,18 +39,22 @@ namespace RockEngine.Editor.ImguiEditor
                     {
                         _window.Close();
                         _window.Context.MakeNoneCurrent();
-                        AssetManager.LoadProject(result.Path);
+                        TaskToWait = Task.Run(async ()=> await AssetManager.LoadProject(result.Path));
                         return;
                     }
                 }
 
                 ImGui.End();
             }
-            _controller.Render(_window.Size);
+            IRenderingContext.Render(ctx =>
+            {
+                _controller.Render(ctx, _window.Size);
+            });
         }
 
         public void Dispose()
         {
+            TaskToWait.Wait();
             _controller.Dispose();
         }
     }

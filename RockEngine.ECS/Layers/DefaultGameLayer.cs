@@ -1,6 +1,7 @@
 ﻿using OpenTK.Mathematics;
 
 using RockEngine.ECS.GameObjects;
+using RockEngine.Rendering;
 
 using System.Diagnostics;
 
@@ -20,13 +21,18 @@ namespace RockEngine.ECS.Layers
             Watcher = new Stopwatch();
         }
 
-        public override void OnRender(Scene scene)
+        public override Task OnRender(Scene scene)
         {
-            Watcher.Restart();
-            Screen.BeginRenderToScreen();
-            scene.Render();
-            Screen.EndRenderToScreen();
-            Watcher.Stop();
+            IRenderingContext.Render(context =>
+            {
+                Watcher.Restart();
+                Screen.BeginRenderToScreen(context);
+                scene.Render(context);
+                Screen.EndRenderToScreen(context);
+                //Screen.DisplayScreen(context);
+                Watcher.Stop();
+            });
+            return Task.CompletedTask;
         }
 
         public void Dispose()

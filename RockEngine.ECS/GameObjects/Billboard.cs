@@ -1,6 +1,8 @@
 ﻿using OpenTK.Mathematics;
 
+using RockEngine.Common;
 using RockEngine.Common.Vertices;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Shaders;
 using RockEngine.Rendering.OpenGL.Textures;
 
@@ -30,9 +32,14 @@ namespace RockEngine.ECS.GameObjects
             _camera = camera;
             _sprite = new Sprite(_billboardTexture, in _vertices);
             _shader = ShaderProgram.GetOrCreate("Lit2DShader", new VertexShader("Resources\\Shaders\\Screen\\Screen.vert"), new FragmentShader("Resources\\Shaders\\Screen\\Screen.frag"));
+
+           IRenderingContext.Update(context =>
+           {
+               _shader.Setup(context);
+           });
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
             var view = _camera.GetViewMatrix();
             var proj = _camera.GetProjectionMatrix();
@@ -43,12 +50,7 @@ namespace RockEngine.ECS.GameObjects
             {
                 return;
             }
-            _sprite.Render();
-        }
-
-        public void RenderOnEditorLayer()
-        {
-
+            _sprite.Render(context);
         }
 
         public void OnStart()

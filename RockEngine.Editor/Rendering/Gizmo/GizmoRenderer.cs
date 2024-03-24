@@ -1,4 +1,6 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using Ninject.Activation;
+
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
@@ -11,6 +13,7 @@ using RockEngine.Editor.GameObjects;
 using RockEngine.Editor.Layers;
 using RockEngine.Inputs;
 using RockEngine.Renderers;
+using RockEngine.Rendering;
 using RockEngine.Rendering.Layers;
 using RockEngine.Rendering.OpenGL.Shaders;
 
@@ -65,7 +68,10 @@ namespace RockEngine.Editor.Rendering.Gizmo
             _selectingShader = ShaderProgram.GetOrCreate("GizmoShader",
                 new VertexShader(baseDebug / "Gizmo.vert"),
                  new FragmentShader(baseDebug / "Gizmo.frag"));
-            _selectingShader.Setup();
+            IRenderingContext.Update(context =>
+            {
+                _selectingShader.Setup(context);
+            });
 
             var posMesh = new Mesh(ref _axisVertices, ref _axisIndices, "GIZMO MESH AXIS position", PathsInfo.ENGINE_DIRECTORY, Guid.Empty);
             posMesh.PrimitiveType = PrimitiveType.Lines;
@@ -119,47 +125,51 @@ namespace RockEngine.Editor.Rendering.Gizmo
 
         private void GizmoRenderer_MouseDown(OpenTK.Windowing.Common.MouseButtonEventArgs obj)
         {
-            if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis() &&
+            IRenderingContext.Update(context =>
+            {
+                if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis(context) &&
                 _axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis) &&
                 _currentTransform is not null)
-            {
-                _isDragging = true;
-                _currentAxis = axis;
-            }
+                {
+                    _isDragging = true;
+                    _currentAxis = axis;
+                }
+            });
+            
         }
 
-        public void Render(GameObject go)
+        public void Render(IRenderingContext context, GameObject go)
         {
-            Render(go.Transform);
+            Render(context, go.Transform);
         }
 
-        public void Render(IComponent component)
+        public void Render(IRenderingContext context, IComponent component)
         {
             if(component is Transform tr)
             {
                 var camOffset = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - tr.Position).Length;
                 var lineLength = Math.Clamp(camOffset / 2, 2, 6);
                 var lineWidth = Math.Clamp(lineLength, 8, 10);
-                GL.LineWidth(lineWidth);
+                context.LineWidth(lineWidth);
                 _currentTransform = tr;
                 // Setting transform data
                 _gizmoPosGameObject.Transform.Position = tr.Position;
                 _gizmoPosGameObject.Transform.Scale = new Vector3(Math.Max(tr.Scale.X, Math.Max(tr.Scale.Y, tr.Scale.Z))) * lineLength;
                 _gizmoPosGameObject.Transform.RotationQuaternion = Quaternion.Identity;
                 // Picking pass
-                _pickingRenderer.Begin();
+                _pickingRenderer.Begin(context);
                 _pickingRenderer.ResizeTexture(_screen.ScreenTexture.Size);
                 _gizmoPosGameObject.Update();
-                _pickingRenderer.Render(_gizmoPosGameObject);
-                _pickingRenderer.End();
+                _pickingRenderer.Render(context, _gizmoPosGameObject);
+                _pickingRenderer.End(context);
 
                 // DefaultRender pass to render gizmos
-                _selectingShader.BindIfNotBinded();
-                HandleClickingOnAxis();
-                _gizmoPosGameObject.Render();
-                _selectingShader.SetShaderData("outlineColor", Vector3.One);
-                _selectingShader.Unbind();
-                GL.LineWidth(1);
+                _selectingShader.BindIfNotBinded(context);
+                HandleClickingOnAxis(context);
+                _gizmoPosGameObject.Render(context);
+                _selectingShader.SetShaderData(context, "outlineColor", Vector3.One);
+                _selectingShader.Unbind(context);
+                context.LineWidth(1);
 
                 if(_isDragging)
                 {
@@ -182,18 +192,18 @@ namespace RockEngine.Editor.Rendering.Gizmo
             _lastMousePos = mousePosition;
         }
 
-        public bool IsClickingOnAxis()
+        public bool IsClickingOnAxis(IRenderingContext context)
         {
-            _pickingRenderer.ReadPixel((int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref CurrentPixelInfo);
+            _pickingRenderer.ReadPixel(context, (int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref CurrentPixelInfo);
 
             return Input.IsButtonDown(MouseButton.Left) && CurrentPixelInfo.PrimID >= 1 && CurrentPixelInfo.PrimID <= 3;
         }
 
-        private void HandleClickingOnAxis()
+        private void HandleClickingOnAxis(IRenderingContext context)
         {
             if(_axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis))
             {
-                _selectingShader.SetShaderData("outlineColor", axis.Color);
+                _selectingShader.SetShaderData(context, "outlineColor", axis.Color);
             };
         }
 

@@ -7,11 +7,13 @@ using RockEngine.ECS.Layers;
 
 namespace RockEngine
 {
-    public abstract class Application
+    public abstract class Application : IDisposable
     {
         private static Application? _instance;
         public static Application? GetCurrentApp() => _instance;
         public static EngineWindow? GetMainWindow() => _instance?.MainWindow;
+        protected CancellationTokenSource _ctr;
+        protected CancellationToken _ct;
 
         public EngineWindow MainWindow;
         public readonly Layers Layers;
@@ -26,10 +28,14 @@ namespace RockEngine
             {
                 _instance = this;
             }
+            _ctr = new CancellationTokenSource();
+            _ct = _ctr.Token;
+
             MainWindow = WindowManager.CreateWindow(name, width, height);
             MainWindow.RenderFrame += Render;
             MainWindow.UpdateFrame += Update;
-            MainWindow.Load += Load;
+            MainWindow.Initilized += Initilized;
+
             Layers = new Layers();
         }
 
@@ -37,9 +43,14 @@ namespace RockEngine
         {
             MainWindow.Run();
         }
-
-        protected abstract void Load();
+        protected abstract Task Initilized();
         protected abstract void Update(FrameEventArgs args);
         protected abstract void Render(FrameEventArgs args);
+
+        public virtual void Dispose()
+        {
+            _ctr.Cancel();
+            _ctr.Dispose();
+        }
     }
 }

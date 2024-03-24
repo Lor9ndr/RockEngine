@@ -16,6 +16,8 @@
   <ItemGroup>
     <None Remove="Resources\Shaders\Dbg\Gizmo\Gizmo.frag" />
     <None Remove="Resources\Shaders\Dbg\Gizmo\Gizmo.vert" />
+    <None Remove="Resources\Shaders\ImGui\ImGui.frag" />
+    <None Remove="Resources\Shaders\ImGui\ImGui.vert" />
     <None Remove="runtimes\glfw3.dll" />
     <None Remove="runtimes\libbulletc.dll" />
     <None Remove="runtimes\win-x64\native\glfw3.dll" />

@@ -35,7 +35,7 @@ namespace RockEngine.Rendering.OpenGL
             RenderType = RenderType.Forward;
         }
 
-        public abstract void Render();
+        public abstract void Render(IRenderingContext context);
 
         /// <summary>
         /// Render without using indices (EBO)

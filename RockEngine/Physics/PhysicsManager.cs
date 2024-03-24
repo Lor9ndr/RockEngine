@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using RockEngine.ECS;
 using RockEngine.ECS.GameObjects;
 using RockEngine.Physics.Colliders;
+using RockEngine.Physics.Drawing;
 
 namespace RockEngine.Physics
 {
@@ -13,15 +14,16 @@ namespace RockEngine.Physics
 
         public PhysicsWorld World { get; set; }
 
-        public PhysicsManager(IWorldRenderer worldRenderer)
+        public PhysicsManager(ColliderRenderer renderer)
         {
-            World = new PhysicsWorld(worldRenderer);
-            World.Gravity = new Vector3(0, -9.8f, 0);
+            // IWorldRenderer worldRenderer
+            World = new PhysicsWorld();
+            World.ColliderRenderer = renderer;
         }
 
         public void Update(float elapsedTime)
         {
-            World.Simulate();
+            World.Update(elapsedTime);
         }
 
         public void SetDebugRender(Camera debugCamera)
@@ -30,12 +32,10 @@ namespace RockEngine.Physics
         }
 
      
-        public EngineRigidBody LocalCreateRigidBody(float mass, Vector3 startPos, Collider collider)
+        public EngineRigidBody LocalCreateRigidBody(float mass, Vector3 startPos, ICollider collider)
         {
-            var rb = new EngineRigidBody(startPos, mass);
+            var rb = new EngineRigidBody(startPos, mass, collider);
             World.AddRigidBody(rb);
-            rb.Collider = collider;
-            collider.Body = rb;
             return rb;
         }
     }

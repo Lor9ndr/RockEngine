@@ -28,9 +28,9 @@ namespace RockEngine.Rendering.OpenGL.Textures
         /// This method just initilize Opengl Texture
         /// </summary>
         /// <returns>Fluent</returns>
-        public override Texture2D Setup()
+        public override Texture2D Setup(IRenderingContext context)
         {
-            GL.CreateTextures(Settings.TextureTarget, 1, out int handle);
+            context.CreateTextures(Settings.TextureTarget, out int handle);
             Handle = handle;
             return this;
         }

@@ -1,9 +1,11 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
+using RockEngine.Common;
 using RockEngine.Common.Editor;
 using RockEngine.Common.Utils;
 using RockEngine.ECS.Figures;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.ECS.GameObjects
@@ -98,9 +100,9 @@ namespace RockEngine.ECS.GameObjects
         // Get the view matrix using the amazing LookAt function described more in depth on the web tutorials
         public Matrix4 GetViewMatrix() => Matrix4.LookAt(Parent!.Transform.Position, Parent.Transform.Position + Front, _up);
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            _cameraData.SendData();
+            _cameraData.SendData(context);
         }
 
         public void UpdateVectors()

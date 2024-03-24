@@ -8,8 +8,6 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             : base(name, computeShader)
         {
         }
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.CurrentProgram) == Handle;
 
         /*  public void Dispatch(int numGroupX, int numGroupY, int numGroupZ)
           {

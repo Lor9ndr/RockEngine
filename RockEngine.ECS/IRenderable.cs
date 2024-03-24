@@ -1,7 +1,10 @@
-﻿namespace RockEngine.ECS
+﻿using RockEngine.Common;
+using RockEngine.Rendering;
+
+namespace RockEngine.ECS
 {
     public interface IRenderable
     {
-        void Render();
+        void Render(IRenderingContext context);
     }
 }

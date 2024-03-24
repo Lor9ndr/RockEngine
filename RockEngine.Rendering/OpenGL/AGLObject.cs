@@ -8,7 +8,7 @@
 
         protected bool _disposed;
 
-        public abstract IGLObject Bind();
+        public abstract IGLObject Bind(IRenderingContext context);
 
         protected abstract void Dispose(bool disposing);
         public void Dispose()
@@ -17,17 +17,17 @@
             GC.SuppressFinalize(this);
         }
 
-        public abstract IGLObject SetLabel();
+        public abstract IGLObject SetLabel(IRenderingContext context);
 
-        public abstract IGLObject Unbind();
+        public abstract IGLObject Unbind(IRenderingContext context);
 
-        public abstract bool IsBinded();
+        public abstract bool IsBinded(IRenderingContext context);
 
-        public void BindIfNotBinded()
+        public void BindIfNotBinded(IRenderingContext context)
         {
-            if(!IsBinded())
+            if(!IsBinded(context))
             {
-                Bind();
+                Bind(context);
             }
         }
     }

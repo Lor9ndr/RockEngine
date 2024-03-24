@@ -7,7 +7,7 @@ namespace RockEngine.Rendering.OpenGL.Buffers.UBOBuffers
         internal static UBO<T> UBO { get; set; }
         public int BindingPoint { get; }
         public string Name { get; }
-        public void SendData();
-        public void SendData<TSub>([DisallowNull, NotNull] TSub data, nint offset, int size);
+        public void SendData(IRenderingContext context);
+        public void SendData<TSub>(IRenderingContext context,[DisallowNull, NotNull] TSub data, nint offset, int size);
     }
 }

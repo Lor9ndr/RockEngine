@@ -41,9 +41,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         private static AShaderProgram? _activeShader;
         private static AShaderProgram? _prevActiveShader;
 
-        protected AShaderProgram(string name, params BaseShaderType[ ] baseShaders)
+        protected AShaderProgram(string name, params BaseShaderType[] baseShaders)
         {
-            Check.IsEmpty(baseShaders, "Can't create shader program withoud shaders");
+            Check.IsEmpty(baseShaders, "Can't create shader program without shaders");
 
             Name = name;
             _shaders = baseShaders.ToList();
@@ -53,14 +53,13 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             }
 
             _path = _shaders[0].GetFilePath();
-            Setup();
         }
 
-        public ISetuppable Setup()
+        public ISetuppable Setup(IRenderingContext context)
         {
             if(!IsSetupped)
             {
-                Setup(true);
+                Setup(context, true);
             }
             return this;
         }
@@ -69,19 +68,21 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// Привязка шейдера, после привязки до тех пор пока не будет привязан другой шейдер или не отвязан данный (<see cref="Unbind"/>) 
         /// Все Uniform и тп будут отправляться в привязанный шейдер
         /// </summary>
-        public override AShaderProgram Bind()
+        public override AShaderProgram Bind(IRenderingContext context)
         {
+
             _prevActiveShader = _activeShader;
             _activeShader = this;
-            GL.UseProgram(Handle);
+            context.UseProgram(Handle);
             return this;
         }
 
         // <summary>
         /// Отвязка шейдера, пока что реализовал так,что ставится на предыдущий шейдер, не знаю насколько это полезно, но думаю что пока сойдет
         /// </summary>
-        public override AShaderProgram Unbind()
+        public override AShaderProgram Unbind(IRenderingContext context)
         {
+
             var handle = IGLObject.EMPTY_HANDLE;
             var current = _activeShader;
             if(_prevActiveShader != null)
@@ -91,7 +92,8 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             }
             _prevActiveShader = current;
 
-            GL.UseProgram(handle);
+            context.UseProgram(handle);
+
             return this;
         }
 
@@ -104,21 +106,20 @@ namespace RockEngine.Rendering.OpenGL.Shaders
 
         public int GetAttribLocation(string attribName) => GL.GetAttribLocation(Handle, attribName);
 
-        public void ResetShader() => Setup(false);
+        public void ResetShader(IRenderingContext context) => Setup(context, false);
 
-        public UniformFieldInfo[ ] GetUniforms()
+        public UniformFieldInfo[] GetUniforms(IRenderingContext context)
         {
-            GL.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out int unifromCount);
+            context.GetProgram(Handle, GetProgramParameterName.ActiveUniforms, out int unifromCount);
 
             var uniforms = new UniformFieldInfo[unifromCount];
 
             for(var i = 0; i < unifromCount; i++)
             {
-                // get the name of this uniform,
-                GL.GetActiveUniform(Handle, i, 256, out _, out var size, out var type, out string name);
 
-                // get the location,
-                var location = GL.GetUniformLocation(Handle, name);
+                context
+                    .GetActiveUniform(Handle, i, 256, out var size, out var type, out string name) // get the name of this uniform
+                    .GetUniformLocation(Handle, name, out int location); // get the location
 
                 uniforms[i] = new UniformFieldInfo
                 {
@@ -127,16 +128,15 @@ namespace RockEngine.Rendering.OpenGL.Shaders
                     Size = size,
                     Type = type
                 };
-                ;
             }
 
             return uniforms;
         }
 
-        public List<UniformFieldInfo> GetMaterialUniforms()
+        public List<UniformFieldInfo> GetMaterialUniforms(IRenderingContext context)
         {
             List<UniformFieldInfo> materialData = new List<UniformFieldInfo>();
-            var uniforms = GetUniforms();
+            var uniforms = GetUniforms(context);
             foreach(var item in uniforms)
             {
                 if(item.Name.StartsWith("Material", StringComparison.OrdinalIgnoreCase))
@@ -148,17 +148,6 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             return materialData;
         }
 
-        public UniformFieldInfo[ ] GetUniformBufferData(int bufferBindingPoint)
-        {
-            GL.GetActiveUniformBlock(Handle, bufferBindingPoint, ActiveUniformBlockParameter.UniformBlockActiveUniforms, out int cnt);
-            UniformFieldInfo[ ] info = new UniformFieldInfo[cnt];
-            for(int i = 0; i < cnt; i++)
-            {
-                //GL.GetActiveUniform(Handle, i, 
-            }
-            return info;
-        }
-
         /// <summary>
         /// Отправка в шейдер булевую переменную
         /// в GLSL нельзя вроде отправить булевую переменную поэтому перевод в целочисленный тип,
@@ -166,64 +155,65 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="location">Расположение переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(int location, bool data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, bool data)
         {
-            GL.Uniform1(location, data ? 1 : 0);
+            context.SetShaderData(location, data ? 1 : 0);
             return this;
         }
 
-        public AShaderProgram SetShaderData(string name, object data)
+        public AShaderProgram SetShaderData(IRenderingContext context,string name, object data)
         {
-            var loc = GetUniformLocation(name);
+            var loc = GetUniformLocation(context, name);
+
             if(data is int di)
             {
-                SetShaderData(loc, di);
+                SetShaderData(context, loc, di);
             }
             else if(data is float df)
             {
-                SetShaderData(loc, df);
+                SetShaderData(context, loc, df);
             }
             else if(data is Vector2 dv2)
             {
-                SetShaderData(loc, dv2);
+                SetShaderData(context,loc, dv2);
             }
             else if(data is Vector3 dv3)
             {
-                SetShaderData(loc, dv3);
+                SetShaderData(context, loc, dv3);
             }
             else if(data is Vector4 dv4)
             {
-                SetShaderData(loc, dv4);
+                SetShaderData(context, loc, dv4);
             }
             else if(data is Matrix4 m4)
             {
-                SetShaderData(loc, m4);
+                SetShaderData(context, loc, m4);
             }
 
             // fill more if needed
             return this;
         }
 
-        public AShaderProgram SetShaderData(string name, Vector4[ ] data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, Vector4[] data)
         {
             for(int i = 0; i < data.Length; i++)
             {
-                GL.Uniform4(GetUniformLocation($"{name}[{i}]"), data[i]);
+                context.SetShaderData(GetUniformLocation(context, $"{name}[{i}]"), data[i]);
             }
 
             return this;
         }
 
-        public AShaderProgram SetShaderData(int location, Color4 data) => SetShaderData(location, new Vector4(data.R, data.G, data.B, data.A));
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, Color4 data) => SetShaderData(context, location, new Vector4(data.R, data.G, data.B, data.A));
 
         /// <summary>
         /// Отправка в шейдер плавающее число
         /// </summary>
         /// <param name="location">Расположение переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(int location, float data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, float data)
         {
-            GL.Uniform1(location, data);
+            context.SetShaderData(location, data);
             return this;
         }
 
@@ -234,16 +224,16 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// <param name="x">координата X</param>
         /// <param name="y">координата Y</param>
         /// <param name="z">координата Z</param>
-        public AShaderProgram SetShaderData(int location, float x, float y, float z) => SetShaderData(location, new Vector3(x, y, z));
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, float x, float y, float z) => SetShaderData(context, location, new Vector3(x, y, z));
 
         /// <summary>
         /// Отправка в шейдер целочисленную переменную 
         /// </summary>
         /// <param name="location">Расположение переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(int location, int data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, int data)
         {
-            GL.Uniform1(location, data);
+            context.SetShaderData(location, data);
             return this;
         }
 
@@ -252,9 +242,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="location">Расположение переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(int location, Matrix4 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, Matrix4 data)
         {
-            GL.UniformMatrix4(location, false, ref data);
+            context.SetShaderData(location, data);
             return this;
         }
 
@@ -263,9 +253,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="location">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(int location, Vector2 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, Vector2 data)
         {
-            GL.Uniform2(location, ref data);
+            context.SetShaderData(location, data);
             return this;
         }
 
@@ -274,15 +264,15 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="location">Расположение переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(int location, Vector3 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, Vector3 data)
         {
-            GL.Uniform3(location, data);
+            context.SetShaderData(location, data);
             return this;
         }
 
-        public AShaderProgram SetShaderData(int location, Vector4 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, int location, Vector4 data)
         {
-            GL.Uniform4(location, ref data);
+            context.SetShaderData(location, data);
             return this;
         }
 
@@ -293,22 +283,22 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, bool data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, bool data)
         {
-            GL.Uniform1(GetUniformLocation(name), data ? 1 : 0);
+            context.SetShaderData(GetUniformLocation(context, name), data ? 1 : 0);
             return this;
         }
 
-        public AShaderProgram SetShaderData(string name, Color4 data) => SetShaderData(name, new Vector4(data.R, data.G, data.B, data.A));
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, Color4 data) => SetShaderData(context, name, new Vector4(data.R, data.G, data.B, data.A));
 
         /// <summary>
         /// Отправка в шейдер плавающее число
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, float data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, float data)
         {
-            GL.Uniform1(GetUniformLocation(name), data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -319,16 +309,16 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// <param name="x">координата X</param>
         /// <param name="y">координата Y</param>
         /// <param name="z">координата Z</param>
-        public AShaderProgram SetShaderData(string name, float x, float y, float z) => SetShaderData(name, new Vector3(x, y, z));
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, float x, float y, float z) => SetShaderData(context, name, new Vector3(x, y, z));
 
         /// <summary>
         /// Отправка в шейдер целочисленную переменную 
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, int data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, int data)
         {
-            GL.Uniform1(GetUniformLocation(name), data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -337,9 +327,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, Matrix4 data, bool transpose = false)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, Matrix4 data)
         {
-            GL.UniformMatrix4(GetUniformLocation(name), transpose, ref data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -348,9 +338,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, ref Matrix4 data, bool transpose = false)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, ref Matrix4 data)
         {
-            GL.UniformMatrix4(GetUniformLocation(name), transpose, ref data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -359,9 +349,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, ref Vector2 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, ref Vector2 data)
         {
-            GL.Uniform2(GetUniformLocation(name), ref data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -370,15 +360,15 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, ref Vector3 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, ref Vector3 data)
         {
-            GL.Uniform3(GetUniformLocation(name), ref data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
-        public AShaderProgram SetShaderData(string name, ref Vector4 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, ref Vector4 data)
         {
-            GL.Uniform4(GetUniformLocation(name), ref data);
+            context.SetShaderData (GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -387,9 +377,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, uint data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, uint data)
         {
-            GL.Uniform1(GetUniformLocation(name), data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -398,9 +388,9 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, Vector2 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, Vector2 data)
         {
-            GL.Uniform2(GetUniformLocation(name), ref data);
+            GL.Uniform2(GetUniformLocation(context, name), data);
             return this;
         }
 
@@ -409,23 +399,24 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="name">Название переменной в шейдере</param>
         /// <param name="data">Отправляемая переменная</param>
-        public AShaderProgram SetShaderData(string name, Vector3 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, Vector3 data)
         {
-            GL.Uniform3(GetUniformLocation(name), data);
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
-        public AShaderProgram SetShaderData(string name, Vector4 data)
+        public AShaderProgram SetShaderData(IRenderingContext context, string name, Vector4 data)
         {
-            GL.Uniform4(GetUniformLocation(name), data);
+
+            context.SetShaderData(GetUniformLocation(context, name), data);
             return this;
         }
 
-        public override AShaderProgram SetLabel()
+        public override AShaderProgram SetLabel(IRenderingContext context)
         {
             string name = $"Shader program ({Handle}), with name: {Name}";
             Logger.AddLog($"Setupped {name}");
-            GL.ObjectLabel(ObjectLabelIdentifier.Program, Handle, name.Length, name);
+            context.ObjectLabel(ObjectLabelIdentifier.Program, Handle, name.Length, name);
             return this;
         }
 
@@ -435,7 +426,7 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// иначе ищем с помощью <see cref="GL"/>
         /// </summary>
         /// <param name="name">Название переменной</param>
-        private int GetUniformLocation(string name)
+        private int GetUniformLocation(IRenderingContext context, string name)
         {
             if(UniformLocations.TryGetValue(name, out int value))
             {
@@ -443,7 +434,7 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             }
             else
             {
-                var location = GL.GetUniformLocation(Handle, name);
+                context.GetUniformLocation(Handle, name, out int location);
                 UniformLocations.TryAdd(name, location);
                 if(location == -1)
                 {
@@ -459,64 +450,65 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         /// </summary>
         /// <param name="program">индекс программы</param>
         /// <exception cref="Exception">Выдает ошибку, если при соединении вышла ошибка, например, когда шейдеры имеют разные in - out переменные </exception>
-        private void LinkProgram(int program)
+        private void LinkProgram(IRenderingContext context, int program)
         {
             // We link the program
-            GL.LinkProgram(program);
+            context.LinkProgram(program, out int status);
 
-            // Check for linking errors
-            GL.GetProgram(program, GetProgramParameterName.LinkStatus, out var code);
-            if(code != (int)All.True)
+            if(status != (int)All.True)
             {
-                var infoLog = GL.GetProgramInfoLog(program);
+                context.GetProgramInfoLog(program, out var infoLog);
                 Logger.AddError(infoLog);
                 throw new Exception($"{infoLog}, FileName - {_path},ERROR: {GL.GetError()}");
             }
         }
 
-        protected void Setup(bool firstLoad)
+        protected void Setup(IRenderingContext context, bool firstLoad)
         {
-            if(!firstLoad)
-            {
-                // Safe remove shader
-                GL.UseProgram(0);
-                GL.DeleteProgram(Handle);
-            }
-
-            if(_shaders.Count == 1)
-            {
-                // Create a singleShader to attach to the pipeline
-                var shader = _shaders[0];
-                Handle = GL.CreateShaderProgram(shader.Type, 1, new string[ ] { shader.GetShaderText() });
-            }
-            else
-            {
-                Handle = GL.CreateProgram();
-
-                foreach(var item in _shaders)
+                if(!firstLoad)
                 {
-                    item.Setup(Handle);
+                    // Safe remove shader
+                    context.UseProgram(0)
+                        .DeleteProgram(Handle);
                 }
 
-                LinkProgram(Handle);
-                // TODO: Think if it is usefull to disposing them after setupping or not
-                foreach(var item in _shaders)
+                if(_shaders.Count == 1)
                 {
-                    item.Dispose();
+                    // Create a singleShader to attach to the pipeline
+                    var shader = _shaders[0];
+                    context.CreateShaderProgram(shader.Type, 1, new string[] { shader.GetShaderText() }, out int handle);
+                    Handle = handle;
                 }
-            }
+                else
+                {
+                    context.CreateProgram(out int handle);
+                    Handle = handle;
 
-            SetLabel();
-            // The shader is now ready to go, but first, we're going to cache all the shader uniform locations.
-            // Querying this from the shader is very slow, so we do it once on initialization and reuse those values
-            // later.
+                    foreach(var item in _shaders)
+                    {
+                        item.Setup(context, Handle);
+                    }
 
-            FillCacheUniforms();
+                    LinkProgram(context, Handle);
+                    // TODO: Think if it is usefull to disposing them after setupping or not
+                    foreach(var item in _shaders)
+                    {
+                        item.Dispose();
+                    }
+                }
+
+                SetLabel(context);
+                // The shader is now ready to go, but first, we're going to cache all the shader uniform locations.
+                // Querying this from the shader is very slow, so we do it once on initialization and reuse those values
+                // later.
+
+                FillCacheUniforms(context);
+            
         }
 
-        private void FillCacheUniforms()
+        private void FillCacheUniforms(IRenderingContext context)
         {
-            var uniforms = GetUniforms();
+            var uniforms = GetUniforms(context);
 
             // Next, allocate the dictionary to hold the locations.
             UniformLocations.Clear();
@@ -531,35 +523,45 @@ namespace RockEngine.Rendering.OpenGL.Shaders
 
         protected override void Dispose(bool disposing)
         {
-            if(_disposed)
+            IRenderingContext.Update(context =>
             {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.GetObjectLabel(ObjectLabelIdentifier.Program, Handle, 64, out int length, out string name);
-            if(name.Length == 0)
-            {
-                name = $"Shader program: ({Handle})";
-            }
-            Logger.AddLog($"Disposing {name}");
-            foreach(var item in _shaders)
-            {
-                item.Dispose();
-            }
-            GL.DeleteProgram(Handle);
-            Handle = IGLObject.EMPTY_HANDLE;
-            _disposed = true;
+                if(!IsSetupped)
+                {
+                    return;
+                }
+
+                context.GetObjectLabel(ObjectLabelIdentifier.Program, Handle, 64, out int length, out string name);
+                if(name.Length == 0)
+                {
+                    name = $"Shader program: ({Handle})";
+                }
+                Logger.AddLog($"Disposing {name}");
+                foreach(var item in _shaders)
+                {
+                    item.Dispose();
+                }
+                context.DeleteProgram(Handle);
+
+                Handle = IGLObject.EMPTY_HANDLE;
+                _disposed = true;
+            });
+
         }
 
-        public override bool IsBinded() => GL.GetInteger(GetPName.CurrentProgram) == Handle;
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.CurrentProgram, out int value);
+            return value == Handle;
+        }
 
         ~AShaderProgram()
         {

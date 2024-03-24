@@ -27,140 +27,148 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         protected override void Dispose(bool disposing)
         {
-            if(_disposed)
+            IRenderingContext.Update(context =>
             {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.GetObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, 64, out int length, out string name);
-            if(name.Length == 0)
-            {
-                name = $"FBO: ({Handle})";
-            }
-            Logger.AddLog($"Disposing {name}");
-            GL.DeleteFramebuffer(_handle);
-            // now Handle is 0 
-            _handle = IGLObject.EMPTY_HANDLE;
+                if(!IsSetupped)
+                {
+                    return;
+                }
+
+                context.GetObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, 64, out int length, out string name);
+                if(name.Length == 0)
+                {
+                    name = $"FBO: ({Handle})";
+                }
+                Logger.AddLog($"Disposing {name}");
+                context.DeleteFrameBuffer(_handle);
+                // now Handle is 0 
+                _handle = IGLObject.EMPTY_HANDLE;
+            });
+          
         }
 
-        public override FBO SetLabel()
+        public override FBO SetLabel(IRenderingContext context)
         {
             string label = $"FBO: ({Handle})";
             Logger.AddLog($"Setupped {label}");
-            GL.ObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, label.Length, label);
+            context.ObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, label.Length, label);
             return this;
         }
 
-        public override FBO Setup()
+        public override FBO Setup(IRenderingContext context)
         {
-            GL.CreateFramebuffers(1, out int handle);
+            context.CreateFrameBuffer(out int handle);
             Handle = handle;
 
-            SetupInternal();
+            SetupInternal(context);
             return this;
         }
 
-        protected virtual FBO SetupInternal()
+        protected virtual FBO SetupInternal(IRenderingContext context)
         {
             foreach(var texture in _textures)
             {
-                texture.Resize(Size);
+                texture.Resize(context, Size);
                 if(!texture.IsSetupped)
                 {
                     texture
-                        .Setup()
-                        .SetLabel();
+                        .Setup(context)
+                        .SetLabel(context);
                 }
-                GL.NamedFramebufferTexture(Handle, texture.Settings.FramebufferAttachment, texture.Handle, 0);
+                context.NamedFramebufferTexture(Handle, texture.Settings.FramebufferAttachment, texture.Handle, 0);
             }
 
-            CheckBuffer();
+            CheckBuffer(context);
             return this;
         }
 
-        public virtual void Resize(Vector2i size)
+        public virtual void Resize(IRenderingContext context, Vector2i size)
         {
             Size = size;
-            SetupInternal();
+            SetupInternal(context);
         }
-        public void CheckBuffer()
+        public void CheckBuffer(IRenderingContext context)
         {
-            var status = GL.CheckNamedFramebufferStatus(Handle, Settings.FramebufferTarget);
+            context.CheckNamedFramebufferStatus(Handle, Settings.FramebufferTarget, out var status);
             if(status != FramebufferStatus.FramebufferComplete)
             {
                 Logger.AddError($"Can't create a framebuffer. Status : {status}");
             }
         }
 
-        public override FBO Bind()
+        public override FBO Bind(IRenderingContext context)
         {
-            _prevFbo = GL.GetInteger(GetPName.FramebufferBinding);
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+            context.GetInteger(GetPName.FramebufferBinding, out _prevFbo)
+                .Bind(this);
             return this;
         }
 
-        public override FBO Unbind()
+        public override FBO Unbind(IRenderingContext context)
         {
-            GL.BindFramebuffer(FramebufferTarget.Framebuffer, _prevFbo);
+            context.BindFBOAs(FramebufferTarget.Framebuffer, _prevFbo);
             return this;
         }
 
-        public virtual FBO BindAsDrawBuffer()
+        public virtual FBO BindAsDrawBuffer(IRenderingContext context)
         {
-            _prevDrawFbo = GL.GetInteger(GetPName.DrawFramebufferBinding);
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, Handle);
+            context.GetInteger(GetPName.DrawFramebufferBinding, out _prevDrawFbo)
+                .BindFBOAs(FramebufferTarget.DrawFramebuffer, Handle);
             return this;
         }
 
-        public virtual FBO UnbindAsDrawBuffer()
+        public virtual FBO UnbindAsDrawBuffer(IRenderingContext context)
         {
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, _prevDrawFbo);
+            context.BindFBOAs(FramebufferTarget.DrawFramebuffer, _prevDrawFbo);
             return this;
         }
-        public virtual FBO BindAsReadBuffer()
+        public virtual FBO BindAsReadBuffer(IRenderingContext context)
         {
-            _prevReadFbo = GL.GetInteger(GetPName.ReadFramebufferBinding);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, Handle);
-            return this;
-        }
-
-        public virtual FBO UnbindAsReadBuffer()
-        {
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _prevReadFbo);
+            context.GetInteger(GetPName.ReadFramebufferBinding, out _prevReadFbo)
+                .BindFBOAs(FramebufferTarget.ReadFramebuffer, Handle);
             return this;
         }
 
-        public void ReadPixel(int x, int y, ref PixelInfo info)
+        public virtual FBO UnbindAsReadBuffer(IRenderingContext context)
         {
-            BindAsReadBuffer();
-            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
-
-            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, ref info);
-
-            GL.ReadBuffer(ReadBufferMode.None);
-            UnbindAsReadBuffer();
+            context.BindFBOAs(FramebufferTarget.ReadFramebuffer, _prevReadFbo);
+            return this;
         }
 
-        public override bool IsBinded()
-           => GL.GetInteger(GetPName.FramebufferBinding) == Handle;
-
-        internal void ReadPixel(int x, int y, ref PixelInfo[ ] info)
+        public void ReadPixel(IRenderingContext context,int x, int y, ref PixelInfo info)
         {
-            BindAsReadBuffer();
-            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+            BindAsReadBuffer(context);
 
-            GL.ReadPixels(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, info);
+            context
+                .ReadBuffer(ReadBufferMode.ColorAttachment0)
+                .ReadPixel(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, ref info)
+                .ReadBuffer(ReadBufferMode.None);
 
-            GL.ReadBuffer(ReadBufferMode.None);
-            UnbindAsReadBuffer();
+            UnbindAsReadBuffer(context);
+        }
+
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.FramebufferBinding, out int handle);
+            return handle == Handle;
+        }
+
+        internal void ReadPixel(IRenderingContext context,int x, int y, ref PixelInfo[ ] info)
+        {
+            BindAsReadBuffer(context);
+            IRenderingContext.Current
+               .ReadBuffer(ReadBufferMode.ColorAttachment0)
+               .ReadPixel(x, y, 1, 1, PixelFormat.Rgb, PixelType.Float, info)
+               .ReadBuffer(ReadBufferMode.None);
+            UnbindAsReadBuffer(context);
         }
     }
 }

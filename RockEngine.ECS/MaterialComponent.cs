@@ -1,5 +1,7 @@
-﻿using RockEngine.Common.Editor;
+﻿using RockEngine.Common;
+using RockEngine.Common.Editor;
 using RockEngine.ECS.Assets;
+using RockEngine.Rendering;
 
 namespace RockEngine.ECS
 {
@@ -16,9 +18,9 @@ namespace RockEngine.ECS
             Material = material;
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            Material.SendData();
+            Material.SendData(context);
         }
 
         public void OnStart() { }

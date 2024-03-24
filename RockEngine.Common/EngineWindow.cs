@@ -34,6 +34,8 @@ namespace RockEngine.Common
                 GLFW.SetWindowSize(WindowPtr, size.X, size.Y);
             }
         }
+        public event Func<Task> Initilized;
+
         public float DeltaTime;
         public int FPS;
 
@@ -47,7 +49,7 @@ namespace RockEngine.Common
         {
         }
 
-        protected override void OnLoad()
+        protected override async void OnLoad()
         {
             base.OnLoad();
 
@@ -56,6 +58,7 @@ namespace RockEngine.Common
             GL.Arb.DebugMessageCallback(Logger.DebugMessageDelegateARB, nint.Zero);
             GL.Enable(EnableCap.DebugOutput);
             GL.Enable(EnableCap.DebugOutputSynchronous);
+            await Initilized?.Invoke();
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -67,23 +70,12 @@ namespace RockEngine.Common
             oldTimeSinceStart = Time;
         }
 
-        protected unsafe override void OnRenderFrame(FrameEventArgs args)
+        protected override void OnRenderFrame(FrameEventArgs args)
         {
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-
-            GL.Enable(EnableCap.DepthTest);
-            GL.DepthFunc(DepthFunction.Less);
             base.OnRenderFrame(args);
-
             SwapBuffers();
-
         }
 
-        protected override void OnResize(ResizeEventArgs e)
-        {
-            base.OnResize(e);
-            GL.Viewport(0, 0, Size.X, Size.Y);
-        }
         private void CalculateFPS()
         {
             float currentTime = (float)Time;

@@ -17,7 +17,7 @@ namespace RockEngine.Rendering.OpenGL.Buffers.UBOBuffers
         public uint gObjectIndex;
 
         public const int Size = 16;
-        private static UBO<PickingData> UBO => IUBOData<PickingData>.UBO;
+        private static UBO<PickingData> UBO {get=> IUBOData<PickingData>.UBO ; set => IUBOData<PickingData>.UBO = value;}
         public readonly string Name => nameof(PickingData);
 
         /// <summary>
@@ -29,18 +29,26 @@ namespace RockEngine.Rendering.OpenGL.Buffers.UBOBuffers
         {
             if(IUBOData<PickingData>.UBO is null)
             {
-                IUBOData<PickingData>.UBO = new UBO<PickingData>(new BufferSettings(Size, BufferUsageHint.StreamDraw, BindingPoint, Name)).Setup().SetLabel();
+                var name = Name;
+                var bindingPoint = BindingPoint;
+                IRenderingContext.Update(context =>
+                {
+                    UBO = new UBO<PickingData>(new BufferSettings(Size, BufferUsageHint.StreamDraw, bindingPoint, name))
+                    .Setup(context)
+                    .SetLabel(context);
+
+                });
             }
         }
 
-        public readonly void SendData()
+        public readonly void SendData(IRenderingContext context)
         {
-            UBO.SendData(this);
+            UBO.SendData(context, this);
         }
 
-        public readonly void SendData<TSub>([DisallowNull, NotNull] TSub data, nint offset, int size)
+        public readonly void SendData<TSub>(IRenderingContext context, [DisallowNull, NotNull] TSub data, nint offset, int size)
         {
-            UBO.SendData(data, offset, size);
+            UBO.SendData(context, data, offset, size);
         }
     }
 }

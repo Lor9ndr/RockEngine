@@ -26,5 +26,10 @@ namespace RockEngine.ECS.Assets
         /// Means that is overriden after save
         /// </summary>
         bool IsDirty { get; set; }
+
+        /// <summary>
+        /// Call when ready to use in OpenGL thread
+        /// </summary>
+        public void Loaded();
     }
 }

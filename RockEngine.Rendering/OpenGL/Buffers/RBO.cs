@@ -18,74 +18,81 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             Size = size;
         }
 
-        public override RBO Bind()
+        public override RBO Bind(IRenderingContext context)
         {
-            GL.BindRenderbuffer(Settings.RenderbufferTarget, Handle);
+            context.Bind(this);
             return this;
         }
 
-        public override RBO Setup()
+        public override RBO Setup(IRenderingContext context)
         {
-            GL.CreateRenderbuffers(1, out int handle);
+            context.CreateRenderBuffer(out int handle);
             Handle = handle;
             if(Settings.IsMultiSample)
             {
-                GL.NamedRenderbufferStorageMultisample(Handle, Settings.SampleCount, Settings.RenderbufferStorage, Size.X, Size.Y);
+                context.NamedRenderbufferStorageMultisample(Handle, Settings.SampleCount, Settings.RenderbufferStorage, Size.X, Size.Y);
             }
             else
             {
-                GL.NamedRenderbufferStorage(Handle, Settings.RenderbufferStorage, Size.X, Size.Y);
+                context.NamedRenderbufferStorage(Handle, Settings.RenderbufferStorage, Size.X, Size.Y);
             }
             return this;
         }
 
-        public override RBO Unbind()
+        public override RBO Unbind(IRenderingContext context)
         {
-            GL.BindRenderbuffer(Settings.RenderbufferTarget, IGLObject.EMPTY_HANDLE);
+            context.BindRenderBuffer(Settings.RenderbufferTarget, IGLObject.EMPTY_HANDLE);
             return this;
         }
 
-        public override RBO SetLabel()
+        public override RBO SetLabel(IRenderingContext context)
         {
             string label = $"RBO: ({Handle})";
             Logger.AddLog($"Setupped {label}");
-            GL.ObjectLabel(ObjectLabelIdentifier.Renderbuffer, Handle, label.Length, label);
+            context.ObjectLabel(ObjectLabelIdentifier.Renderbuffer, Handle, label.Length, label);
             return this;
         }
 
-        public void Resize(Vector2i size)
+        public void Resize(IRenderingContext context, Vector2i size)
         {
             Size = size;
             Dispose();
-            Setup();
+            Setup(context);
         }
         protected override void Dispose(bool disposing)
         {
+            IRenderingContext.Update(context =>
+            {
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(_disposed)
-            {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(!IsSetupped)
+                {
+                    return;
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 128, out int _, out string name);
-            if(name.Length == 0)
-            {
-                name = $"RBO: ({Handle})";
-            }
-            Logger.AddLog($"Disposing {name}");
-            GL.DeleteRenderbuffers(1, ref _handle);
-            _handle = IGLObject.EMPTY_HANDLE;
+                GL.GetObjectLabel(ObjectLabelIdentifier.Renderbuffer, Handle, 128, out int _, out string name);
+                if(name.Length == 0)
+                {
+                    name = $"RBO: ({Handle})";
+                }
+                Logger.AddLog($"Disposing {name}");
+                context.DeleteRenderBuffer(_handle);
+                _handle = IGLObject.EMPTY_HANDLE;
+            });
+            
         }
 
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.RenderbufferBinding) == Handle;
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.RenderbufferBinding, out int value);
+            return value == Handle;
+        }
     }
 }

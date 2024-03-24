@@ -18,70 +18,83 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
-        public override FBORBO SetLabel()
+        public override FBORBO SetLabel(IRenderingContext context)
         {
             string label = $"FBO_RBO: {Settings.FramebufferTarget}({Handle})";
             Logger.AddLog($"Setupped {label}");
-            GL.ObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, label.Length, label);
+            context.ObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, label.Length, label);
             return this;
         }
 
-        protected override FBORBO SetupInternal()
+        protected override FBORBO SetupInternal(IRenderingContext context)
         {
             foreach(var texture in _textures)
             {
                 if(!texture.IsSetupped)
                 {
                     texture
-                        .Setup()
-                        .SetLabel();
+                        .Setup(context)
+                        .SetLabel(context);
                 }
-                texture.Resize(Size);
+                texture.Resize(context, Size);
 
-                GL.NamedFramebufferTexture(Handle, texture.Settings.FramebufferAttachment, texture.Handle, 0);
+                IRenderingContext.Update(context =>
+                {
+                    context.NamedFramebufferTexture(Handle, texture.Settings.FramebufferAttachment, texture.Handle, 0);
+
+                });
             }
-            GL.NamedFramebufferRenderbuffer(Handle, ((FrameBufferRenderBufferSettings)Settings).RenderBufferAttachment, _rbo.Settings.RenderbufferTarget, _rbo.Handle);
-            CheckBuffer();
+            IRenderingContext.Update(context =>
+            {
+                context.NamedFramebufferRenderbuffer(Handle, ((FrameBufferRenderBufferSettings)Settings).RenderBufferAttachment, _rbo.Settings.RenderbufferTarget, _rbo.Handle);
+                CheckBuffer(context);
+
+            });
             return this;
         }
-        public override void Resize(Vector2i size)
+        public override void Resize(IRenderingContext context, Vector2i size)
         {
             Size = size;
-            _rbo.Resize(size);
-            SetupInternal();
+            _rbo.Resize(context, size);
+            SetupInternal(context);
         }
 
-        public override FBORBO Bind()
+        public override FBORBO Bind(IRenderingContext context)
         {
-            base.Bind();
+            base.Bind(context);
 
             return this;
         }
 
-        public override FBORBO Unbind()
+        public override FBORBO Unbind(IRenderingContext context)
         {
-            base.Unbind();
+            base.Unbind(context);
             return this;
         }
 
         protected override void Dispose(bool disposing)
         {
-            if(_disposed)
+            IRenderingContext.Update(context =>
             {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.DeleteFramebuffers(1, ref _handle);
+                if(!IsSetupped)
+                {
+                    return;
+                }
+                context.DeleteFrameBuffer(_handle);
+                _handle = IGLObject.EMPTY_HANDLE;
+            });
+            // Вызываем отдельно Dispose для RBO так как нужно чтобы создалась отдельная команда для него
             _rbo.Dispose();
-            _handle = IGLObject.EMPTY_HANDLE;
+
         }
     }
 }

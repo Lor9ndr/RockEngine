@@ -3,6 +3,7 @@
 using RockEngine.DI;
 using RockEngine.Editor.Physics;
 using RockEngine.Physics;
+using RockEngine.Physics.Drawing;
 
 namespace RockEngine.Editor
 {
@@ -15,7 +16,7 @@ namespace RockEngine.Editor
 
         public override void Register()
         {
-            _kernel.Bind<IWorldRenderer>().To<DebugPhysicsRenderer>().InSingletonScope();
+            _kernel.Bind<ColliderRenderer>().To<DebugPhysicsRenderer>().InSingletonScope();
         }
     }
 }

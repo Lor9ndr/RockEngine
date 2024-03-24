@@ -13,5 +13,9 @@
         {
 
         }
+
+        public override void Loaded()
+        {
+        }
     }
 }

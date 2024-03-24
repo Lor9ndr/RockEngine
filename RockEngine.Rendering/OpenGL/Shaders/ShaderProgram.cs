@@ -1,5 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL4;
-
+﻿
 namespace RockEngine.Rendering.OpenGL.Shaders
 {
     /// <summary>
@@ -10,14 +9,14 @@ namespace RockEngine.Rendering.OpenGL.Shaders
 
         #region Ctor
 
-        private ShaderProgram(string name, params BaseShaderType[ ] baseShaders)
+        private ShaderProgram(string name, params BaseShaderType[] baseShaders)
             : base(name, baseShaders)
         {
         }
 
         #endregion
 
-        public static ShaderProgram GetOrCreate(string name, params BaseShaderType[ ] baseShaders)
+        public static ShaderProgram GetOrCreate(string name, params BaseShaderType[] baseShaders)
         {
             if(AllShaders.TryGetValue(name, out var shader))
             {
@@ -25,7 +24,5 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             }
             return new ShaderProgram(name, baseShaders);
         }
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.CurrentProgram) == Handle;
     }
 }

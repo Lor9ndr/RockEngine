@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using RockEngine.Rendering;
+
+using System.Collections;
 
 namespace RockEngine.ECS.Layers
 {
@@ -20,11 +22,11 @@ namespace RockEngine.ECS.Layers
             _layers.Remove(layer);
         }
 
-        public void OnRender(Scene scene)
+        public async Task OnRender( Scene scene)
         {
             foreach(var item in _layers)
             {
-                item.OnRender(scene);
+                await item.OnRender(scene);
             }
         }
 

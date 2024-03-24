@@ -1,6 +1,8 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 
+using RockEngine.Common;
 using RockEngine.Common.Vertices;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL;
 using RockEngine.Rendering.OpenGL.Buffers;
 using RockEngine.Rendering.OpenGL.Settings;
@@ -10,8 +12,8 @@ namespace RockEngine.ECS
 {
     internal sealed class Sprite : ARenderable<Vertex2D>, IComponent
     {
-        private VAO? _vao;
-        private VBO? _vbo;
+        private VAO _vao;
+        private VBO _vbo;
 
         public bool IsSetupped => _vao != null && _vao.Handle != IGLObject.EMPTY_HANDLE;
 
@@ -25,38 +27,37 @@ namespace RockEngine.ECS
         {
             Vertices = vertices;
             SpriteTexture = spriteTexture;
-            Setup();
         }
 
-        private void Setup()
+        public void Setup(IRenderingContext context)
         {
             _vao = new VAO()
-                .Setup()
-                .Bind()
-                .SetLabel();
+                .Setup(context)
+                .Bind(context)
+                .SetLabel(context);
 
             _vbo = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex2D.Size * Vertices.Length })
-                .Setup()
-                .Bind()
-                .SendData(Vertices)
-                .SetLabel();
+                .Setup(context)
+                .Bind(context)
+                .SendData(context, Vertices)
+                .SetLabel(context);
 
-            _vao.EnableVertexArrayAttrib(0)
+            context.EnableVertexArrayAttrib(_vao.Handle, 0)
                 .VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, Vertex2D.Size, Vertex2D.PositionOffset)
-                .EnableVertexArrayAttrib(1)
+                .EnableVertexArrayAttrib(_vao.Handle, 1)
                 .VertexAttribPointer(1, 2, VertexAttribPointerType.Float, false, Vertex2D.Size, Vertex2D.TexCoordsOffset);
 
-            _vbo.Unbind();
-            _vao.Unbind();
+            _vbo.Unbind(context);
+            _vao.Unbind(context);
         }
 
-        public override void Render()
+        public override void Render(IRenderingContext context)
         {
-            SpriteTexture.BindIfNotBinded();
+            SpriteTexture.BindIfNotBinded(context);
 
-            _vao?.BindIfNotBinded();
-            GL.DrawArrays(PrimitiveType.Triangles, 0, Vertices.Length);
-            SpriteTexture.Unbind();
+            _vao.BindIfNotBinded(context);
+            context.DrawArrays(PrimitiveType.Triangles, 0, Vertices.Length);
+            SpriteTexture.Unbind(context);
         }
 
         public void Dispose()
@@ -76,7 +77,7 @@ namespace RockEngine.ECS
         {
             if(!IsSetupped)
             {
-                Setup();
+                IRenderingContext.Update(Setup);
             }
         }
 
@@ -87,10 +88,6 @@ namespace RockEngine.ECS
         public void OnDestroy()
         {
             Dispose();
-        }
-
-        public void OnUpdateDevelepmentState()
-        {
         }
 
         public dynamic GetState()

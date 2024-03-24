@@ -1,7 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
+using RockEngine.Common;
 using RockEngine.Common.Editor;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Shaders;
 using RockEngine.Rendering.OpenGL.Textures;
 
@@ -18,7 +20,10 @@ namespace RockEngine.ECS.Assets
         {
             ShaderData = new Dictionary<string, object>();
             ShaderProgram = shaderProgram;
-            SetShaderUnfiromValues();
+        }
+        public override void Loaded()
+        {
+            IRenderingContext.Update(SetShaderUnfiromValues);
         }
 
         /// <summary>
@@ -37,98 +42,77 @@ namespace RockEngine.ECS.Assets
             ShaderData = shaderData;
         }
 
-        private void SetShaderUnfiromValues()
+        private void SetShaderUnfiromValues(IRenderingContext context)
         {
-            var uniforms = ShaderProgram.GetMaterialUniforms();
+            var uniforms = ShaderProgram.GetMaterialUniforms(context);
             foreach(var uniform in uniforms)
             {
-                float[ ] value = new float[4 * 4]; // max is mat4x4
-                GL.GetUniform(ShaderProgram.Handle, uniform.Location, value);
+                float[] value = new float[4 * 4]; // max is mat4x4
+                context.GetUniform(ShaderProgram.Handle, uniform.Location, value);
                 var obj = ConvertGettedUniformValue(uniform.Type, value);
-
-                ShaderData.Add(uniform.Name,
-                     obj);
+                ShaderData.TryAdd(uniform.Name, obj);
             }
         }
 
-        public static object ConvertGettedUniformValue(ActiveUniformType t, float[ ] values)
-        {
-            switch(t)
-            {
-                case ActiveUniformType.Int:
-                    return (int)values[0];
-                case ActiveUniformType.Float:
-                    return values[0]; // Default value for float
-                case ActiveUniformType.Bool:
-                    return values[0] == 0 ? false : true; // Default value for bool
-                case ActiveUniformType.FloatVec3:
-                    return new Vector3(values[0], values[1], values[2]);
-                case ActiveUniformType.UnsignedInt:
-                    return (uint)values[0]; // Default value for unsigned int
-                case ActiveUniformType.Double:
-                    return (double)values[0]; // Default value for double
-                case ActiveUniformType.FloatVec2:
-                    return new Vector2(values[0], values[1]);
-                case ActiveUniformType.FloatVec4:
-                    return new Vector4(values[0], values[1], values[2], values[3]);
-                case ActiveUniformType.IntVec2:
-                    return new Vector2i((int)values[0], (int)values[1]);
-                case ActiveUniformType.IntVec3:
-                    return new Vector3i((int)values[0], (int)values[1], (int)values[2]);
-                case ActiveUniformType.IntVec4:
-                    return new Vector4i((int)values[0], (int)values[1], (int)values[2], (int)values[3]);
-                case ActiveUniformType.BoolVec2:
-                    return new Vector2i((int)values[0], (int)values[1]);
-                case ActiveUniformType.BoolVec3:
-                    return new Vector3i((int)values[0], (int)values[1], (int)values[2]);
-                case ActiveUniformType.BoolVec4:
-                    return new Vector4i((int)values[0], (int)values[1], (int)values[2], (int)values[3]);
-                case ActiveUniformType.FloatMat2:
-                    return new Matrix2(values[0], values[1], values[2], values[3]);
-                case ActiveUniformType.FloatMat3:
-                    return new Matrix3(values[0],
-                                       values[1],
-                                       values[2],
-                                       values[3],
-                                       values[4],
-                                       values[5],
-                                       values[6],
-                                       values[7],
-                                       values[8]);
-                case ActiveUniformType.FloatMat4:
-                    return new Matrix4(values[0],
-                                       values[1],
-                                       values[2],
-                                       values[3],
-                                       values[4],
-                                       values[5],
-                                       values[6],
-                                       values[7],
-                                       values[8],
-                                       values[9],
-                                       values[10],
-                                       values[11],
-                                       values[12],
-                                       values[13],
-                                       values[14],
-                                       values[16]);
-                case ActiveUniformType.Sampler2D:
-                    return new Texture2D(); // Handle sampler2D case accordingly
-                default:
-                    throw new Exception("Unsupported material shader type"); // Return null for unsupported types or handle the case accordingly
-            }
-        }
-
-        public void SendData()
+        public void SendData(IRenderingContext context)
         {
             /*            MaterialData. = ShaderData.Values.ToArray();
-                        MaterialData.SendData();*/
-            ShaderProgram.Bind();
+                   MaterialData.SendData();*/
+            ShaderProgram.Bind(context);
             foreach(var item in ShaderData)
             {
-                ShaderProgram.SetShaderData(item.Key, item.Value);
+                ShaderProgram.SetShaderData(context,item.Key, item.Value);
             }
-            ShaderProgram.Unbind();
+            ShaderProgram.Unbind(context);
+
+        }
+        public static object ConvertGettedUniformValue(ActiveUniformType t, float[] values)
+        {
+            return t switch
+            {
+                ActiveUniformType.Int => (int)values[0],
+                ActiveUniformType.Float => values[0],// Default value for float
+                ActiveUniformType.Bool => values[0] == 0 ? false : true,// Default value for bool
+                ActiveUniformType.FloatVec3 => new Vector3(values[0], values[1], values[2]),
+                ActiveUniformType.UnsignedInt => (uint)values[0],// Default value for unsigned int
+                ActiveUniformType.Double => (double)values[0],// Default value for double
+                ActiveUniformType.FloatVec2 => new Vector2(values[0], values[1]),
+                ActiveUniformType.FloatVec4 => new Vector4(values[0], values[1], values[2], values[3]),
+                ActiveUniformType.IntVec2 => new Vector2i((int)values[0], (int)values[1]),
+                ActiveUniformType.IntVec3 => new Vector3i((int)values[0], (int)values[1], (int)values[2]),
+                ActiveUniformType.IntVec4 => new Vector4i((int)values[0], (int)values[1], (int)values[2], (int)values[3]),
+                ActiveUniformType.BoolVec2 => new Vector2i((int)values[0], (int)values[1]),
+                ActiveUniformType.BoolVec3 => new Vector3i((int)values[0], (int)values[1], (int)values[2]),
+                ActiveUniformType.BoolVec4 => new Vector4i((int)values[0], (int)values[1], (int)values[2], (int)values[3]),
+                ActiveUniformType.FloatMat2 => new Matrix2(values[0], values[1], values[2], values[3]),
+                ActiveUniformType.FloatMat3 => new Matrix3(values[0],
+                                                       values[1],
+                                                       values[2],
+                                                       values[3],
+                                                       values[4],
+                                                       values[5],
+                                                       values[6],
+                                                       values[7],
+                                                       values[8]),
+                ActiveUniformType.FloatMat4 => new Matrix4(values[0],
+                                                       values[1],
+                                                       values[2],
+                                                       values[3],
+                                                       values[4],
+                                                       values[5],
+                                                       values[6],
+                                                       values[7],
+                                                       values[8],
+                                                       values[9],
+                                                       values[10],
+                                                       values[11],
+                                                       values[12],
+                                                       values[13],
+                                                       values[14],
+                                                       values[16]),
+                ActiveUniformType.Sampler2D => new Texture2D(),// Handle sampler2D case accordingly
+                _ => throw new Exception("Unsupported material shader type"),// Return null for unsupported types or handle the case accordingly
+            };
         }
     }
 }

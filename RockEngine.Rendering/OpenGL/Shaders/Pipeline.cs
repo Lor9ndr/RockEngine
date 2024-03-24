@@ -29,6 +29,7 @@ namespace RockEngine.Rendering.OpenGL.Shaders
 
         public Pipeline(RenderType renderType, string name)
         {
+            throw new NotImplementedException("Pipeline is not implemented yet");
             Shaders = new List<AShaderProgram>();
             RenderType = renderType;
             Name = name;
@@ -54,7 +55,7 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             return this;
         }
 
-        public override Pipeline Bind()
+        public override Pipeline Bind(IRenderingContext context)
         {
             GL.BindProgramPipeline(Handle);
             return this;
@@ -88,28 +89,28 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             _disposed = true;
         }
 
-        public override Pipeline SetLabel()
+        public override Pipeline SetLabel(IRenderingContext context)
         {
             string label = $"Pipeline: ({Handle})";
             Logger.AddLog($"Setupped {label}");
 
-            GL.ObjectLabel(ObjectLabelIdentifier.ProgramPipeline, Handle, label.Length, label);
+            IRenderingContext.Current.ObjectLabel(ObjectLabelIdentifier.ProgramPipeline, Handle, label.Length, label);
             return this;
         }
 
-        public override Pipeline Unbind()
+        public override Pipeline Unbind(IRenderingContext context)
         {
             GL.BindProgramPipeline(0);
             return this;
         }
 
-        public override Pipeline Setup()
+        public override Pipeline Setup(IRenderingContext context)
         {
             GL.CreateProgramPipelines(1, out _handle);
             return this;
         }
 
-        public override bool IsBinded()
+        public override bool IsBinded(IRenderingContext context)
             => GL.GetInteger(GetPName.ProgramPipelineBinding) == Handle;
     }
 }

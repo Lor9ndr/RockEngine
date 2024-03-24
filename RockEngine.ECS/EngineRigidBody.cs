@@ -2,13 +2,14 @@
 using OpenTK.Mathematics;
 
 using RockEngine.Physics;
+using RockEngine.Physics.Colliders;
 
 namespace RockEngine.ECS
 {
     public sealed class EngineRigidBody : RigidBody, IComponent
     {
-        public EngineRigidBody(Vector3 position, float mass)
-            : base(position, new Vector3(0), mass)
+        public EngineRigidBody(Vector3 position, float mass, ICollider collider)
+            : base(position, mass, collider)
         {
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace RockEngine.Rendering.Commands
 {
-    internal readonly struct ApiCommand : ICommand
+    public readonly struct ApiCommand : ICommand
     {
         private readonly Action Action;
 

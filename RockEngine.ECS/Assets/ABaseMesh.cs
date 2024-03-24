@@ -1,7 +1,9 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 
+using RockEngine.Common;
 using RockEngine.Common.Vertices;
+using RockEngine.Rendering;
 
 namespace RockEngine.ECS.Assets
 {
@@ -39,14 +41,9 @@ namespace RockEngine.ECS.Assets
             PrimitiveType = PrimitiveType.Triangles;
         }
 
-        public abstract void Render();
+        public abstract void Render(IRenderingContext context);
 
-        public void SetInstanceMatrices(in Matrix4[ ] matrices)
-        {
-            Models = matrices;
-            InstanceCount = Models.Length;
-        }
-        public void SetInstanceMatrices(Matrix4[ ] matrices)
+        public void SetInstanceMatrices(Matrix4[] matrices)
         {
             Models = matrices;
             InstanceCount = Models.Length;

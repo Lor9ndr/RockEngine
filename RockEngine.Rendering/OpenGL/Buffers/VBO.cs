@@ -14,99 +14,104 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public VBO(BufferSettings settings) : base(settings) { }
 
-        public override VBO Bind()
+        public override VBO Bind(IRenderingContext context)
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, Handle);
+            context.BindBuffer(BufferTarget.ArrayBuffer, Handle);
             return this;
         }
 
         protected override void Dispose(bool disposing)
         {
-            if(_disposed)
+            IRenderingContext.Update(context =>
             {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 128, out int length, out string name);
-            if(length == 0)
-            {
-                name = $"IBO: ({Handle})";
-            }
-            Logger.AddLog($"Disposing {name}");
-            if(syncObj != nint.Zero)
-            {
-                Logger.AddLog($"Disposing fence sync");
-                GL.DeleteSync(syncObj);
-            }
-            GL.DeleteBuffers(1, ref _handle);
-            Handle = IGLObject.EMPTY_HANDLE;
+                if(!IsSetupped)
+                {
+                    return;
+                }
+                GL.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 128, out int length, out string name);
+                if(length == 0)
+                {
+                    name = $"IBO: ({Handle})";
+                }
+                Logger.AddLog($"Disposing {name}");
+                if(syncObj != nint.Zero)
+                {
+                    Logger.AddLog($"Disposing fence sync");
+                    GL.DeleteSync(syncObj);
+                }
+                GL.DeleteBuffers(1, ref _handle);
+                Handle = IGLObject.EMPTY_HANDLE;
+            });
+            
         }
         ~VBO()
         {
             Dispose();
         }
 
-        public override VBO SetLabel()
+        public override VBO SetLabel(IRenderingContext context)
         {
             string label = $"VBO: ({Handle})";
             Logger.AddLog($"Setupped {label}");
-            GL.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, label.Length, label);
+            context.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, label.Length, label);
             return this;
         }
 
-        public override VBO Setup()
+        public override VBO Setup(IRenderingContext context)
         {
-            GL.CreateBuffers(1, out int handle);
+            context.CreateBuffer(out int handle);
             Handle = handle;
             return this;
         }
 
-        public VBO MapBuffer(BufferAccessMask flags, out nint buffer)
+        public VBO MapBuffer(IRenderingContext context, BufferAccessMask flags, out nint buffer)
         {
-            buffer = GL.MapNamedBufferRange(Handle, 0, Settings.BufferSize, flags);
+            context.MapBufferRange(this, 0, Settings.BufferSize, flags, out buffer);
             return this;
         }
 
-        public VBO UnmapBuffer(ref nint buffer)
+        public VBO UnmapBuffer(IRenderingContext context,ref nint buffer)
         {
             if(Handle != IGLObject.EMPTY_HANDLE && buffer != nint.Zero)
             {
-                WaitBuffer();
+                WaitBuffer(context);
 
-                GL.UnmapNamedBuffer(Handle);
+                context.UnmapBuffer(Handle);
                 buffer = nint.Zero;
-                GL.DeleteSync(syncObj);
+                context.DeleteSync(syncObj);
                 syncObj = nint.Zero;
             }
             return this;
         }
-        public VBO SetupBufferStorage<T>(BufferStorageFlags flags, T[ ] data) where T : struct
+        public VBO SetupBufferStorage<T>(IRenderingContext context,BufferStorageFlags flags, T[ ] data) where T : struct
         {
-            GL.NamedBufferStorage(Handle, Settings.BufferSize, data, flags);
+            context.NamedBufferStorage(Handle, Settings.BufferSize, data, flags);
             return this;
         }
-        public VBO SetupBufferStorage(BufferStorageFlags flags, nint data)
+        public VBO SetupBufferStorage(IRenderingContext context, BufferStorageFlags flags, nint data)
         {
-            GL.NamedBufferStorage(Handle, Settings.BufferSize, data, flags);
-            return this;
-        }
-
-        public unsafe VBO SendData<T>(T[ ] data) where T : struct
-        {
-            GL.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
+            context.NamedBufferStorage(Handle, Settings.BufferSize, data, flags);
             return this;
         }
 
-        public unsafe VBO SendData(Matrix4[ ] data, nint buffer)
+        public unsafe VBO SendData<T>(IRenderingContext context, T[] data) where T : struct
         {
+            context.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
+            return this;
+        }
+
+        public unsafe VBO SendData(IRenderingContext context, Matrix4[ ] data, nint buffer)
+        {
+            throw new NotImplementedException("NOT IMPLEMENTED: TODO");
             fixed(Matrix4* matrixPtr = &data[0])
             {
                 Matrix4* destinationPtr = (Matrix4*)buffer;
@@ -127,7 +132,7 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             return this;
         }
 
-        public VBO WaitBuffer()
+        public VBO WaitBuffer(IRenderingContext context)
         {
             if(syncObj == nint.Zero)
             {
@@ -137,30 +142,33 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             WaitSyncStatus waitReturn = WaitSyncStatus.WaitFailed;
             while(waitReturn != WaitSyncStatus.AlreadySignaled && waitReturn != WaitSyncStatus.ConditionSatisfied)
             {
-                waitReturn = GL.ClientWaitSync(syncObj, ClientWaitSyncFlags.SyncFlushCommandsBit, 1);
+                context.ClientWaitSync(syncObj, ClientWaitSyncFlags.SyncFlushCommandsBit, 1, out waitReturn);
             }
             return this;
         }
-        public VBO LockBuffer()
+        public VBO LockBuffer(IRenderingContext context)
         {
-            GL.DeleteSync(syncObj);
-            syncObj = GL.FenceSync(SyncCondition.SyncGpuCommandsComplete, 0);
+            context.DeleteSync(syncObj)
+                .CreateFenceSync(SyncCondition.SyncGpuCommandsComplete, 0, out syncObj);
             return this;
         }
 
-        public VBO SendData<T>(in T[ ] data) where T : struct
+        public VBO SendData<T>(IRenderingContext context, in T[ ] data) where T : struct
         {
-            GL.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
+            context.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
             return this;
         }
 
-        public override VBO Unbind()
+        public override VBO Unbind(IRenderingContext context)
         {
-            GL.BindBuffer(BufferTarget.ArrayBuffer, IGLObject.EMPTY_HANDLE);
+            context.BindBuffer(BufferTarget.ArrayBuffer, IGLObject.EMPTY_HANDLE);
             return this;
         }
 
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.ArrayBufferBinding) == Handle;
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.ArrayBufferBinding, out int value);
+            return value == Handle;
+        }
     }
 }

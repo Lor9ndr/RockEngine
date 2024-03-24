@@ -8,10 +8,10 @@ if(args.Length > 0)
 {
     name = args[0];
 }
-var window = new Editor(name);
-
-window.Start();
-window.Dispose();
+using var app = new Editor(name);
+{
+    app.Start();
+}
 
 static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
 {

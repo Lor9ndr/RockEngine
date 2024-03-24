@@ -5,6 +5,8 @@ using ImGuiNET;
 //using ImGuizmoNET;
 using NativeFileDialogSharp;
 
+using Ninject.Activation;
+
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
@@ -82,7 +84,7 @@ namespace RockEngine.Rendering.Layers
             {
                 // Calling OnRender to initilize the gui and user no longer should press "Load layout" on first launch
                 // i think it is should be reworked
-                OnRender();
+                OnRender().Wait();
                 ImGui.LoadIniSettingsFromDisk(LAYOUT_FILE);
             }
             _projectWindowIsOpened = Project.CurrentProject == null;
@@ -101,8 +103,9 @@ namespace RockEngine.Rendering.Layers
 
         #endregion
 
-        public void OnRender()
+        public async Task OnRender()
         {
+
             IsMouseOnEditorScreen = false;
             ImGui.NewFrame();
             GL.Viewport(0, 0, _window.Size.X, _window.Size.Y);
@@ -128,16 +131,17 @@ namespace RockEngine.Rendering.Layers
             ImGui.DockSpace(dockID, Vector2.Zero, ImGuiDockNodeFlags.PassthruCentralNode);
             DisplayAssetFolders();
 
-            SelectProjectWindow();
-
+            await SelectProjectWindow().ConfigureAwait(false);
             ImGui.PopFont();
 
             if(Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyDown(Keys.S))
             {
-                AssetManager.SaveAll();
+                await AssetManager.SaveAll().ConfigureAwait(false);
             }
-
-            _controller.Render(_window.Size);
+            IRenderingContext.Render(ctx =>
+            {
+                _controller.Render(ctx, _window.Size);
+            });
         }
 
         public void AddGameObjectContextWindow()
@@ -154,7 +158,7 @@ namespace RockEngine.Rendering.Layers
             }
         }
 
-        private void SelectProjectWindow()
+        private async Task SelectProjectWindow()
         {
             if(_projectWindowIsOpened && ImGui.Begin("Select project", ref _projectWindowIsOpened))
             {
@@ -163,7 +167,7 @@ namespace RockEngine.Rendering.Layers
                     var result = Dialog.FileOpen("asset");
                     if(!string.IsNullOrEmpty(result.Path))
                     {
-                        AssetManager.LoadProject(result.Path);
+                        await AssetManager.LoadProject(result.Path);
                     }
                 }
 
@@ -181,7 +185,10 @@ namespace RockEngine.Rendering.Layers
                 var padding = ImGui.GetStyle().WindowPadding;
                 var winPos = ImGui.GetWindowPos();
                 var winSize = ImGui.GetWindowSize();
-                _editorScreen.Resize(new OpenMath.Vector2i((int)winSize.X, (int)winSize.Y));
+                IRenderingContext.Update(context =>
+                {
+                    _editorScreen.Resize(context, new OpenMath.Vector2i((int)winSize.X, (int)winSize.Y));
+                });
                 ImGui.Image(_editorScreen.ScreenTexture.Handle, winSize, new Vector2(0, 1), new Vector2(1, 0));
 
                 var pos = GetActualWindowMousePos(mousePos, padding, winPos, winSize);
@@ -207,7 +214,10 @@ namespace RockEngine.Rendering.Layers
             if(ImGui.Begin("GAME SCREEN", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoTitleBar))
             {
                 var size = ImGui.GetWindowContentRegionMax();
-                //_gameScreen.Resize(new OpenMath.Vector2i((int)size.X, (int)size.Y));
+                IRenderingContext.Update(context =>
+                {
+                    _gameScreen.Resize(context, new OpenMath.Vector2i((int)size.X, (int)size.Y));
+                });
                 ImGui.Image(_gameScreen.ScreenTexture.Handle, size, new Vector2(0, 1), new Vector2(1, 0));
                 ImGui.End();
             }

@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 
 using RockEngine.Common.Utils;
+using RockEngine.Rendering;
 
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -58,7 +59,7 @@ namespace RockEngine.Editor.ImguiEditor
             {
                 Logger.AddLog("Builded fonts");
             }
-            controller.RecreateFontDeviceTexture();
+            IRenderingContext.Update(controller.RecreateFontDeviceTexture);
         }
 
         public static void SelectFont(ImGuiOpenGL controller, string font, int size = 18)
@@ -73,7 +74,7 @@ namespace RockEngine.Editor.ImguiEditor
                 Logger.AddLog("Builded fonts");
             }
 
-            controller.RecreateFontDeviceTexture();
+            IRenderingContext.Update(controller.RecreateFontDeviceTexture);
         }
 
         public static void SetupImGuiStyle()

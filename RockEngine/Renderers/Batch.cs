@@ -1,4 +1,5 @@
 ﻿using RockEngine.ECS;
+using RockEngine.Rendering;
 
 namespace RockEngine.Renderers
 {
@@ -13,10 +14,10 @@ namespace RockEngine.Renderers
             Mesh = mesh;
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            Material.Render();
-            Mesh.Render();
+            Material.Render(context);
+            Mesh.Render(context);
         }
     }
 }

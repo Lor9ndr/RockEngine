@@ -8,7 +8,7 @@
     public interface ISetuppable
     {
         public bool IsSetupped { get; }
-        public ISetuppable Setup();
+        public ISetuppable Setup(IRenderingContext context);
     }
 
     public interface ISettings

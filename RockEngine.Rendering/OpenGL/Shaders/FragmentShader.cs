@@ -8,7 +8,5 @@ namespace RockEngine.Rendering.OpenGL.Shaders
         public FragmentShader(string path) : base(path)
         {
         }
-        public override bool IsBinded()
-            => GL.GetInteger(GetPName.CurrentProgram) == _mainProgramHandle;
     }
 }

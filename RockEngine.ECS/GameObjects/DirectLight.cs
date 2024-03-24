@@ -1,6 +1,8 @@
 ﻿using OpenTK.Mathematics;
 
+using RockEngine.Common;
 using RockEngine.Common.Editor;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.ECS.GameObjects
@@ -46,14 +48,14 @@ namespace RockEngine.ECS.GameObjects
             _lightData.intensity = Intensity;
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            _lightData.SendData();
+            _lightData.SendData(context);
         }
 
-        public void RenderOnEditorLayer()
+        public void RenderOnEditorLayer(IRenderingContext context)
         {
-            Render();
+            Render(context);
         }
 
         public void OnUpdateDevelepmentState()

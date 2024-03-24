@@ -27,18 +27,28 @@ namespace RockEngine.Rendering.OpenGL.Buffers.UBOBuffers
         {
             if(IUBOData<TransformData>.UBO is null)
             {
-                IUBOData<TransformData>.UBO = new UBO<TransformData>(new BufferSettings(Size, BufferUsageHint.DynamicDraw, BindingPoint, Name)).Setup().SetLabel();
+                var bindingPoint = BindingPoint;
+                var name = Name;
+                IRenderingContext.Update(context =>
+                {
+                    if(IUBOData<TransformData>.UBO is null)
+                    {
+                        IUBOData<TransformData>.UBO = new UBO<TransformData>(new BufferSettings(Size, BufferUsageHint.DynamicDraw, bindingPoint, name))
+                        .Setup(context)
+                        .SetLabel(context);
+                    }
+                });
             }
         }
 
-        public readonly void SendData()
+        public readonly void SendData(IRenderingContext context)
         {
-            UBO.SendData(this);
+            UBO.SendData(context, this);
         }
 
-        public readonly void SendData<TSub>([DisallowNull, NotNull] TSub data, nint offset, int size)
+        public readonly void SendData<TSub>(IRenderingContext context, [DisallowNull, NotNull] TSub data, nint offset, int size)
         {
-            UBO.SendData(data, offset, size);
+            UBO.SendData(context, data, offset, size);
         }
     }
 }

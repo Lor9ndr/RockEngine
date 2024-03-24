@@ -9,7 +9,6 @@
         public abstract AssetType Type { get; internal set; }
 
         public bool IsDirty { get; set; }
-
         protected AAsset(string path, string name, Guid id)
         {
             Path = path;
@@ -29,5 +28,7 @@
             Name = "Asset";
             ID = Guid.NewGuid();
         }
+
+        public abstract void Loaded();
     }
 }

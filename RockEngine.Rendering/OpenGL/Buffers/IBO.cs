@@ -6,7 +6,7 @@ using RockEngine.Rendering.OpenGL.Settings;
 
 namespace RockEngine.Rendering.OpenGL.Buffers
 {
-    internal sealed class IBO : ASetuppableGLObject<BufferSettings>
+    public sealed class IBO : ASetuppableGLObject<BufferSettings>
     {
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
@@ -15,40 +15,42 @@ namespace RockEngine.Rendering.OpenGL.Buffers
         {
         }
 
-        public override IBO Bind()
+        public override IBO Bind(IRenderingContext context)
         {
-            GL.BindBuffer(BufferTarget.DrawIndirectBuffer, Handle);
+            context.BindBuffer(BufferTarget.DrawIndirectBuffer, Handle);
             return this;
         }
 
         protected override void Dispose(bool disposing)
         {
-            if(_disposed)
+            IRenderingContext.Update(context =>
             {
-                return;
-            }
-            if(disposing)
-            {
-                // Освободите управляемые ресурсы здесь
-            }
+                if(_disposed)
+                {
+                    return;
+                }
+                if(disposing)
+                {
+                    // Освободите управляемые ресурсы здесь
+                }
 
-            if(!IsSetupped)
-            {
-                return;
-            }
-            if(!IsSetupped)
-            {
-                return;
-            }
-            GL.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 64, out int length, out string name);
-            if(name.Length == 0)
-            {
-                name = $"IBO: ({Handle})";
-            }
-            Logger.AddLog($"Disposing {name}");
-            GL.DeleteBuffers(1, ref _handle);
-            _handle = IGLObject.EMPTY_HANDLE;
-
+                if(!IsSetupped)
+                {
+                    return;
+                }
+                if(!IsSetupped)
+                {
+                    return;
+                }
+                context.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 64, out int length, out string name);
+                if(name.Length == 0)
+                {
+                    name = $"IBO: ({Handle})";
+                }
+                Logger.AddLog($"Disposing {name}");
+                context.DeleteBuffer(_handle);
+                _handle = IGLObject.EMPTY_HANDLE;
+            });
         }
 
         ~IBO()
@@ -56,41 +58,42 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             Dispose();
         }
 
-        public override IBO SetLabel()
+        public override IBO SetLabel(IRenderingContext context)
         {
             string label = $"IBO: ({Handle})";
             Logger.AddLog($"Setupped {label}");
 
-            GL.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, label.Length, label);
+            context.ObjectLabel(ObjectLabelIdentifier.Buffer, Handle, label.Length, label);
             return this;
         }
 
-        public override IBO Setup()
+        public override IBO Setup(IRenderingContext context)
         {
-            GL.CreateBuffers(1, out int handle);
+            context.CreateBuffer(out int handle);
             Handle = handle;
             return this;
         }
 
-        public override IBO Unbind()
+        public override IBO Unbind(IRenderingContext context)
         {
-            GL.BindBuffer(BufferTarget.DrawIndirectBuffer, IGLObject.EMPTY_HANDLE);
+            context.BindBuffer(BufferTarget.DrawIndirectBuffer, IGLObject.EMPTY_HANDLE);
             return this;
         }
-        public unsafe IBO SendData<T>(T[ ] data) where T : struct
+        public unsafe IBO SendData<T>(IRenderingContext context, T[] data) where T : struct
         {
-            GL.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
-            return this;
-        }
-
-        public unsafe IBO SendData<T>(T[ ] data, int size) where T : struct
-        {
-            GL.NamedBufferData(Handle, size, data, Settings.BufferUsageHint);
+            context.NamedBufferData(Handle, Settings.BufferSize, data, Settings.BufferUsageHint);
             return this;
         }
 
-        public unsafe IBO SendData(Matrix4[ ] data, nint buffer)
+        public unsafe IBO SendData<T>(IRenderingContext context, T[ ] data, int size) where T : struct
         {
+            context.NamedBufferData(Handle, size, data, Settings.BufferUsageHint);
+            return this;
+        }
+
+        public unsafe IBO SendData(IRenderingContext context, Matrix4[ ] data, nint buffer)
+        {
+            throw new NotImplementedException("NOT IMPLEMENTED YET");
             //GL.NamedBufferData(Handle, Settings.BufferSize, data, BufferUsageHint.DynamicDraw);
 
             unsafe
@@ -104,7 +107,10 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             return this;
         }
 
-        public override bool IsBinded()
-           => GL.GetInteger(GetPName.DrawIndirectBufferBinding) == Handle;
+        public override bool IsBinded(IRenderingContext context)
+        {
+            context.GetInteger(GetPName.DrawIndirectBufferBinding, out int handle);
+            return handle == Handle;
+        }
     }
 }

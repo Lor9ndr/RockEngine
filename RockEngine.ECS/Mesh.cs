@@ -1,10 +1,13 @@
 ﻿using OpenTK.Graphics.OpenGL4;
 
+using RockEngine.Common;
 using RockEngine.Common.Vertices;
 using RockEngine.ECS.Assets;
+using RockEngine.Rendering;
 using RockEngine.Rendering.OpenGL.Buffers;
 using RockEngine.Rendering.OpenGL.Settings;
 
+using System.ComponentModel;
 using System.Text.Json.Serialization;
 
 namespace RockEngine.ECS
@@ -34,84 +37,84 @@ namespace RockEngine.ECS
         [JsonConstructor]
         public Mesh() : base() => VAO = new VAO();
 
-        public Mesh SetupMeshVertices(ref Vertex3D[ ] vertices)
+        public Mesh SetupMeshVertices(IRenderingContext context, Vertex3D[ ] vertices)
         {
             Vertices = vertices;
             VAO = new VAO()
-                .Setup()
-                .Bind()
-                .SetLabel();
+           .Setup(context)
+           .Bind(context)
+           .SetLabel(context);
 
             VBO = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
-                .Setup()
-                .Bind()
-                .SendData(vertices)
-                .SetLabel();
+                .Setup(context)
+                .Bind(context)
+                .SendData(context, vertices)
+                .SetLabel(context);
 
-            VAO.EnableVertexArrayAttrib(0)
+            context.EnableVertexArrayAttrib(VAO.Handle, 0)
                 .VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.PositionOffset)
-                .EnableVertexArrayAttrib(1)
+                .EnableVertexArrayAttrib(VAO.Handle, 1)
                 .VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.NormalOffset)
-                .EnableVertexArrayAttrib(2)
+                .EnableVertexArrayAttrib(VAO.Handle, 2)
                 .VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.TexCoordsOffset);
             //PrepareSendingModel();
-            VAO.Unbind();
+            VAO.Unbind(context);
+
             return this;
         }
 
-        public Mesh SetupMeshIndicesVertices(ref int[ ] indices, ref Vertex3D[ ] vertices)
+        public Mesh SetupMeshIndicesVertices(IRenderingContext context, int[] indices, Vertex3D[] vertices)
         {
             Vertices = vertices;
             Indices = indices;
-
             VAO = new VAO()
-                .Setup()
-                .Bind()
-                .SetLabel();
+            .Setup(context)
+            .Bind(context)
+            .SetLabel(context);
 
             VBO = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
-                .Setup()
-                .Bind()
-                .SendData(in vertices)
-                .SetLabel();
+                .Setup(context)
+                .Bind(context)
+                .SendData(context, vertices)
+                .SetLabel(context);
 
             EBO = new EBO(new BufferSettings(sizeof(int) * indices.Length, BufferUsageHint.StaticDraw))
-                .Setup()
-                .SendData(in indices)
-                .Bind()
-                .SetLabel();
+                .Setup(context)
+                .SendData(context, indices)
+                .Bind(context)
+                .SetLabel(context);
 
-            VAO.EnableVertexArrayAttrib(0)
+            context.EnableVertexArrayAttrib(VAO.Handle, 0)
                 .VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.PositionOffset)
-                .EnableVertexArrayAttrib(1)
+                .EnableVertexArrayAttrib(VAO.Handle, 1)
                 .VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.NormalOffset)
-                .EnableVertexArrayAttrib(2)
+                .EnableVertexArrayAttrib(VAO.Handle, 2)
                 .VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, Vertex3D.Size, Vertex3D.TexCoordsOffset);
 
             //PrepareSendingModel();
 
-            VBO.Unbind();
-            EBO.Unbind();
-            VAO.Unbind();
+            VBO.Unbind(context);
+            EBO.Unbind(context);
+            VAO.Unbind(context);
             return this;
         }
 
-        public Mesh SetupMeshVertices()
+        public Mesh SetupMeshVertices(IRenderingContext context)
         {
-            SetupMeshVertices(ref Vertices!);
+            SetupMeshVertices(context, Vertices!);
             return this;
         }
 
-        public Mesh SetupMeshIndicesVertices()
+        public Mesh SetupMeshIndicesVertices(IRenderingContext context)
         {
-            SetupMeshIndicesVertices(ref Indices!, ref Vertices!);
+            SetupMeshIndicesVertices(context, Indices!, Vertices!);
             return this;
         }
 
-        public override void Render()
+        public override void Render(IRenderingContext context)
         {
             //var command = new DrawMeshCommand(this);
-            VAO!.BindIfNotBinded();
+            VAO!.BindIfNotBinded(context);
 
             if(InstanceCount > 1)
             {
@@ -119,24 +122,24 @@ namespace RockEngine.ECS
                 //THINK ABOUT MATERIALS AND OTHER COMPONENTS ATTACHED TO THE GameObject
                 if(HasIndices)
                 {
-                    EBO!.BindIfNotBinded();
-                    GL.DrawElementsInstanced(PrimitiveType, Indices!.Length, DrawElementsType.UnsignedInt, nint.Zero, InstanceCount);
+                    EBO!.BindIfNotBinded(context);
+                    context.DrawElementsInstanced(PrimitiveType, Indices!.Length, DrawElementsType.UnsignedInt, nint.Zero, InstanceCount);
                 }
                 else
                 {
-                    GL.DrawArraysInstanced(PrimitiveType, 0, Vertices!.Length, InstanceCount);
+                    context.DrawArraysInstanced(PrimitiveType, 0, Vertices!.Length, InstanceCount);
                 }
             }
             else
             {
                 if(HasIndices)
                 {
-                    EBO!.BindIfNotBinded();
-                    GL.DrawElements(PrimitiveType, Indices!.Length, DrawElementsType.UnsignedInt, 0);
+                    EBO!.BindIfNotBinded(context);
+                    context.DrawElements(PrimitiveType, Indices!.Length, DrawElementsType.UnsignedInt, 0);
                 }
                 else
                 {
-                    GL.DrawArrays(PrimitiveType, 0, Vertices!.Length);
+                    context.DrawArrays(PrimitiveType, 0, Vertices!.Length);
                 }
             }
         }
@@ -159,33 +162,36 @@ namespace RockEngine.ECS
              }*/
         }
 
-        private void CreateInstanceBuffer(int size)
+        private void CreateInstanceBuffer(IRenderingContext context,int size)
         {
             ModelBuffer = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = size, BufferUsageHint = BufferUsageHint.StreamDraw })
-                             .Setup()
-                             .SetLabel()
-                             .SetupBufferStorage(BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapWriteBit, 0)
-                             .Bind()
-                             .MapBuffer(BufferAccessMask.MapPersistentBit | BufferAccessMask.MapWriteBit, out _mappedBuffer);
-
-            GL.VertexArrayVertexBuffer(VAO!.Handle, VAO.INSTANCE_MODELS_ATTRIBUTE, ModelBuffer.Handle, nint.Zero, sizeof(float) * 4 * 4);
+                             .Setup(context)
+                             .SetLabel(context)
+                             .SetupBufferStorage(context, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapWriteBit, 0)
+                             .Bind(context)
+                             .MapBuffer(context, BufferAccessMask.MapPersistentBit | BufferAccessMask.MapWriteBit, out _mappedBuffer);
+            context.VertexArrayVertexBuffer(VAO!.Handle, VAO.INSTANCE_MODELS_ATTRIBUTE, ModelBuffer.Handle, nint.Zero, sizeof(float) * 4 * 4);
         }
 
-        private void SetInstancedAttributes()
+        private void SetInstancedAttributes(IRenderingContext context)
         {
             var mat4Size = sizeof(float) * 4 * 4;
             for(int i = 0; i < 4; i++)
             {
-                VAO!.EnableVertexArrayAttrib(VAO.INSTANCE_MODELS_ATTRIBUTE + i);
-                VAO.VertexAttribPointer(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 4, VertexAttribPointerType.Float, false, mat4Size, sizeof(float) * i * 4);
-                VAO.VertexAttribDivisor(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 1);
+                context.EnableVertexArrayAttrib(VAO.Handle,VAO.INSTANCE_MODELS_ATTRIBUTE + i)
+                    .VertexAttribPointer(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 4, VertexAttribPointerType.Float, false, mat4Size, sizeof(float) * i * 4)
+                    .VertexAttribDivisor(VAO.INSTANCE_MODELS_ATTRIBUTE + i, 1);
             }
         }
 
         public void Dispose()
         {
             EBO?.Dispose();
-            ModelBuffer?.UnmapBuffer(ref _mappedBuffer);
+            IRenderingContext.Update(context =>
+            {
+                ModelBuffer?.UnmapBuffer(context,ref _mappedBuffer);
+            });
+
             ModelBuffer?.Dispose();
             VBO?.Dispose();
             VAO?.Dispose();

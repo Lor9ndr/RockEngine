@@ -1,6 +1,8 @@
-﻿using RockEngine.Common.Utils;
+﻿using RockEngine.Common;
+using RockEngine.Common.Utils;
 using RockEngine.ECS.Assets;
 using RockEngine.ECS.GameObjects;
+using RockEngine.Rendering;
 
 using System.Collections;
 
@@ -48,7 +50,7 @@ namespace RockEngine.ECS
             Check.IsNull(newScene);
             CurrentScene?.Stop();
             CurrentScene = newScene;
-            CurrentScene.Start();
+            CurrentScene!.Start();
         }
 
         private void Start()
@@ -72,7 +74,8 @@ namespace RockEngine.ECS
         /// </summary>
         /// <param name="gameObject">gameobject which to add to scene</param>
         public Scene Add(GameObject gameObject)
-        {// Create a HashSet to store the names of existing game objects
+        {
+            // Create a HashSet to store the names of existing game objects
             var existingNames = new HashSet<string>(_gameObjects.Select(go => go.Name));
 
             // Check if the initial name of the new game object is already in use
@@ -125,9 +128,9 @@ namespace RockEngine.ECS
             return _gameObjects;
         }
 
-        public void Render()
+        public void Render(IRenderingContext context)
         {
-            MainCamera?.Render();
+            MainCamera?.Render(context);
             for(int i = 0; i < _gameObjects.Count; i++)
             {
                 GameObject? item = _gameObjects[i];
@@ -135,14 +138,14 @@ namespace RockEngine.ECS
                 {
                     continue;
                 }
-                item.Render();
+                item.Render(context);
             }
         }
 
         /// <summary>
         /// Default render without camera
         /// </summary>
-        public void EditorLayerRender()
+        public void EditorLayerRender(IRenderingContext context)
         {
             for(int i = 0; i < _gameObjects.Count; i++)
             {
@@ -151,7 +154,7 @@ namespace RockEngine.ECS
                 {
                     continue;
                 }
-                item.Render();
+                item.Render(context);
             }
         }
 
