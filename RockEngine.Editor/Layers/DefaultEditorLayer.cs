@@ -72,7 +72,7 @@ namespace RockEngine.Editor.Layers
             _physicsManager = IoC.Get<PhysicsManager>();
             _physicsManager.SetDebugRender(camera);
             _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!, this, _physicsManager);
-            _gizmoRenderer = new GizmoRenderer(Screen);
+            _gizmoRenderer = new GizmoRenderer(Screen,this);
 
             // First init to init UBO for that
             PickingData pd = new PickingData();
@@ -125,15 +125,17 @@ namespace RockEngine.Editor.Layers
                     {
                         return;
                     }
-                    PixelInfo pi = new PixelInfo();
+                    PixelInfo[] pi = new PixelInfo[3];
                     PickingTexture.ReadPixel(context, (int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref pi);
                     GameObject? selected = null;
-                    if((uint)pi.PrimID != 0)
+                    foreach(var item in pi)
                     {
-                        var objID = (uint)pi.ObjectID;
-                        selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
+                        if((uint)item.PrimID != 0)
+                        {
+                            var objID = (uint)item.ObjectID;
+                            selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
+                        }
                     }
-
                     _imguiRenderer.SelectedGameObject = selected;
                 });
                

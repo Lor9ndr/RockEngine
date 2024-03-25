@@ -1,7 +1,7 @@
-﻿using Ninject.Activation;
-
+﻿
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 using RockEngine.Common;
@@ -40,12 +40,11 @@ namespace RockEngine.Editor.Rendering.Gizmo
 
         // Define the indices for the axes
         private readonly int[ ] _axisIndices =
-        new int[ ]
-        {
+        [
             0, 1, // X-axis
             2, 3, // Y-axis
             4, 5  // Z-axis
-        };
+        ];
 
         private readonly GameObject _gizmoPosGameObject;
         private readonly GameObject _gizmoRotGameObject;
@@ -53,15 +52,17 @@ namespace RockEngine.Editor.Rendering.Gizmo
         private readonly CameraTexture _screen;
         private readonly PickingRenderer _pickingRenderer;
         private readonly Dictionary<int, Axis> _axes;
+        private readonly DefaultEditorLayer? _editorLayer;
         private PixelInfo CurrentPixelInfo;
         private Vector2 _lastMousePos;
         private bool _isDragging;
         private Axis? _currentAxis;
         private Transform _currentTransform;
+        private GizmoMode _currentGizmoMode = GizmoMode.Position;
 
         private event Action<Axis, Transform> StartDrag;
 
-        public GizmoRenderer(CameraTexture screen)
+        public GizmoRenderer(CameraTexture screen, DefaultEditorLayer editorLayer)
         {
             var baseDebug = new PathInfo(PathConstants.RESOURCES) / PathConstants.SHADERS / PathConstants.DEBUG / PathConstants.GIZMO;
 
@@ -94,48 +95,9 @@ namespace RockEngine.Editor.Rendering.Gizmo
             var window = Application.GetMainWindow()!;
             window.MouseDown += GizmoRenderer_MouseDown;
             window.MouseUp += GizmoRenderer_MouseUp;
+            window.KeyDown += Window_KeyDown;
             StartDrag += GizmoRenderer_StartDrag;
-        }
-
-        private void GizmoRenderer_StartDrag(Axis axis, Transform transform)
-        {
-            var editorLayer = Application.GetCurrentApp().Layers.GetLayer<DefaultEditorLayer>();
-            var debugCam = editorLayer.DebugCamera.GetComponent<DebugCamera>();
-            var prevValue = debugCam.CanMove;
-            if(_isDragging)
-            {
-                debugCam.CanMove = false;
-                // Get the current mouse position
-                Vector2 mousePos = (Vector2)ImGuiRenderer.EditorScreenMousePos;
-
-                // Drag and set the position based on the axis being dragged
-                DragAndSetPosition(mousePos, transform, axis.Color);
-            }
-            else
-            {
-                debugCam.CanMove = prevValue;
-            }
-        }
-
-        private void GizmoRenderer_MouseUp(OpenTK.Windowing.Common.MouseButtonEventArgs obj)
-        {
-            _isDragging = false;
-            _currentAxis = null;
-        }
-
-        private void GizmoRenderer_MouseDown(OpenTK.Windowing.Common.MouseButtonEventArgs obj)
-        {
-            IRenderingContext.Update(context =>
-            {
-                if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis(context) &&
-                _axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis) &&
-                _currentTransform is not null)
-                {
-                    _isDragging = true;
-                    _currentAxis = axis;
-                }
-            });
-            
+            _editorLayer = editorLayer;
         }
 
         public void Render(IRenderingContext context, GameObject go)
@@ -145,36 +107,38 @@ namespace RockEngine.Editor.Rendering.Gizmo
 
         public void Render(IRenderingContext context, IComponent component)
         {
-            if(component is Transform tr)
+
+            if(component is not Transform tr)
             {
-                var camOffset = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - tr.Position).Length;
-                var lineLength = Math.Clamp(camOffset / 2, 2, 6);
-                var lineWidth = Math.Clamp(lineLength, 8, 10);
-                context.LineWidth(lineWidth);
-                _currentTransform = tr;
-                // Setting transform data
-                _gizmoPosGameObject.Transform.Position = tr.Position;
-                _gizmoPosGameObject.Transform.Scale = new Vector3(Math.Max(tr.Scale.X, Math.Max(tr.Scale.Y, tr.Scale.Z))) * lineLength;
-                _gizmoPosGameObject.Transform.RotationQuaternion = Quaternion.Identity;
-                // Picking pass
-                _pickingRenderer.Begin(context);
-                _pickingRenderer.ResizeTexture(_screen.ScreenTexture.Size);
-                _gizmoPosGameObject.Update();
-                _pickingRenderer.Render(context, _gizmoPosGameObject);
-                _pickingRenderer.End(context);
+                return;
+            }
+            var camOffset = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - tr.Position).Length;
+            var lineLength = Math.Clamp(camOffset / 2, 2, 6);
+            var lineWidth = Math.Clamp(lineLength, 8, 10);
+            context.LineWidth(lineWidth);
+            _currentTransform = tr;
+            // Setting transform data
+            _gizmoPosGameObject.Transform.Position = tr.Position;
+            _gizmoPosGameObject.Transform.Scale = new Vector3(Math.Max(tr.Scale.X, Math.Max(tr.Scale.Y, tr.Scale.Z))) * lineLength;
+            _gizmoPosGameObject.Transform.RotationQuaternion = Quaternion.Identity;
+            // Picking pass
+            _pickingRenderer.Begin(context);
+            _pickingRenderer.ResizeTexture(_screen.ScreenTexture.Size);
+            _gizmoPosGameObject.Update();
+            _pickingRenderer.Render(context, _gizmoPosGameObject);
+            _pickingRenderer.End(context);
 
-                // DefaultRender pass to render gizmos
-                _selectingShader.BindIfNotBinded(context);
-                HandleClickingOnAxis(context);
-                _gizmoPosGameObject.Render(context);
-                _selectingShader.SetShaderData(context, "outlineColor", Vector3.One);
-                _selectingShader.Unbind(context);
-                context.LineWidth(1);
+            // DefaultRender pass to render gizmos
+            _selectingShader.BindIfNotBinded(context);
+            HandleClickingOnAxis(context);
+            _gizmoPosGameObject.Render(context);
+            _selectingShader.SetShaderData(context, "outlineColor", Vector3.One);
+            _selectingShader.Unbind(context);
+            context.LineWidth(1);
 
-                if(_isDragging)
-                {
-                    StartDrag.Invoke(_currentAxis!, _currentTransform);
-                }
+            if(_isDragging)
+            {
+                StartDrag.Invoke(_currentAxis!, _currentTransform);
             }
             _lastMousePos = (Vector2)ImGuiRenderer.EditorScreenMousePos;
         }
@@ -205,6 +169,108 @@ namespace RockEngine.Editor.Rendering.Gizmo
             {
                 _selectingShader.SetShaderData(context, "outlineColor", axis.Color);
             };
+        }
+
+        private void Window_KeyDown(KeyboardKeyEventArgs e)
+        {
+            switch(e.Key)
+            {
+                case Keys.W:
+                    _currentGizmoMode = GizmoMode.Position;
+                    break;
+                case Keys.E:
+                    _currentGizmoMode = GizmoMode.Rotation;
+                    break;
+                case Keys.R:
+                    _currentGizmoMode = GizmoMode.Scale;
+                    break;
+            }
+        }
+        private void GizmoRenderer_StartDrag(Axis axis, Transform transform)
+        {
+            var debugCam = _editorLayer.DebugCamera.GetComponent<DebugCamera>();
+            var prevValue = debugCam.CanMove;
+            if(_isDragging)
+            {
+                debugCam.CanMove = false;
+                // Get the current mouse position
+                Vector2 mousePos = (Vector2)ImGuiRenderer.EditorScreenMousePos;
+
+                switch(_currentGizmoMode)
+                {
+                    case GizmoMode.Position:
+                        DragAndSetPosition(mousePos, transform, axis.Color);
+                        break;
+                    case GizmoMode.Rotation:
+                        DragAndSetRotation(mousePos, transform, axis.Color);
+                        break;
+                    case GizmoMode.Scale:
+                        DragAndSetScale(mousePos, transform, axis.Color);
+
+                        break;
+                }
+            }
+            else
+            {
+                debugCam.CanMove = prevValue;
+            }
+        }
+        private void DragAndSetScale(Vector2 mousePos, Transform transform, Vector3 axis)
+        {
+            var delta = mousePos - _lastMousePos;
+            float scaleFactor = 1.0f + (delta.Y * 0.01f); // Adjust based on vertical mouse movement
+
+            // Apply scaling factor to each axis selectively
+            Vector3 newScale = transform.Scale;
+            if(axis.X != 0)
+            {
+                newScale.X *= scaleFactor;
+            }
+            if(axis.Y != 0)
+            {
+                newScale.Y *= scaleFactor;
+            }
+            if(axis.Z != 0)
+            {
+                newScale.Z *= scaleFactor;
+            }
+
+            transform.Scale = newScale;
+
+            _lastMousePos = mousePos;
+        }
+
+        private void DragAndSetRotation(Vector2 mousePos, Transform transform, Vector3 axis)
+        {
+            var delta = mousePos - _lastMousePos;
+            float rotationAmount = delta.X * 0.01f; // Adjust based on horizontal mouse movement
+
+            // Create a quaternion rotation around the specified axis
+            Quaternion rotationDelta = Quaternion.FromAxisAngle(axis, rotationAmount);
+            transform.RotationQuaternion *= rotationDelta;
+
+            _lastMousePos = mousePos;
+        }
+
+        private void GizmoRenderer_MouseUp(MouseButtonEventArgs obj)
+        {
+            _isDragging = false;
+            _currentAxis = null;
+        }
+
+        private void GizmoRenderer_MouseDown(MouseButtonEventArgs obj)
+        {
+            IRenderingContext.Update(context =>
+            {
+                if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis(context) &&
+                _axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis) &&
+                _currentTransform is not null)
+                {
+                    _isDragging = true;
+                    _currentAxis = axis;
+                }
+            });
+
         }
 
         public void Dispose() => _gizmoPosGameObject.Dispose();

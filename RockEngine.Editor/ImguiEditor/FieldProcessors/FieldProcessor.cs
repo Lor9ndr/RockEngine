@@ -129,7 +129,6 @@ namespace RockEngine.Editor.ImguiEditor.FieldProcessors
                         .ToArray();
                 }
 
-
                 _cachedFields[type] = fields;
                 return fields;
             }

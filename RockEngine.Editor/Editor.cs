@@ -239,7 +239,7 @@ namespace RockEngine.Editor
                 {
                     for(int k = 0; k > -2; k--)
                     {
-                        material = await AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial")
+                        material = await AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial(" +( i + j + k) + ")")
                             .ConfigureAwait(false);
                         IRenderingContext.Update(ctx =>
                         {

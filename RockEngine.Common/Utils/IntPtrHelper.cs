@@ -12,15 +12,15 @@ namespace RockEngine.Common.Utils
         /// <returns>the pointer to the structure</returns>
         public static nint ToIntPtr<T>(this T structure) where T : struct
         {
-            var bytenint = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
-            Marshal.StructureToPtr(structure, bytenint, false);
-            return bytenint;
+            var pointer = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+            Marshal.StructureToPtr(structure, pointer, false);
+            return pointer;
         }
         public static nint ToIntPtr<T>(this T structure, int size) where T : struct
         {
-            var bytenint = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(structure, bytenint, false);
-            return bytenint;
+            var pointer = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(structure, pointer, false);
+            return pointer;
         }
 
         public static T? FromIntPtr<T>(this nint reference)

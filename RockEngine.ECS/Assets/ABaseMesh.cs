@@ -11,17 +11,17 @@ namespace RockEngine.ECS.Assets
     {
 
         public PrimitiveType PrimitiveType;
-        public Vertex3D[ ]? Vertices;
+        public Vertex3D[]? Vertices;
 
-        public int[ ]? Indices;
+        public int[]? Indices;
 
         public bool HasIndices => Indices is not null && Indices.Length != 0;
 
-        public Matrix4[ ]? Models;
+        public Matrix4[]? Models;
 
         public int InstanceCount { get; set; }
 
-        public ABaseMesh(ref int[ ]? indices, ref Vertex3D[ ] vertices, string name, string path, Guid id)
+        public ABaseMesh(ref int[]? indices, ref Vertex3D[] vertices, string name, string path, Guid id)
             : base(path, name, id, AssetType.Mesh)
         {
             Indices = indices;
@@ -29,7 +29,7 @@ namespace RockEngine.ECS.Assets
             PrimitiveType = PrimitiveType.Triangles;
 
         }
-        public ABaseMesh(ref Vertex3D[ ] vertices, string name, string path, Guid id)
+        public ABaseMesh(ref Vertex3D[] vertices, string name, string path, Guid id)
             : base(path, name, id, AssetType.Mesh)
         {
             Vertices = vertices;
