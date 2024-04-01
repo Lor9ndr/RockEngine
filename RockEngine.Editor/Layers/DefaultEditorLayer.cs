@@ -18,6 +18,7 @@ using RockEngine.Rendering.Layers;
 using RockEngine.Rendering.OpenGL;
 using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 using RockEngine.Rendering.OpenGL.Shaders;
+using RockEngine.Rendering.Renderers;
 
 using System.Diagnostics;
 
@@ -26,7 +27,7 @@ namespace RockEngine.Editor.Layers
     public sealed class DefaultEditorLayer : ALayer, IDisposable
     {
         public CameraTexture Screen;
-        public PickingTexture PickingTexture;
+        public PickingRenderer PickingRenderer;
         public GameObject DebugCamera;
         public Stopwatch Watcher;
 
@@ -34,7 +35,6 @@ namespace RockEngine.Editor.Layers
 
         private readonly EngineWindow _window;
         private readonly PhysicsManager _physicsManager;
-        private readonly AShaderProgram _pickingShader;
         private readonly AShaderProgram _selectingShader;
         private readonly ImGuiRenderer _imguiRenderer;
         private readonly GizmoRenderer _gizmoRenderer;
@@ -44,14 +44,10 @@ namespace RockEngine.Editor.Layers
             Watcher = new Stopwatch();
             _window = WindowManager.GetMainWindow();
             Screen = new CameraTexture(WindowManager.GetMainWindow().Size);
-            PickingTexture = new PickingTexture(WindowManager.GetMainWindow().Size);
+            PickingRenderer = new PickingRenderer(WindowManager.GetMainWindow().Size);
 
             var basePicking = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.PICKING);
             var baseDebug = Path.Combine(PathConstants.RESOURCES, PathConstants.SHADERS, PathConstants.DEBUG, PathConstants.SELECTED_OBJECT);
-
-            _pickingShader = ShaderProgram.GetOrCreate("PickingShader",
-              new VertexShader(Path.Combine(basePicking, "Picking.vert")),
-            new FragmentShader(Path.Combine(basePicking, "Picking.frag")));
 
             _selectingShader = ShaderProgram.GetOrCreate("SelectingObjectShader",
                     new VertexShader(Path.Combine(baseDebug, "Selected.vert")),
@@ -59,7 +55,6 @@ namespace RockEngine.Editor.Layers
 
             IRenderingContext.Update(context =>
             {
-                _pickingShader.Setup(context);
                 _selectingShader.Setup(context);
             });
           
@@ -73,12 +68,9 @@ namespace RockEngine.Editor.Layers
             _physicsManager.SetDebugRender(camera);
             _imguiRenderer = new ImGuiRenderer(Application.GetMainWindow()!, this, _physicsManager);
             _gizmoRenderer = new GizmoRenderer(Screen,this);
-
-            // First init to init UBO for that
-            PickingData pd = new PickingData();
         }
 
-        public override async Task OnRender(Scene scene)
+        public override void OnRender(Scene scene)
         {
             if(EditorSettings.DrawCollisions)
             {
@@ -106,11 +98,11 @@ namespace RockEngine.Editor.Layers
             
             MainRenderPass(scene);
 
-             PickingObjectPass(scene);
-             GettingObjectFromPicked(scene);
-            
+            PickingObjectPass(scene);
+            GettingObjectFromPicked(scene);
+
+            _imguiRenderer.OnRender();
             Watcher.Stop();
-            await _imguiRenderer.OnRender().ConfigureAwait(false);
         }
 
         private void GettingObjectFromPicked(IEnumerable<GameObject> gameObjects)
@@ -125,16 +117,13 @@ namespace RockEngine.Editor.Layers
                     {
                         return;
                     }
-                    PixelInfo[] pi = new PixelInfo[3];
-                    PickingTexture.ReadPixel(context, (int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref pi);
+                    PixelInfo pi = new PixelInfo();
+                    PickingRenderer.ReadPixel(context, (int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref pi);
                     GameObject? selected = null;
-                    foreach(var item in pi)
+                    if((uint)pi.PrimID != 0)
                     {
-                        if((uint)item.PrimID != 0)
-                        {
-                            var objID = (uint)item.ObjectID;
-                            selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
-                        }
+                        var objID = (uint)pi.ObjectID;
+                        selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
                     }
                     _imguiRenderer.SelectedGameObject = selected;
                 });
@@ -146,15 +135,14 @@ namespace RockEngine.Editor.Layers
         {
             IRenderingContext.Render(context =>
             {
-                context.Enable(EnableCap.CullFace)
-                .Enable(EnableCap.DepthTest);
+                Screen.BeginRenderToScreen(context);
+                context.Enable(EnableCap.DepthTest);
                 var selected = _imguiRenderer.SelectedGameObject;
                 if(selected != null)
                 {
                     selected.IsActive = false;
                 }
-                Screen.BeginRenderToScreen(context);
-
+               
                 scene.EditorLayerRender(context);
                 if(selected != null)
                 {
@@ -195,7 +183,14 @@ namespace RockEngine.Editor.Layers
             // Bind the shader for outlining and render the outline
             _selectingShader.Bind(context);
             DebugCamera.Render(context);
-            selected.Render(context); // Render the selected object again or render a specific outline mesh if you have one
+            var mesh = selected.GetComponent<MeshComponent>(); // Render the outline mesh if you have one>
+            if(mesh is not null)
+            {
+                mesh.Mesh.InstanceCount = 1;
+                mesh.Mesh.AdjustInstanceAttributesForGroup(context,0);
+                mesh.Mesh.Render(context);
+            }
+            //selected.Render(context); // Render the selected object again or render a specific outline mesh if you have one
             _selectingShader.Unbind(context);
 
             // Restore the original stencil function and depth test state
@@ -216,41 +211,20 @@ namespace RockEngine.Editor.Layers
                 context.Disable(EnableCap.StencilTest); // Restore original stencil test state
             }
 
+          
             // Render gizmos or other overlays that should ignore the stencil buffer
             _gizmoRenderer.Render(context, selected.Transform);
         }
 
-        private void PickingObjectPass(IEnumerable<GameObject> gameObjects)
+        private void PickingObjectPass(Scene scene)
         {
             IRenderingContext.Render(context =>
             {
-                PickingTexture.CheckSize(Screen.ScreenTexture.Size);
-
-                _pickingShader.Bind(context);
+                PickingRenderer.ResizeTexture(Screen.ScreenTexture.Size);
                 DebugCamera.Render(context);
-                context.Enable(EnableCap.Blend);
-                PickingTexture.BeginWrite(context);
-
-                for(int i = 0; i < gameObjects?.Count(); i++)
-                {
-                    GameObject? gameObject = gameObjects.ElementAt(i);
-                    PickingData pd = new PickingData()
-                    {
-                        gObjectIndex = gameObject.GameObjectID,
-                        gDrawIndex = (uint)i,
-                    };
-                    if(gameObject.GetComponent<Camera>() is not null)
-                    {
-                        continue;
-                    }
-                    pd.SendData(context);
-                    gameObject.RenderMeshWithoutMaterial(context);
-                }
-
-                PickingTexture.EndWrite(context);
-                _pickingShader.Unbind(context);
-                context.Disable(EnableCap.Blend)
-                    .ClearColor(EditorSettings.BackGroundColor);
+                PickingRenderer.Begin(context);
+                PickingRenderer.Render(context, scene);
+                PickingRenderer.End(context);
             });
         }
 

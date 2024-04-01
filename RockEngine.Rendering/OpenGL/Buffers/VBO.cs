@@ -9,8 +9,11 @@ namespace RockEngine.Rendering.OpenGL.Buffers
     public sealed class VBO : ASetuppableGLObject<BufferSettings>
     {
         private nint syncObj;
+        private nint _mappedBuffer = nint.Zero;
 
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
+
+        public bool IsMapped { get;  private set; }
 
         public VBO(BufferSettings settings) : base(settings) { }
 
@@ -20,39 +23,55 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             return this;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext? context = null)
         {
-            IRenderingContext.Update(context =>
+            if(context is null)
             {
-                if(_disposed)
+                IRenderingContext.Update(context =>
                 {
-                    return;
-                }
-                if(disposing)
-                {
-                    // Освободите управляемые ресурсы здесь
-                }
-
-                if(!IsSetupped)
-                {
-                    return;
-                }
-                GL.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 128, out int length, out string name);
-                if(length == 0)
-                {
-                    name = $"IBO: ({Handle})";
-                }
-                Logger.AddLog($"Disposing {name}");
-                if(syncObj != nint.Zero)
-                {
-                    Logger.AddLog($"Disposing fence sync");
-                    GL.DeleteSync(syncObj);
-                }
-                GL.DeleteBuffers(1, ref _handle);
-                Handle = IGLObject.EMPTY_HANDLE;
-            });
-            
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing, context);
+            }
         }
+
+        private void InternalDispose(bool disposing, IRenderingContext context)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+            if(disposing)
+            {
+                // Освободите управляемые ресурсы здесь
+            }
+
+            if(!IsSetupped)
+            {
+                return;
+            }
+            if(syncObj != nint.Zero)
+            {
+                UnmapBuffer(context);
+            }
+            context.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 128, out int length, out string name);
+            if(length == 0)
+            {
+                name = $"IBO: ({Handle})";
+            }
+            Logger.AddLog($"Disposing {name}");
+            if(syncObj != nint.Zero)
+            {
+                Logger.AddLog($"Disposing fence sync");
+                context.DeleteSync(syncObj);
+            }
+            context.DeleteBuffer(Handle);
+            Handle = IGLObject.EMPTY_HANDLE;
+        }
+       
         ~VBO()
         {
             Dispose();
@@ -75,18 +94,29 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public VBO MapBuffer(IRenderingContext context, BufferAccessMask flags, out nint buffer)
         {
+            if(IsMapped)
+            {
+                buffer = _mappedBuffer;
+                return this;
+            }
             context.MapBufferRange(this, 0, Settings.BufferSize, flags, out buffer);
+            _mappedBuffer = buffer;
+            IsMapped = true;
             return this;
         }
 
-        public VBO UnmapBuffer(IRenderingContext context,ref nint buffer)
+        public VBO UnmapBuffer(IRenderingContext context)
         {
-            if(Handle != IGLObject.EMPTY_HANDLE && buffer != nint.Zero)
+            if(Handle != IGLObject.EMPTY_HANDLE && _mappedBuffer != nint.Zero)
             {
-                WaitBuffer(context);
+                if(syncObj != nint.Zero)
+                {
+                    WaitBuffer(context);
+                }
 
                 context.UnmapBuffer(Handle);
-                buffer = nint.Zero;
+                IsMapped = false;
+                _mappedBuffer = nint.Zero;
                 context.DeleteSync(syncObj);
                 syncObj = nint.Zero;
             }
@@ -109,26 +139,48 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             return this;
         }
 
-        public unsafe VBO SendData(IRenderingContext context, Matrix4[ ] data, nint buffer)
+        public unsafe VBO SendDataMappedBuffer(IRenderingContext context, Matrix4[] data, int startIndex, int byteOffset, int size)
         {
-            throw new NotImplementedException("NOT IMPLEMENTED: TODO");
-            fixed(Matrix4* matrixPtr = &data[0])
+            if(startIndex < 0 || startIndex >= data.Length)
             {
-                Matrix4* destinationPtr = (Matrix4*)buffer;
-                System.Buffer.MemoryCopy(matrixPtr, destinationPtr, data.Length * sizeof(Matrix4), data.Length * sizeof(Matrix4));
+                throw new ArgumentOutOfRangeException(nameof(startIndex), "startIndex is out of the bounds of the data array.");
             }
 
-            /* unsafe
-             {
-                 Matrix4* matrixPtr = (Matrix4*)buffer;
+            int actualSize = Math.Min(size, (data.Length - startIndex) * 64);
 
-                 for (int i = 0; i < data.Length; i++)
-                 {
-                     matrixPtr[i] = data[i];
-                 }
+            Matrix4* destinationPtr = (Matrix4*)(_mappedBuffer + byteOffset);
 
-             }*/
+            fixed(Matrix4* sourcePtr = data)
+            {
+                Matrix4* adjustedSourcePtr = sourcePtr + startIndex;
+                System.Buffer.MemoryCopy(adjustedSourcePtr, destinationPtr, actualSize, actualSize);
+            }
 
+            return this;
+        }
+        public unsafe VBO SendDataMappedBuffer<T>(IRenderingContext context, T[] data, int startIndex, int byteOffset, int size) where T :unmanaged
+        {
+            if(startIndex < 0 || startIndex >= data.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startIndex), "startIndex is out of the bounds of the data array.");
+            }
+
+            int actualSize = Math.Min(size, (data.Length - startIndex) * sizeof(T));
+
+            T* destinationPtr = (T*)(_mappedBuffer + byteOffset);
+
+            fixed(T* sourcePtr = data)
+            {
+                T* adjustedSourcePtr = sourcePtr + startIndex;
+                System.Buffer.MemoryCopy(adjustedSourcePtr, destinationPtr, actualSize, actualSize);
+            }
+
+            return this;
+        }
+
+        public VBO SendData(IRenderingContext context, Matrix4[] data, int offset, int size)
+        {
+            context.NamedBufferSubData(Handle, offset, size, data);
             return this;
         }
 
@@ -142,14 +194,17 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             WaitSyncStatus waitReturn = WaitSyncStatus.WaitFailed;
             while(waitReturn != WaitSyncStatus.AlreadySignaled && waitReturn != WaitSyncStatus.ConditionSatisfied)
             {
-                context.ClientWaitSync(syncObj, ClientWaitSyncFlags.SyncFlushCommandsBit, 1, out waitReturn);
+                context.ClientWaitSync(syncObj, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000, out waitReturn);
             }
             return this;
         }
         public VBO LockBuffer(IRenderingContext context)
         {
-            context.DeleteSync(syncObj)
-                .CreateFenceSync(SyncCondition.SyncGpuCommandsComplete, 0, out syncObj);
+            if(syncObj != nint.Zero)
+            {
+                context.DeleteSync(syncObj);
+            }
+            context.CreateFenceSync(SyncCondition.SyncGpuCommandsComplete, 0, out syncObj);
             return this;
         }
 
@@ -169,6 +224,45 @@ namespace RockEngine.Rendering.OpenGL.Buffers
         {
             context.GetInteger(GetPName.ArrayBufferBinding, out int value);
             return value == Handle;
+        }
+
+        public nint GetMappedBuffer()
+        {
+            return _mappedBuffer;
+        }
+
+        public void Resize(IRenderingContext context, int requiredSize)
+        {
+            // Check if the current buffer size is already the required size
+            if(Settings.BufferSize == requiredSize)
+            {
+                return; // No resizing needed
+            }
+
+            // Create a new buffer with the required size
+            context.CreateBuffer(out int newBufferHandle);
+            context.BindBuffer(BufferTarget.ArrayBuffer, newBufferHandle);
+            context.NamedBufferData(newBufferHandle, requiredSize, IntPtr.Zero, Settings.BufferUsageHint);
+
+            // Optionally, copy data from the old buffer to the new one
+            if(IsMapped && _mappedBuffer != nint.Zero)
+            {
+                // Assuming you want to copy the entire content of the old buffer to the new one
+                // Adjust the size parameter as needed based on the actual data size to copy
+                int sizeToCopy = Math.Min(requiredSize, Settings.BufferSize);
+                context.CopyNamedBufferSubData(Handle, newBufferHandle, 0, 0, sizeToCopy);
+            }
+
+            // Delete the old buffer
+            Dispose(false,context);
+
+            // Update the VBO instance to use the new buffer
+            Handle = newBufferHandle;
+            Settings.BufferSize = requiredSize; // Update the buffer size setting
+
+            // If the buffer was mapped, you may need to remap it or handle this scenario appropriately
+            _mappedBuffer = nint.Zero; // Reset the mapped buffer pointer
+            IsMapped = false; // Reset the mapped state
         }
     }
 }

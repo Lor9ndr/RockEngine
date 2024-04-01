@@ -20,7 +20,8 @@ namespace RockEngine.Engine.EngineStates
             SetNextState(states[0].Key);
         }
 
-        public static string GetCurrentStateKey() => _baseEngineState.Key;
+        public static bool IsInited() => _states.Any();
+        public static string? GetCurrentStateKey() => _baseEngineState.Key;
 
         public static void SetNextState(string key)
         {

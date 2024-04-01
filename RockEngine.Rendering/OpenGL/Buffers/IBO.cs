@@ -21,36 +21,48 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             return this;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext? context = null)
         {
-            IRenderingContext.Update(context =>
+            if(context is null)
             {
-                if(_disposed)
+                IRenderingContext.Update(context =>
                 {
-                    return;
-                }
-                if(disposing)
-                {
-                    // Освободите управляемые ресурсы здесь
-                }
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing, context);
+            }
+        }
 
-                if(!IsSetupped)
-                {
-                    return;
-                }
-                if(!IsSetupped)
-                {
-                    return;
-                }
-                context.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 64, out int length, out string name);
-                if(name.Length == 0)
-                {
-                    name = $"IBO: ({Handle})";
-                }
-                Logger.AddLog($"Disposing {name}");
-                context.DeleteBuffer(_handle);
-                _handle = IGLObject.EMPTY_HANDLE;
-            });
+        private void InternalDispose(bool disposing, IRenderingContext context)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+            if(disposing)
+            {
+                // Освободите управляемые ресурсы здесь
+            }
+
+            if(!IsSetupped)
+            {
+                return;
+            }
+            if(!IsSetupped)
+            {
+                return;
+            }
+            context.GetObjectLabel(ObjectLabelIdentifier.Buffer, Handle, 64, out int length, out string name);
+            if(name.Length == 0)
+            {
+                name = $"IBO: ({Handle})";
+            }
+            Logger.AddLog($"Disposing {name}");
+            context.DeleteBuffer(_handle);
+            _handle = IGLObject.EMPTY_HANDLE;
         }
 
         ~IBO()

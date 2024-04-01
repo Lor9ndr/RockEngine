@@ -11,7 +11,7 @@
         public abstract IGLObject Unbind(IRenderingContext context);
         public abstract ISetuppable Setup(IRenderingContext context);
         public abstract IGLObject SetLabel(IRenderingContext context);
-        protected abstract void Dispose(bool disposing);
+        public abstract void Dispose(bool disposing, IRenderingContext context = null);
         public void Dispose()
         {
             Dispose(true);
@@ -56,7 +56,7 @@
         public abstract IGLObject Unbind(IRenderingContext context);
         public abstract ISetuppable Setup(IRenderingContext context);
         public abstract IGLObject SetLabel(IRenderingContext context);
-        protected abstract void Dispose(bool disposing);
+        public abstract void Dispose(bool disposing, IRenderingContext context = null);
         public void Dispose()
         {
             Dispose(true);

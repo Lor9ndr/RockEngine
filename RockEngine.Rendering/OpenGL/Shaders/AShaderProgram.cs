@@ -465,45 +465,45 @@ namespace RockEngine.Rendering.OpenGL.Shaders
 
         protected void Setup(IRenderingContext context, bool firstLoad)
         {
-                if(!firstLoad)
+            if(!firstLoad)
+            {
+                // Safe remove shader
+                context.UseProgram(0)
+                    .DeleteProgram(Handle);
+            }
+
+            if(_shaders.Count == 1)
+            {
+                // Create a singleShader to attach to the pipeline
+                var shader = _shaders[0];
+                context.CreateShaderProgram(shader.Type, 1, new string[] { shader.GetShaderText() }, out int handle);
+                Handle = handle;
+            }
+            else
+            {
+                context.CreateProgram(out int handle);
+                Handle = handle;
+
+                foreach(var item in _shaders)
                 {
-                    // Safe remove shader
-                    context.UseProgram(0)
-                        .DeleteProgram(Handle);
+                    item.Setup(context, Handle);
                 }
 
-                if(_shaders.Count == 1)
+                LinkProgram(context, Handle);
+                // TODO: Think if it is usefull to disposing them after setupping or not
+                foreach(var item in _shaders)
                 {
-                    // Create a singleShader to attach to the pipeline
-                    var shader = _shaders[0];
-                    context.CreateShaderProgram(shader.Type, 1, new string[] { shader.GetShaderText() }, out int handle);
-                    Handle = handle;
+                    item.Dispose();
                 }
-                else
-                {
-                    context.CreateProgram(out int handle);
-                    Handle = handle;
+            }
 
-                    foreach(var item in _shaders)
-                    {
-                        item.Setup(context, Handle);
-                    }
+            SetLabel(context);
+            // The shader is now ready to go, but first, we're going to cache all the shader uniform locations.
+            // Querying this from the shader is very slow, so we do it once on initialization and reuse those values
+            // later.
 
-                    LinkProgram(context, Handle);
-                    // TODO: Think if it is usefull to disposing them after setupping or not
-                    foreach(var item in _shaders)
-                    {
-                        item.Dispose();
-                    }
-                }
+            FillCacheUniforms(context);
 
-                SetLabel(context);
-                // The shader is now ready to go, but first, we're going to cache all the shader uniform locations.
-                // Querying this from the shader is very slow, so we do it once on initialization and reuse those values
-                // later.
-
-                FillCacheUniforms(context);
-            
         }
 
         private void FillCacheUniforms(IRenderingContext context)

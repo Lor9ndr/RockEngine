@@ -731,5 +731,29 @@ namespace RockEngine.Rendering
             GL.GetInteger(param, values);
             return this;
         }
+
+        public IRenderingContext GenerateTextureMipmap(int handle)
+        {
+            GL.GenerateTextureMipmap(handle);
+            return this;
+        }
+
+        public IRenderingContext NamedBufferSubData<T>(int buffer, int offset, int size, T[] data) where T : struct
+        {
+            GL.NamedBufferSubData(buffer, offset, size, data);
+            return this;
+        }
+
+        public IRenderingContext InvalidateBufferSubData(int handle, int offset, int size)
+        {
+            GL.InvalidateBufferSubData(handle, offset, size);
+            return this;
+        }
+
+        public IRenderingContext CopyNamedBufferSubData(int handle, int newBufferHandle, int readOffset, int writeOffset, int sizeToCopy)
+        {
+            GL.CopyNamedBufferSubData(handle, newBufferHandle, readOffset, writeOffset, sizeToCopy);
+            return this;
+        }
     }
 }

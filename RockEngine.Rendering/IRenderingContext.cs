@@ -92,6 +92,7 @@ namespace RockEngine.Rendering
         public IRenderingContext BindBufferRange(BufferRangeTarget target, int index, int buffer, nint offset, int size);
         public IRenderingContext NamedBufferSubData(int buffer, int offset, int size, nint data);
         public IRenderingContext NamedBufferSubData<T>(int buffer, int offset, int size, ref T data) where T : struct;
+        public IRenderingContext NamedBufferSubData<T>(int buffer, int offset, int size,  T[] data) where T : struct;
         public IRenderingContext NamedBufferData<T>(int buffer, int size, ref T data, BufferUsageHint hint) where T : struct;
         public IRenderingContext NamedBufferData<T>(int buffer, int size, T[] data, BufferUsageHint hint) where T : struct;
         public IRenderingContext NamedBufferData(int buffer, int size, nint data, BufferUsageHint hint);
@@ -238,6 +239,9 @@ namespace RockEngine.Rendering
         public IRenderingContext BufferSubData(BufferTarget target, nint offset, int size, nint data);
         public IRenderingContext IsEnabled(EnableCap param, out bool value);
         public IRenderingContext GetIntegerv(GetPName param, int[] values);
+        public IRenderingContext GenerateTextureMipmap(int handle);
+        public IRenderingContext InvalidateBufferSubData(int handle, int offset, int size);
+        public IRenderingContext CopyNamedBufferSubData(int handle, int newBufferHandle, int readOffset, int writeOffset, int sizeToCopy);
 
         #endregion
     }

@@ -12,19 +12,18 @@ using RockEngine.ECS.GameObjects;
 using RockEngine.Editor.GameObjects;
 using RockEngine.Editor.Layers;
 using RockEngine.Inputs;
-using RockEngine.Renderers;
 using RockEngine.Rendering;
 using RockEngine.Rendering.Layers;
 using RockEngine.Rendering.OpenGL.Shaders;
+using RockEngine.Rendering.Renderers;
 
 namespace RockEngine.Editor.Rendering.Gizmo
 {
-    public class GizmoRenderer : IRenderer, IDisposable
+    public class GizmoRenderer : IRenderer<Transform>, IDisposable
     {
-        private readonly AShaderProgram _selectingShader;
+        private readonly AShaderProgram _gizmoShader;
         private readonly Vertex3D[ ] _axisVertices =
-        new Vertex3D[ ]
-        {
+        [
             // X-axis
             new Vertex3D(Vector3.Zero, Vector3.UnitX),
             new Vertex3D(Vector3.UnitX, Vector3.UnitX),
@@ -36,7 +35,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
             // Z-axis
             new Vertex3D(Vector3.Zero, Vector3.UnitZ),
             new Vertex3D(Vector3.UnitZ, Vector3.UnitZ)
-        };
+        ];
 
         // Define the indices for the axes
         private readonly int[ ] _axisIndices =
@@ -52,7 +51,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
         private readonly CameraTexture _screen;
         private readonly PickingRenderer _pickingRenderer;
         private readonly Dictionary<int, Axis> _axes;
-        private readonly DefaultEditorLayer? _editorLayer;
+        private readonly DefaultEditorLayer _editorLayer;
         private PixelInfo CurrentPixelInfo;
         private Vector2 _lastMousePos;
         private bool _isDragging;
@@ -66,12 +65,12 @@ namespace RockEngine.Editor.Rendering.Gizmo
         {
             var baseDebug = new PathInfo(PathConstants.RESOURCES) / PathConstants.SHADERS / PathConstants.DEBUG / PathConstants.GIZMO;
 
-            _selectingShader = ShaderProgram.GetOrCreate("GizmoShader",
+            _gizmoShader = ShaderProgram.GetOrCreate("GizmoShader",
                 new VertexShader(baseDebug / "Gizmo.vert"),
                  new FragmentShader(baseDebug / "Gizmo.frag"));
             IRenderingContext.Update(context =>
             {
-                _selectingShader.Setup(context);
+                _gizmoShader.Setup(context);
             });
 
             var posMesh = new Mesh(ref _axisVertices, ref _axisIndices, "GIZMO MESH AXIS position", PathsInfo.ENGINE_DIRECTORY, Guid.Empty);
@@ -100,40 +99,32 @@ namespace RockEngine.Editor.Rendering.Gizmo
             _editorLayer = editorLayer;
         }
 
-        public void Render(IRenderingContext context, GameObject go)
+        public void Render(IRenderingContext context, Transform item)
         {
-            Render(context, go.Transform);
-        }
-
-        public void Render(IRenderingContext context, IComponent component)
-        {
-
-            if(component is not Transform tr)
-            {
-                return;
-            }
-            var camOffset = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - tr.Position).Length;
+            var camOffset = (DebugCamera.ActiveDebugCamera.Parent.Transform.Position - item.Position).Length;
             var lineLength = Math.Clamp(camOffset / 2, 2, 6);
             var lineWidth = Math.Clamp(lineLength, 8, 10);
             context.LineWidth(lineWidth);
-            _currentTransform = tr;
+            _currentTransform = item;
             // Setting transform data
-            _gizmoPosGameObject.Transform.Position = tr.Position;
-            _gizmoPosGameObject.Transform.Scale = new Vector3(Math.Max(tr.Scale.X, Math.Max(tr.Scale.Y, tr.Scale.Z))) * lineLength;
+            _gizmoPosGameObject.Transform.Position = item.Position;
+            _gizmoPosGameObject.Transform.Scale = new Vector3(Math.Max(item.Scale.X, Math.Max(item.Scale.Y, item.Scale.Z))) * lineLength;
             _gizmoPosGameObject.Transform.RotationQuaternion = Quaternion.Identity;
             // Picking pass
+            _gizmoPosGameObject.Update();
+
+            var mesh = _gizmoPosGameObject.GetComponent<MeshComponent>()!.Mesh!;
+            mesh.PrepareSendingModel(context, [_gizmoPosGameObject.Transform.GetModelMatrix()], 0, 1);
             _pickingRenderer.Begin(context);
             _pickingRenderer.ResizeTexture(_screen.ScreenTexture.Size);
-            _gizmoPosGameObject.Update();
             _pickingRenderer.Render(context, _gizmoPosGameObject);
             _pickingRenderer.End(context);
-
             // DefaultRender pass to render gizmos
-            _selectingShader.BindIfNotBinded(context);
+            _gizmoShader.BindIfNotBinded(context);
             HandleClickingOnAxis(context);
+            _gizmoShader.SetShaderData(context, "outlineColor", Vector3.One);
             _gizmoPosGameObject.Render(context);
-            _selectingShader.SetShaderData(context, "outlineColor", Vector3.One);
-            _selectingShader.Unbind(context);
+            _gizmoShader.Unbind(context);
             context.LineWidth(1);
 
             if(_isDragging)
@@ -143,18 +134,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
             _lastMousePos = (Vector2)ImGuiRenderer.EditorScreenMousePos;
         }
 
-        public void DragAndSetPosition(Vector2 mousePosition, Transform transform, Vector3 directionAxis)
-        {
-            // Calculate the offset in the plane
-            var delta = mousePosition - _lastMousePos;
-            var offset = delta.X + delta.Y;
-
-            // Update the position of the object being manipulated
-            transform.Position += directionAxis * offset * 0.05f;
-
-            // Update the last mouse position
-            _lastMousePos = mousePosition;
-        }
+       
 
         public bool IsClickingOnAxis(IRenderingContext context)
         {
@@ -167,7 +147,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
         {
             if(_axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis))
             {
-                _selectingShader.SetShaderData(context, "outlineColor", axis.Color);
+                _gizmoShader.SetShaderData(context, "outlineColor", axis.Color);
             };
         }
 
@@ -215,28 +195,28 @@ namespace RockEngine.Editor.Rendering.Gizmo
                 debugCam.CanMove = prevValue;
             }
         }
+
+        public void DragAndSetPosition(Vector2 mousePosition, Transform transform, Vector3 directionAxis)
+        {
+            // Calculate the offset in the plane
+            var delta = mousePosition - _lastMousePos;
+            var offset = delta.X + delta.Y;
+
+            // Update the position of the object being manipulated
+            transform.Position += directionAxis * offset * 0.05f;
+
+            // Update the last mouse position
+            _lastMousePos = mousePosition;
+        }
         private void DragAndSetScale(Vector2 mousePos, Transform transform, Vector3 axis)
         {
             var delta = mousePos - _lastMousePos;
-            float scaleFactor = 1.0f + (delta.Y * 0.01f); // Adjust based on vertical mouse movement
+            var offset = delta.X + delta.Y;
 
-            // Apply scaling factor to each axis selectively
-            Vector3 newScale = transform.Scale;
-            if(axis.X != 0)
-            {
-                newScale.X *= scaleFactor;
-            }
-            if(axis.Y != 0)
-            {
-                newScale.Y *= scaleFactor;
-            }
-            if(axis.Z != 0)
-            {
-                newScale.Z *= scaleFactor;
-            }
+            // Update the position of the object being manipulated
+            transform.Scale += axis * offset * 0.05f;
 
-            transform.Scale = newScale;
-
+            // Update the last mouse position
             _lastMousePos = mousePos;
         }
 
@@ -274,5 +254,10 @@ namespace RockEngine.Editor.Rendering.Gizmo
         }
 
         public void Dispose() => _gizmoPosGameObject.Dispose();
+
+        public void Update(Transform item)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -25,35 +25,46 @@ namespace RockEngine.Rendering.OpenGL.Buffers
 
         public override bool IsSetupped => Handle != IGLObject.EMPTY_HANDLE;
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext context = null)
         {
-            IRenderingContext.Update(context =>
+            if(context is null)
             {
-                if(_disposed)
+                IRenderingContext.Update(context =>
                 {
-                    return;
-                }
-                if(disposing)
-                {
-                    // Освободите управляемые ресурсы здесь
-                }
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing, context);
+            }
+        }
 
-                if(!IsSetupped)
-                {
-                    return;
-                }
+        private void InternalDispose(bool disposing, IRenderingContext context)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+            if(disposing)
+            {
+                // Освободите управляемые ресурсы здесь
+            }
 
-                context.GetObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, 64, out int length, out string name);
-                if(name.Length == 0)
-                {
-                    name = $"FBO: ({Handle})";
-                }
-                Logger.AddLog($"Disposing {name}");
-                context.DeleteFrameBuffer(_handle);
-                // now Handle is 0 
-                _handle = IGLObject.EMPTY_HANDLE;
-            });
-          
+            if(!IsSetupped)
+            {
+                return;
+            }
+
+            context.GetObjectLabel(ObjectLabelIdentifier.Framebuffer, Handle, 64, out int length, out string name);
+            if(name.Length == 0)
+            {
+                name = $"FBO: ({Handle})";
+            }
+            Logger.AddLog($"Disposing {name}");
+            context.DeleteFrameBuffer(_handle);
+            // now Handle is 0 
+            _handle = IGLObject.EMPTY_HANDLE;
         }
 
         public override FBO SetLabel(IRenderingContext context)

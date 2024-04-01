@@ -39,10 +39,8 @@ namespace RockEngine.Engine.EngineStates
 
         public override void OnUpdateState()
         {
-            foreach(var item in Scene.CurrentScene.GetGameObjects())
-            {
-                item.Update();
-            }
+            Scene.CurrentScene?.Update();
+
         }
     }
 }

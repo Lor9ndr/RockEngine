@@ -40,26 +40,26 @@ namespace RockEngine.Rendering.OpenGL.Textures
         /// </summary>
         /// <param name="bitmap">bitmap to upload to GPU</param>
         /// <returns>Fluent</returns>
-        public Texture2D SetupBitmap(SKBitmap bitmap)
+        public Texture2D SetupBitmap(IRenderingContext contex, SKBitmap bitmap)
         {
             var bitHandle = bitmap.GetPixels();
             Size = new Vector2i(bitmap.Width, bitmap.Height);
             int maxDimension = Math.Max(bitmap.Width, bitmap.Height);
             int maxMipLevel = maxDimension > 0 ? 1 + (int)Math.Log2(maxDimension) : 1;
 
-            GL.TextureStorage2D(Handle, maxMipLevel, SizedInternalFormat.Srgb8Alpha8, Size.X, Size.Y);
+            contex.TextureStorage2D(Handle, maxMipLevel, SizedInternalFormat.Srgb8Alpha8, Size);
 
             int levelWidth = bitmap.Width;
             int levelHeight = bitmap.Height;
 
             for(int level = 0; level < maxMipLevel; level++)
             {
-                GL.TextureSubImage2D(Handle, level, 0, 0, levelWidth, levelHeight, Settings.PixelFormat, Settings.PixelType, bitHandle);
+                contex.TextureSubImage2D(Handle, level, 0, 0, levelWidth, levelHeight, Settings.PixelFormat, Settings.PixelType, bitHandle);
                 levelWidth = Math.Max(levelWidth >> 1, 1);
                 levelHeight = Math.Max(levelHeight >> 1, 1);
             }
 
-            GL.GenerateTextureMipmap(Handle);
+            contex.GenerateTextureMipmap(Handle);
 
             bitmap.Dispose();
             return this;

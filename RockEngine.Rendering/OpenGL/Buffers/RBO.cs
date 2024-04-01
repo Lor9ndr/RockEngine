@@ -59,34 +59,45 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             Dispose();
             IRenderingContext.Update(ctx=>Setup(ctx));
         }
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext? context = null)
         {
-            IRenderingContext.Update(context =>
+            if(context is null)
             {
-                if(_disposed)
+                IRenderingContext.Update(context =>
                 {
-                    return;
-                }
-                if(disposing)
-                {
-                    // Освободите управляемые ресурсы здесь
-                }
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing, context);
+            }
+        }
 
-                if(!IsSetupped)
-                {
-                    return;
-                }
+        private void InternalDispose(bool disposing, IRenderingContext context)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+            if(disposing)
+            {
+                // Освободите управляемые ресурсы здесь
+            }
 
-                GL.GetObjectLabel(ObjectLabelIdentifier.Renderbuffer, Handle, 128, out int _, out string name);
-                if(name.Length == 0)
-                {
-                    name = $"RBO: ({Handle})";
-                }
-                Logger.AddLog($"Disposing {name}");
-                context.DeleteRenderBuffer(_handle);
-                _handle = IGLObject.EMPTY_HANDLE;
-            });
-            
+            if(!IsSetupped)
+            {
+                return;
+            }
+
+            GL.GetObjectLabel(ObjectLabelIdentifier.Renderbuffer, Handle, 128, out int _, out string name);
+            if(name.Length == 0)
+            {
+                name = $"RBO: ({Handle})";
+            }
+            Logger.AddLog($"Disposing {name}");
+            context.DeleteRenderBuffer(_handle);
+            _handle = IGLObject.EMPTY_HANDLE;
         }
 
         public override bool IsBinded(IRenderingContext context)

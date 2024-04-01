@@ -3,10 +3,7 @@ layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aColor;
 
 
-layout (std140, binding = 1) uniform TransformData
-{
-    mat4 Model;
-}transformData;
+layout (location = 10) in mat4 instanceMatrix;
 
 
 layout (std140, binding = 2) uniform CameraData
@@ -20,7 +17,7 @@ out vec3 color;
 
 void main()
 {
-    vec4 pos = transformData.Model * vec4(aPos, 1.0);
+    vec4 pos = instanceMatrix * vec4(aPos, 1.0);
     color = aColor;
     gl_Position = cameraData.Projection * cameraData.View * pos;
 

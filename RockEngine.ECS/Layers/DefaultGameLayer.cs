@@ -21,7 +21,7 @@ namespace RockEngine.ECS.Layers
             Watcher = new Stopwatch();
         }
 
-        public override Task OnRender(Scene scene)
+        public override void OnRender(Scene scene)
         {
             IRenderingContext.Render(context =>
             {
@@ -32,7 +32,6 @@ namespace RockEngine.ECS.Layers
                 //Screen.DisplayScreen(context);
                 Watcher.Stop();
             });
-            return Task.CompletedTask;
         }
 
         public void Dispose()

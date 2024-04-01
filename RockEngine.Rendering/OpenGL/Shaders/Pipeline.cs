@@ -61,7 +61,22 @@ namespace RockEngine.Rendering.OpenGL.Shaders
             return this;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext? context = null)
+        {
+            if(context is null)
+            {
+                IRenderingContext.Update(context =>
+                {
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing, context);
+            }
+        }
+
+        private void InternalDispose(bool disposing, IRenderingContext context)
         {
             if(_disposed)
             {

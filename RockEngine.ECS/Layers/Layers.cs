@@ -22,11 +22,11 @@ namespace RockEngine.ECS.Layers
             _layers.Remove(layer);
         }
 
-        public async Task OnRender( Scene scene)
+        public void OnRender(Scene scene)
         {
             foreach(var item in _layers)
             {
-                await item.OnRender(scene);
+                 item.OnRender(scene);
             }
         }
 

@@ -115,7 +115,7 @@ namespace RockEngine.ECS.Assets
             _isSaving = false;
         }
 
-        public static async Task<Material> CreateMaterialAsset(AShaderProgram shader, string path, string name = "Material", CancellationToken cancellationToken = default)
+        public static async Task<Material> CreateMaterialAssetAsync(AShaderProgram shader, string path, string name = "Material", CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var asset = new Material(shader, path, name, Guid.NewGuid());
@@ -145,7 +145,7 @@ namespace RockEngine.ECS.Assets
             return asset;
         }
 
-        public static async Task<Mesh> CreateMesh(Vertex3D[ ] vertices, string name = "Mesh", string path = "", Guid id = default, CancellationToken cancellationToken = default)
+        public static async Task<Mesh> CreateMeshAsync(Vertex3D[ ] vertices, string name = "Mesh", string path = "", Guid id = default, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -186,11 +186,16 @@ namespace RockEngine.ECS.Assets
             return obj!;
         }
 
-        public static async Task SaveAssetToFile(string filePath, object objToSave, CancellationToken cancellationToken = default)
+        public static async Task SaveAssetToFile<T>(string filePath, T objToSave, CancellationToken cancellationToken = default) where T:IAsset
         {
             cancellationToken.ThrowIfCancellationRequested();
-            string json = JsonConvert.SerializeObject(objToSave, _jsonSettings);
-            await File.WriteAllTextAsync(filePath, json, cancellationToken);
+            string jsonString = JsonConvert.SerializeObject(objToSave, _jsonSettings);
+
+            // Write the JSON string to file asynchronously
+            // Since Newtonsoft.Json does not provide an asynchronous method for writing to a file directly,
+            // we use StreamWriter with an asynchronous method here.
+            using var streamWriter = new StreamWriter(filePath);
+            await streamWriter.WriteAsync(jsonString).ConfigureAwait(false);
         }
 
         public static Task SaveAssetToFileAsync(IAsset objToSave, CancellationToken cancellationToken = default)

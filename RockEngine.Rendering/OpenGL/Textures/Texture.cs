@@ -97,32 +97,44 @@ namespace RockEngine.Rendering.OpenGL.Textures
             return this;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext? context = null)
         {
-            IRenderingContext.Update(context =>
+            if(context is null)
             {
-                if(_disposed)
+                IRenderingContext.Update(context =>
                 {
-                    return;
-                }
-                if(disposing)
-                {
-                    // Освободите управляемые ресурсы здесь
-                }
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing, context);
+            }
+        }
 
-                if(!IsSetupped)
-                {
-                    return;
-                }
-                context.GetObjectLabel(ObjectLabelIdentifier.Texture, Handle, 64, out int length, out string name);
-                if(length == 0)
-                {
-                    name = $"Texture: ({Handle})";
-                }
-                Logger.AddLog($"Disposing {name}");
-                context.DeleteTexture(Handle);
-                Handle = IGLObject.EMPTY_HANDLE;
-            });
+        private void InternalDispose(bool disposing, IRenderingContext context)
+        {
+            if(_disposed)
+            {
+                return;
+            }
+            if(disposing)
+            {
+                // Освободите управляемые ресурсы здесь
+            }
+
+            if(!IsSetupped)
+            {
+                return;
+            }
+            context.GetObjectLabel(ObjectLabelIdentifier.Texture, Handle, 64, out int length, out string name);
+            if(length == 0)
+            {
+                name = $"Texture: ({Handle})";
+            }
+            Logger.AddLog($"Disposing {name}");
+            context.DeleteTexture(Handle);
+            Handle = IGLObject.EMPTY_HANDLE;
         }
 
         ~Texture()

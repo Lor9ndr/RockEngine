@@ -1,16 +1,12 @@
 ﻿
 using OpenTK.Mathematics;
 
-using RockEngine.Common;
 using RockEngine.Rendering;
-using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 
 namespace RockEngine.ECS
 {
     public class Transform : IComponent, IRenderable
     {
-        private TransformData _transformData;
-
         public Quaternion RotationQuaternion;
 
         public Vector3 Position;
@@ -29,6 +25,7 @@ namespace RockEngine.ECS
 
         private List<Transform> _childTransforms;
         private GameObject _parent;
+        private Matrix4 _modelMatrix;
 
         public Transform()
         {
@@ -36,6 +33,7 @@ namespace RockEngine.ECS
             Position = Vector3.Zero;
             RotationQuaternion = Quaternion.Identity;
             Scale = Vector3.One;
+            _modelMatrix = Matrix4.Identity;
         }
 
         public Transform(Vector3 position, Vector3 rotation = default)
@@ -51,7 +49,7 @@ namespace RockEngine.ECS
             Scale = scale;
         }
 
-        public Matrix4 GetModelMatrix()
+        public Matrix4 GetUpdatedModelMatrix()
         {
             Matrix4 model;
             var rb = Parent.GetComponent<EngineRigidBody>();
@@ -82,19 +80,21 @@ namespace RockEngine.ECS
             {
                 rb.Position = Position;
             }
-            _transformData = new TransformData();
+            //_transformData = new TransformData();
 
         }
 
         public void OnUpdate()
         {
-            _transformData.Model = GetModelMatrix();
+            _modelMatrix = GetUpdatedModelMatrix();
         }
 
         public void Render(IRenderingContext context)
         {
-            _transformData.SendData(context);
+            //_transformData.SendData(context);
         }
+
+        public Matrix4 GetModelMatrix() => _modelMatrix;
 
         public void AddChildTransform(Transform t)
             => _childTransforms.Add(t);
@@ -121,7 +121,6 @@ namespace RockEngine.ECS
                 Scale = Scale,
                 _childTransforms = _childTransforms,
                 _parent = _parent,
-                _transformData = _transformData
             };
         }
 
@@ -133,7 +132,6 @@ namespace RockEngine.ECS
             Scale = state.Scale;
             _childTransforms = state._childTransforms;
             _parent = state._parent;
-            _transformData = state._transformData;
         }
     }
 }

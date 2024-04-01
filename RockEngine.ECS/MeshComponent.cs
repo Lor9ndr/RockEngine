@@ -1,5 +1,4 @@
-﻿using RockEngine.Common;
-using RockEngine.Rendering;
+﻿using RockEngine.Rendering;
 
 using System.Text.Json.Serialization;
 
@@ -45,8 +44,12 @@ namespace RockEngine.ECS
 
         public void Render(IRenderingContext context)
         {
-            Mesh?.Render(context);
+            if(Mesh.IsSetupped)
+            {
+                Mesh?.Render(context);
+            }
         }
+        
 
         public void OnUpdate()
         {

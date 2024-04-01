@@ -72,7 +72,22 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             return value == Handle;
         }
 
-        protected override void Dispose(bool disposing)
+        public override void Dispose(bool disposing, IRenderingContext? context = null)
+        {
+            if(context is null)
+            {
+                IRenderingContext.Update(context =>
+                {
+                    InternalDispose(disposing, context);
+                });
+            }
+            else
+            {
+                InternalDispose(disposing,context);
+            }
+        }
+
+        private void InternalDispose(bool disposing, IRenderingContext context)
         {
             if(_disposed)
             {
@@ -87,15 +102,16 @@ namespace RockEngine.Rendering.OpenGL.Buffers
             {
                 return;
             }
-            GL.GetObjectLabel(ObjectLabelIdentifier.VertexArray, Handle, 64, out int length, out string name);
+            context.GetObjectLabel(ObjectLabelIdentifier.VertexArray, Handle, 64, out int length, out string name);
             if(name.Length == 0)
             {
                 name = $"VAO: ({Handle})";
             }
             Logger.AddLog($"Disposing {name}");
-            GL.DeleteVertexArrays(1, ref _handle);
+            context.DeleteVertexArray(_handle);
             _handle = IGLObject.EMPTY_HANDLE;
         }
+
         ~VAO()
         {
             Dispose();

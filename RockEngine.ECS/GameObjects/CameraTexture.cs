@@ -29,7 +29,7 @@ namespace RockEngine.ECS.GameObjects
                      { TextureParameterName.TextureWrapR, (int) TextureWrapMode.ClampToEdge},
            };
 
-        private static readonly Vertex2D[ ] _vertices = new Vertex2D[6]
+        private static readonly Vertex2D[] _vertices = new Vertex2D[6]
            {
                     new Vertex2D(new Vector2(-1.0f,  1.0f), new Vector2(0.0f, 1.0f)),
                     new Vertex2D(new Vector2(-1.0f, -1.0f), new Vector2(0.0f, 0.0f)),
@@ -85,7 +85,6 @@ namespace RockEngine.ECS.GameObjects
 
         public void DisplayScreen(IRenderingContext context)
         {
-            
             _screenShader.Bind(context);
             _screenShader.SetShaderData(context, "sampler", 1);
             _screenSprite.SpriteTexture.SetTextureUnit(context, 1);

@@ -4,12 +4,13 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
+layout (location = 10) in mat4 instanceMatrix;
 
 
-layout (std140, binding = 1) uniform TransformData
-{
-    mat4 Model;
-}transformData;
+//layout (std140, binding = 1) uniform TransformData
+//{
+//    mat4 Model;
+//}transformData;
 
 layout (std140, binding = 2) uniform CameraData
 {
@@ -29,10 +30,10 @@ out VS_OUT {
 void main()
 {
    
-    vs_out.FragPos = vec3(transformData.Model * vec4(aPos, 1.0));
-    vs_out.Normal = mat3(transpose(inverse(transformData.Model))) * aNormal;
+    vs_out.FragPos = vec3(instanceMatrix * vec4(aPos, 1.0));
+    vs_out.Normal = mat3(transpose(inverse(instanceMatrix))) * aNormal;
     vs_out.TexCoords = aTexCoords;
     vs_out.ViewPos = cameraData.ViewPos;
     
-    gl_Position = cameraData.Projection * cameraData.View * transformData.Model * vec4(aPos,1.0);
+    gl_Position = cameraData.Projection * cameraData.View * instanceMatrix * vec4(aPos,1.0);
 }

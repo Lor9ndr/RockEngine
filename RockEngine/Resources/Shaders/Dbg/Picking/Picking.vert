@@ -4,11 +4,10 @@
 
 layout (location = 0) in vec3 aPos;
 
-layout (std140, binding = 1) uniform TransformData
-{
-    mat4 Model;
-}transformData;
+layout (location = 5) in uint gDrawIndex;
+layout (location = 6) in uint gObjectIndex;
 
+layout (location = 10) in mat4 instanceMatrix;
 
 layout (std140, binding = 2) uniform CameraData
 {
@@ -17,7 +16,12 @@ layout (std140, binding = 2) uniform CameraData
     vec3 ViewPos;
 }cameraData;
 
+out uint ObjectIndex;
+out uint DrawIndex;
+
 void main()
 {
-   gl_Position = cameraData.Projection * cameraData.View * transformData.Model * vec4(aPos,1.0);
+   gl_Position = cameraData.Projection * cameraData.View * instanceMatrix * vec4(aPos,1.0);
+   ObjectIndex = gObjectIndex;
+   DrawIndex = gDrawIndex;
 }  

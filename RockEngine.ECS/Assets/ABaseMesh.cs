@@ -17,9 +17,7 @@ namespace RockEngine.ECS.Assets
 
         public bool HasIndices => Indices is not null && Indices.Length != 0;
 
-        public Matrix4[]? Models;
-
-        public int InstanceCount { get; set; }
+        public int InstanceCount { get; set; } = 1;
 
         public ABaseMesh(ref int[]? indices, ref Vertex3D[] vertices, string name, string path, Guid id)
             : base(path, name, id, AssetType.Mesh)
@@ -42,11 +40,5 @@ namespace RockEngine.ECS.Assets
         }
 
         public abstract void Render(IRenderingContext context);
-
-        public void SetInstanceMatrices(Matrix4[] matrices)
-        {
-            Models = matrices;
-            InstanceCount = Models.Length;
-        }
     }
 }

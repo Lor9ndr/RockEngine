@@ -20,6 +20,10 @@ namespace RockEngine.Rendering.Layers
 
         partial void DisplayAssetFolders()
         {
+            if(Project.CurrentProject is null)
+            {
+                return;
+            }
             if(ImGui.Begin("Folder Window"))
             {
                 ImGui.Columns(2);

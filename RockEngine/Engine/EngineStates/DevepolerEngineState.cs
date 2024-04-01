@@ -10,7 +10,8 @@ namespace RockEngine.Engine.EngineStates
         {
             foreach(var gameObject in Scene.CurrentScene?.GetGameObjects())
             {
-                foreach(var component in gameObject.GetComponents())
+                var components = gameObject.GetComponents();
+                foreach(var component in components)
                 {
                     if(component is EngineRigidBody rb)
                     {
@@ -37,10 +38,8 @@ namespace RockEngine.Engine.EngineStates
 
         public override void OnUpdateState()
         {
-            foreach(var item in Scene.CurrentScene?.GetGameObjects())
-            {
-                item.Update();
-            }
+            Scene.CurrentScene?.Update();
+           
         }
     }
 }

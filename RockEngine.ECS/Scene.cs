@@ -1,7 +1,7 @@
-﻿using RockEngine.Common;
-using RockEngine.Common.Utils;
+﻿using RockEngine.Common.Utils;
 using RockEngine.ECS.Assets;
 using RockEngine.ECS.GameObjects;
+using RockEngine.Renderers;
 using RockEngine.Rendering;
 
 using System.Collections;
@@ -10,6 +10,7 @@ namespace RockEngine.ECS
 {
     public class Scene : BaseAsset, IDisposable, IEnumerable<GameObject>
     {
+        private static readonly SceneRenderer _meshGroupRenderer = new SceneRenderer();
         /// <summary>
         /// Static property to track of the current scene
         /// </summary>
@@ -21,18 +22,21 @@ namespace RockEngine.ECS
         /// List of game objects in the scene
         /// </summary>
         private readonly List<GameObject> _gameObjects;
-
+        private readonly Dictionary<Mesh,Dictionary<Material, List<GameObject>>> _groupedGameObjects;
+        private readonly List<GameObject> _unGroupedObjects = new List<GameObject>();
         #region Ctor
         public Scene(string name, string path, Guid id)
             : base(path, name, id, AssetType.Scene)
         {
             Name = name;
             _gameObjects = new List<GameObject>();
+            _groupedGameObjects = new Dictionary<Mesh, Dictionary<Material, List<GameObject>>>();
         }
         public Scene(string path, string name, Guid id, AssetType type, List<GameObject> gameObjects)
             : base(path, name, id, type)
         {
             _gameObjects = new List<GameObject>();
+            _groupedGameObjects = new Dictionary<Mesh, Dictionary<Material, List<GameObject>>>();
             foreach(var item in gameObjects)
             {
                 Add(item);
@@ -75,7 +79,18 @@ namespace RockEngine.ECS
         /// <param name="gameObject">gameobject which to add to scene</param>
         public Scene Add(GameObject gameObject)
         {
-            // Create a HashSet to store the names of existing game objects
+            TakeNameForGameObject(gameObject);
+
+            FillGameObjectGroups(gameObject);
+
+            Logger.AddLog($"Created gameobject with name: {gameObject.Name}");
+
+            return this;
+        }
+
+        private void TakeNameForGameObject(GameObject gameObject)
+        {
+            // Utilize a HashSet for quick lookups of existing names
             var existingNames = new HashSet<string>(_gameObjects.Select(go => go.Name));
 
             // Check if the initial name of the new game object is already in use
@@ -84,19 +99,50 @@ namespace RockEngine.ECS
                 int count = 1;
                 string originalName = gameObject.Name;
 
-                // Generate a unique name by appending a number
-                while(existingNames.Contains(gameObject.Name))
+                // Efficiently generate a unique name by appending a number
+                // Avoid re-checking names that have already been generated
+                string newName;
+                do
                 {
-                    gameObject.Name = $"{originalName} ({count})";
-                    count++;
-                }
+                    newName = $"{originalName} ({count++})";
+                } while(existingNames.Contains(newName));
+                gameObject.Name = newName;
             }
+            // Add the gameObject to the main collection and the existingNames set
             _gameObjects.Add(gameObject);
+            existingNames.Add(gameObject.Name); // This ensures the set is up-to-date without reselecting from _gameObjects
+        }
+
+        private void FillGameObjectGroups(GameObject gameObject)
+        {
+           
+            // Assign MainCamera if it's null and the gameObject has a Camera component
             if(MainCamera is null && gameObject.GetComponent<Camera>() is not null)
             {
                 MainCamera = gameObject;
             }
-            return this;
+            // Get the Mesh and Material from the GameObject
+            MeshComponent? mesh = gameObject.GetComponent<MeshComponent>();
+            MaterialComponent? material = gameObject.GetComponent<MaterialComponent>();
+
+            if(mesh is null || material is null)
+            {
+                _unGroupedObjects.Add(gameObject);
+                Logger.AddLog($"Created gameobject with name: {gameObject.Name}");
+                return;
+            }
+            // If the key doesn't exist in the dictionary, add it
+            if(!_groupedGameObjects.TryGetValue(mesh!.Mesh!, out Dictionary<Material, List<GameObject>>? matGroup))
+            {
+                matGroup = new Dictionary<Material, List<GameObject>>();
+                _groupedGameObjects.Add(mesh!.Mesh!, matGroup);
+            }
+            if(!matGroup.TryGetValue(material.Material, out List<GameObject>? value))
+            {
+                value = new List<GameObject>();
+                matGroup[material.Material] = value;
+            }
+            matGroup[material.Material].Add(gameObject);
         }
 
         /// <summary>
@@ -123,17 +169,23 @@ namespace RockEngine.ECS
         /// Method to get all game objects in the scene
         /// </summary>
         /// <returns>List of gameobjects</returns>
-        public List<GameObject> GetGameObjects()
-        {
-            return _gameObjects;
-        }
+        public List<GameObject> GetGameObjects() => _gameObjects;
+
+        public Dictionary<Mesh, Dictionary<Material, List<GameObject>>> GetGroupedGameObjects() => _groupedGameObjects;
+        public List<GameObject> GetUngroupedGameObjects() => _unGroupedObjects;
 
         public void Render(IRenderingContext context)
         {
-            MainCamera?.Render(context);
-            for(int i = 0; i < _gameObjects.Count; i++)
+            RenderCamera(context);
+            RenderObjectsOnly(context);
+        }
+
+        private void RenderObjectsOnly(IRenderingContext context)
+        {
+            _meshGroupRenderer.Render(context, this);
+           
+            foreach(var item in _unGroupedObjects)
             {
-                GameObject? item = _gameObjects[i];
                 if(item == MainCamera)
                 {
                     continue;
@@ -147,15 +199,17 @@ namespace RockEngine.ECS
         /// </summary>
         public void EditorLayerRender(IRenderingContext context)
         {
-            for(int i = 0; i < _gameObjects.Count; i++)
-            {
-                GameObject? item = _gameObjects[i];
-                if(item == MainCamera)
-                {
-                    continue;
-                }
-                item.Render(context);
-            }
+            RenderObjectsOnly(context);
+        }
+
+        public void RenderCamera(IRenderingContext context)
+        {
+            MainCamera?.Render(context);
+        }
+
+        public void Update()
+        {
+            _meshGroupRenderer.Update(this);
         }
 
         public void Dispose()

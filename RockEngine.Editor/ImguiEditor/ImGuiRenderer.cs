@@ -84,7 +84,7 @@ namespace RockEngine.Rendering.Layers
             {
                 // Calling OnRender to initilize the gui and user no longer should press "Load layout" on first launch
                 // i think it is should be reworked
-                OnRender().Wait();
+                OnRender();
                 ImGui.LoadIniSettingsFromDisk(LAYOUT_FILE);
             }
             _projectWindowIsOpened = Project.CurrentProject == null;
@@ -103,7 +103,7 @@ namespace RockEngine.Rendering.Layers
 
         #endregion
 
-        public async Task OnRender()
+        public void OnRender()
         {
 
             IsMouseOnEditorScreen = false;
@@ -131,12 +131,12 @@ namespace RockEngine.Rendering.Layers
             ImGui.DockSpace(dockID, Vector2.Zero, ImGuiDockNodeFlags.PassthruCentralNode);
             DisplayAssetFolders();
 
-            await SelectProjectWindow().ConfigureAwait(false);
+            SelectProjectWindow();
             ImGui.PopFont();
 
             if(Input.IsKeyDown(Keys.LeftControl) && Input.IsKeyDown(Keys.S))
             {
-                await AssetManager.SaveAll().ConfigureAwait(false);
+                AssetManager.SaveAll();
             }
             IRenderingContext.Render(ctx =>
             {
@@ -158,7 +158,7 @@ namespace RockEngine.Rendering.Layers
             }
         }
 
-        private async Task SelectProjectWindow()
+        private void SelectProjectWindow()
         {
             if(_projectWindowIsOpened && ImGui.Begin("Select project", ref _projectWindowIsOpened))
             {
@@ -167,7 +167,7 @@ namespace RockEngine.Rendering.Layers
                     var result = Dialog.FileOpen("asset");
                     if(!string.IsNullOrEmpty(result.Path))
                     {
-                        await AssetManager.LoadProject(result.Path);
+                        Task.Run(async ()=> await AssetManager.LoadProject(result.Path));
                     }
                 }
 
@@ -273,21 +273,24 @@ namespace RockEngine.Rendering.Layers
               
                 ImGui.PushFont(ImguiHelper.IconsFont);
                 ImGui.NextColumn();
-
-                if(EngineStateManager.GetCurrentStateKey() != "play")
+                if(EngineStateManager.IsInited())
                 {
-                    if(ImGui.SmallButton(FA.PLAY))
+                    if(EngineStateManager.GetCurrentStateKey() != "play")
                     {
-                        EngineStateManager.SetNextState("play");
+                        if(ImGui.SmallButton(FA.PLAY))
+                        {
+                            EngineStateManager.SetNextState("play");
+                        }
+                    }
+                    else
+                    {
+                        if(ImGui.SmallButton(FA.STOP))
+                        {
+                            EngineStateManager.SetNextState("dev");
+                        }
                     }
                 }
-                else
-                {
-                    if(ImGui.SmallButton(FA.STOP))
-                    {
-                        EngineStateManager.SetNextState("dev");
-                    }
-                }
+                
 
                 ImGui.PopFont();
 
@@ -305,7 +308,10 @@ namespace RockEngine.Rendering.Layers
         private void DisplayScene()
         {
             var scene = Scene.CurrentScene;
-
+            if(scene is null)
+            {
+                return;
+            }
             if(ImGui.Begin(scene.Name + "##SCENE_WINDOW"))
             {
                 ImGui.Text("Current Scene: " + scene.Name);

@@ -34,7 +34,7 @@ namespace RockEngine
             MainWindow = WindowManager.CreateWindow(name, width, height);
             MainWindow.RenderFrame += Render;
             MainWindow.UpdateFrame += Update;
-            MainWindow.Initilized += Initilized;
+            MainWindow.Initilized += InitilizedAsync;
 
             Layers = new Layers();
         }
@@ -43,7 +43,7 @@ namespace RockEngine
         {
             MainWindow.Run();
         }
-        protected abstract Task Initilized();
+        protected abstract Task InitilizedAsync();
         protected abstract void Update(FrameEventArgs args);
         protected abstract void Render(FrameEventArgs args);
 

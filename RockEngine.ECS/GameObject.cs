@@ -1,5 +1,4 @@
-﻿using RockEngine.Common;
-using RockEngine.Common.Utils;
+﻿using RockEngine.Common.Utils;
 using RockEngine.Rendering;
 
 namespace RockEngine.ECS
@@ -30,7 +29,7 @@ namespace RockEngine.ECS
         /// <summary>
         /// Parent gameobject
         /// </summary>
-        public GameObject Parent { get; private set; }
+        public GameObject? Parent { get; private set; }
 
         /// <summary>
         /// Children of the current gameobject
@@ -63,9 +62,8 @@ namespace RockEngine.ECS
             {
                 AddComponent(item);
             }
-
-            Logger.AddLog($"Created gameobject with name: {Name}");
         }
+
         public GameObject()
         {
             Name = "Gameobject";
@@ -169,11 +167,6 @@ namespace RockEngine.ECS
             {
                 tr.ClearChildrenTransforms();
             }
-            /*  if (component is MeshComponent mc)
-              {
-                  mc.InstanceCount--;
-                  mc.Transforms.Remove(Transform);
-              }*/
             _components.Remove(component);
         }
 
@@ -198,21 +191,28 @@ namespace RockEngine.ECS
             }
         }
 
-        internal void OnExit()
-        {
-            for(int i = 0; i < _components.Count; i++)
-            {
-                IComponent? item = _components[i];
-                item.OnDestroy();
-            }
-        }
-
         public void RenderMeshWithoutMaterial(IRenderingContext context)
         {
             if(IsActive)
             {
                 Transform.Render(context);
                 GetComponent<MeshComponent>()?.Render(context);
+            }
+        }
+
+        public void RenderWithoutMeshAndMaterial(IRenderingContext context)
+        {
+            if(!IsActive)
+            {
+                return;
+            }
+
+            foreach(var component in _components)
+            {
+                if(component is IRenderable renderable && component is not MeshComponent && component is not MaterialComponent)
+                {
+                    renderable.Render(context);
+                }
             }
         }
 

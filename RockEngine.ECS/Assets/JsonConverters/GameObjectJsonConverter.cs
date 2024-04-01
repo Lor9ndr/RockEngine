@@ -20,8 +20,8 @@ namespace RockEngine.ECS.Assets.JsonConverters
             };
 
             var componentsArray = new JArray();
-
-            foreach(var component in value.GetComponents())
+            var components = value.GetComponents();
+            foreach(var component in components)
             {
                 if(component is IAsset asset)
                 {

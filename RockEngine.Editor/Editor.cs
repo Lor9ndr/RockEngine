@@ -1,12 +1,9 @@
-﻿using Ninject.Activation;
-
-using OpenTK.Graphics.OpenGL4;
+﻿using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 using RockEngine.Common;
-using RockEngine.Common.Utils;
 using RockEngine.Common.Vertices;
 using RockEngine.DI;
 using RockEngine.ECS;
@@ -93,11 +90,14 @@ namespace RockEngine.Editor
             }
         }
 
-        protected override async Task Initilized()
+        protected override async Task InitilizedAsync()
         {
             MainWindow.VSync = VSyncMode.Off;
-
+           
             LoadShaders();
+
+            Layers.AddLayer(new DefaultGameLayer());
+            Layers.AddLayer(new DefaultEditorLayer());
 
             // Mock to load default project
             Scene scene = await AssetManager.CreateSceneAsync("Test scene",
@@ -110,9 +110,12 @@ namespace RockEngine.Editor
                  Guid.Parse("057F0D60-91EC-4DFF-A6BD-16A5C10970C1"), scene)
                 .ConfigureAwait(false);
 
-            Material material;
-            var testMesh = await AssetManager.CreateMesh(Vertex3D.CubeVertices).ConfigureAwait(false);
-            var floormaterial = await AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "MaterialFLoor").ConfigureAwait(false);
+            var testMesh = await AssetManager.CreateMeshAsync(Vertex3D.CubeVertices)
+                .ConfigureAwait(false);
+
+            var floormaterial = await AssetManager.CreateMaterialAssetAsync(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "MaterialFLoor")
+                .ConfigureAwait(false);
+
             IRenderingContext.Update(ctx =>
             {
                 // Ensure GameObject creation is on the main thread
@@ -143,21 +146,18 @@ namespace RockEngine.Editor
                 Scene.ChangeScene(scene);
                 Scene.ChangeScene(Project.CurrentProject.FirstScene);
                 EngineStateManager.RegisterStates(new DevepolerEngineState(), new PlayEngineState());
-                Layers.AddLayer(new DefaultGameLayer());
-                Layers.AddLayer(new DefaultEditorLayer());
             });
         }
 
-      
-
         protected override void Update(FrameEventArgs args)
         {
+            EngineStateManager.UpdateState();
+            AssetManager.LoadAssetsToOpenGL();
+
             OpenGLDispatcher.ExecuteUpdateCommands();
 
-            AssetManager.LoadAssetsToOpenGL();
             //Physics.Update((float)args.Time);
             Physics.World.ColliderRenderer.Update();
-            EngineStateManager.UpdateState();
 
         }
 
@@ -170,7 +170,7 @@ namespace RockEngine.Editor
                 DefaultShader?.Bind(context);
             });
 
-            await Layers.OnRender(Scene.CurrentScene).ConfigureAwait(false);
+            Layers.OnRender(Scene.CurrentScene);
             IRenderingContext.Render(context =>
             {
                 DefaultShader?.Unbind(context);
@@ -231,36 +231,107 @@ namespace RockEngine.Editor
 
         private async Task InitCubesBox(Scene scene, Mesh testMesh)
         {
-            Material material;
-            // Nested loops for GameObject creation
-            for(int i = 0; i > -2; i--)
+            Material mat = await AssetManager.CreateMaterialAssetAsync(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial1")
+                           .ConfigureAwait(false);
+            IRenderingContext.Update(ctx =>
             {
-                for(int j = 0; j > -2; j--)
+                // Nested loops for GameObject creation
+                for(int i = 0; i > -10; i--)
                 {
-                    for(int k = 0; k > -2; k--)
+                    for(int j = 0; j > -10; j--)
                     {
-                        material = await AssetManager.CreateMaterialAsset(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial(" +( i + j + k) + ")")
-                            .ConfigureAwait(false);
-                        IRenderingContext.Update(ctx =>
+                        for(int k = 0; k > -1; k--)
                         {
-                            material.ShaderData["material.albedo"] = new Vector3(Random.Shared.NextSingle(), Random.Shared.NextSingle(), Random.Shared.NextSingle());
-                            var testTransform = new Transform(new Vector3(Random.Shared.NextSingle() * 10, Random.Shared.NextSingle() * 10, Random.Shared.NextSingle() * 10));
-                            var testGameObject = new GameObject(
-                                "TestGameObject",
-                                testTransform,
-                                new MeshComponent(testMesh),
-                                new MaterialComponent(material));
+                            var mesh = new MeshComponent(testMesh);
+                            mat.ShaderData["material.albedo"] = new Vector3(0, 1, 0);
 
-                            var body = testGameObject.AddComponent(
-                                Physics.LocalCreateRigidBody(10f,
-                                testTransform.Position,
-                                new OBB(testTransform.Position, testTransform.Scale))
+                            var materialComponent = new MaterialComponent(mat);
+                            var testTransform = new Transform(new Vector3(-2 * k % 2 + 10, -2 * j % 2 + 10, -2 * k % 2 + 10));
+                            var testGameObject = new GameObject(
+                                "Group0",
+                                testTransform, mesh, materialComponent
                                 );
                             scene.Add(testGameObject);
-                        });
+                        }
                     }
                 }
-            }
+            });
+
+            Material material = await AssetManager.CreateMaterialAssetAsync(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial2")
+                                                    .ConfigureAwait(false);
+            IRenderingContext.Update(ctx =>
+            {
+                // Nested loops for GameObject creation
+                for(int i = 0; i > -10; i--)
+                {
+                    for(int j = 0; j > -1; j--)
+                    {
+                        for(int k = 0; k > -1; k--)
+                        {
+                            var mesh = new MeshComponent(testMesh);
+                            var materialComponent = new MaterialComponent(material);
+                            material.ShaderData["material.albedo"] = new Vector3(1, 0, 0);
+                            var testTransform = new Transform(new Vector3(2f * k, 2f * j, 2f * j));
+                            var testGameObject = new GameObject(
+                                "Group1",
+                                testTransform, mesh, materialComponent
+                                );
+                            scene.Add(testGameObject);
+                        }
+                    }
+                }
+            });
+
+            Material mat3 = await AssetManager.CreateMaterialAssetAsync(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial3")
+                                                  .ConfigureAwait(false);
+            IRenderingContext.Update(ctx =>
+            {
+                // Nested loops for GameObject creation
+                for(int i = 0; i > -10; i--)
+                {
+                    for(int j = 0; j > -10; j--)
+                    {
+                        for(int k = 0; k > -1; k--)
+                        {
+                            var mesh = new MeshComponent(testMesh);
+                            var materialComponent = new MaterialComponent(mat3);
+                            material.ShaderData["material.albedo"] = new Vector3(0, 0, 1);
+                            var testTransform = new Transform(new Vector3(7f * k, 7f * j, 7f * j));
+                            var testGameObject = new GameObject(
+                                "Group2",
+                                testTransform, mesh, materialComponent
+                                );
+                            scene.Add(testGameObject);
+                        }
+                    }
+                }
+            });
+
+            Material mat4 = await AssetManager.CreateMaterialAssetAsync(DefaultShader, PathsInfo.PROJECT_ASSETS_PATH, "TestMeshMaterial4")
+                                                 .ConfigureAwait(false);
+            IRenderingContext.Update(ctx =>
+            {
+                // Nested loops for GameObject creation
+                for(int i = 0; i > -10; i--)
+                {
+                    for(int j = 0; j > -5; j--)
+                    {
+                        for(int k = 0; k > -16; k--)
+                        {
+                            var mesh = new MeshComponent(testMesh);
+                            var materialComponent = new MaterialComponent(mat4);
+                            material.ShaderData["material.albedo"] = new Vector3(1, 1, 1);
+                            var testTransform = new Transform(new Vector3(10f* k, 6*j, 8*j));
+                            var testGameObject = new GameObject(
+                                "Group3",
+                                testTransform, mesh, materialComponent
+                                );
+                            scene.Add(testGameObject);
+                        }
+                    }
+                }
+            });
+
         }
 
         public override void Dispose()
