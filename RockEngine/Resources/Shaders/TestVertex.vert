@@ -6,12 +6,6 @@ layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
 layout (location = 10) in mat4 instanceMatrix;
 
-
-//layout (std140, binding = 1) uniform TransformData
-//{
-//    mat4 Model;
-//}transformData;
-
 layout (std140, binding = 2) uniform CameraData
 {
     mat4 View;

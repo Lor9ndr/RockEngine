@@ -18,6 +18,7 @@ namespace RockEngine.ECS
             | BufferAccessMask.MapWriteBit;
         private const int MATRIX_SIZE = 64;
 
+
         public VBO ModelBuffer { get; private set;}
 
         public VAO VAO { get; private set; }
@@ -44,9 +45,9 @@ namespace RockEngine.ECS
         {
             Vertices = vertices;
             VAO = new VAO()
-           .Setup(context)
-           .Bind(context)
-           .SetLabel(context);
+               .Setup(context)
+               .Bind(context)
+               .SetLabel(context);
 
             VBO = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = Vertex3D.Size * vertices.Length })
                 .Setup(context)
@@ -180,7 +181,6 @@ namespace RockEngine.ECS
             ModelBuffer = CreateInstanceBuffer(context, size);
             ModelBuffer!.Bind(context);
             SetInstancedAttributes(context);
-
         }
 
         private unsafe VBO CreateInstanceBuffer(IRenderingContext context, int size)

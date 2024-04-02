@@ -2,15 +2,15 @@
 {
     public struct PixelInfo
     {
-        public float ObjectID;
-        public float DrawID;
-        public float PrimID;
+        public float Red;
+        public float Green;
+        public float Blue;
 
         public PixelInfo()
         {
-            ObjectID = 0.0f;
-            DrawID = 0.0f;
-            PrimID = 0.0f;
+            Red = 0;
+            Green = 0;
+            Blue = 0;
         }
     };
 }

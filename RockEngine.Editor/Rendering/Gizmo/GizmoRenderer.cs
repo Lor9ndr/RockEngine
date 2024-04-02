@@ -140,12 +140,12 @@ namespace RockEngine.Editor.Rendering.Gizmo
         {
             _pickingRenderer.ReadPixel(context, (int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref CurrentPixelInfo);
 
-            return Input.IsButtonDown(MouseButton.Left) && CurrentPixelInfo.PrimID >= 1 && CurrentPixelInfo.PrimID <= 3;
+            return Input.IsButtonDown(MouseButton.Left) && CurrentPixelInfo.Blue >= 1 && CurrentPixelInfo.Blue <= 3;
         }
 
         private void HandleClickingOnAxis(IRenderingContext context)
         {
-            if(_axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis))
+            if(_axes.TryGetValue((int)CurrentPixelInfo.Blue, out var axis))
             {
                 _gizmoShader.SetShaderData(context, "outlineColor", axis.Color);
             };
@@ -243,7 +243,7 @@ namespace RockEngine.Editor.Rendering.Gizmo
             IRenderingContext.Update(context =>
             {
                 if(ImGuiRenderer.IsMouseOnEditorScreen && IsClickingOnAxis(context) &&
-                _axes.TryGetValue((int)CurrentPixelInfo.PrimID, out var axis) &&
+                _axes.TryGetValue((int)CurrentPixelInfo.Blue, out var axis) &&
                 _currentTransform is not null)
                 {
                     _isDragging = true;

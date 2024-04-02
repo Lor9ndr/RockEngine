@@ -120,9 +120,9 @@ namespace RockEngine.Editor.Layers
                     PixelInfo pi = new PixelInfo();
                     PickingRenderer.ReadPixel(context, (int)ImGuiRenderer.EditorScreenMousePos.X, (int)ImGuiRenderer.EditorScreenMousePos.Y, ref pi);
                     GameObject? selected = null;
-                    if((uint)pi.PrimID != 0)
+                    if((uint)pi.Blue != 0)
                     {
-                        var objID = (uint)pi.ObjectID;
+                        var objID = (uint)(pi.Red);
                         selected = gameObjects.FirstOrDefault(s => s.GameObjectID == objID);
                     }
                     _imguiRenderer.SelectedGameObject = selected;
@@ -187,10 +187,9 @@ namespace RockEngine.Editor.Layers
             if(mesh is not null)
             {
                 mesh.Mesh.InstanceCount = 1;
-                mesh.Mesh.AdjustInstanceAttributesForGroup(context,0);
+                mesh.Mesh.AdjustInstanceAttributesForGroup(context, 0);
                 mesh.Mesh.Render(context);
             }
-            //selected.Render(context); // Render the selected object again or render a specific outline mesh if you have one
             _selectingShader.Unbind(context);
 
             // Restore the original stencil function and depth test state

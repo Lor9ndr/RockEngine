@@ -9,6 +9,7 @@ using RockEngine.Rendering.OpenGL.Buffers;
 using RockEngine.Rendering.OpenGL.Buffers.UBOBuffers;
 using RockEngine.Rendering.OpenGL.Settings;
 using RockEngine.Rendering.OpenGL.Shaders;
+using RockEngine.ECS.Assets;
 
 namespace RockEngine.Rendering.Renderers
 {
@@ -32,7 +33,8 @@ namespace RockEngine.Rendering.Renderers
             IRenderingContext.Update((context) =>
             {
                 _pickingShader.Setup(context);
-                _pickingBuffer = CreateInstanceBuffer(context,4);
+                _pickingBuffer = CreateInstanceBuffer(context,20000)
+                .LockBuffer(context);
 
             });
         }
@@ -50,39 +52,51 @@ namespace RockEngine.Rendering.Renderers
             {
                 return;
             }
-            var groupedData = item.GetGroupedGameObjects();
-            int totalObjects = groupedData.Sum(meshGroup => meshGroup.Value.Sum(matGroup => matGroup.Value.Count));
-            PickingData[] pickingDataArray = new PickingData[totalObjects];
-            int globalIndex = 0;
-            int drawID = 0;
-
-            foreach(var meshGroup in groupedData)
+            foreach(var meshEntry in item.GetGroupedGameObjects())
             {
-                var mesh = meshGroup.Key;
+                Mesh mesh = meshEntry.Key;
+                var materialGroups = meshEntry.Value;
                 if(!mesh.IsSetupped)
                 {
                     continue;
                 }
-                int instanceID = 0;
-                int instancesCount = meshGroup.Value.Sum(matGroup => matGroup.Value.Count);
-                for(int i = 0; i < instancesCount; i++)
-                {
-                    pickingDataArray[globalIndex++] = new PickingData((uint)instanceID++, (uint)drawID);
-                }
-                drawID++;
 
-                mesh.VAO.Bind(context);
-                SetInstancedAttributes(context, mesh.VAO);
-            }
-            _pickingBuffer.SendData(context, pickingDataArray);
-            foreach(var meshGroup in groupedData)
-            {
-                var mesh = meshGroup.Key;
-                if(!mesh.IsSetupped)
+                int totalObjects = 0;
+                foreach(var group in materialGroups.Values)
                 {
-                    continue;
+                    totalObjects += group.Count;
                 }
-                mesh.Render(context);
+                PickingData[] pickingDataArray = new PickingData[totalObjects]; // Prepare picking data array
+                Dictionary<Material, int> materialStartIndices = new Dictionary<Material, int>(materialGroups.Count);
+
+                int currentIndex = 0;
+                foreach(var materialGroup in materialGroups)
+                {
+                    materialStartIndices[materialGroup.Key] = currentIndex;
+                    foreach(var gameObject in materialGroup.Value)
+                    {
+                        pickingDataArray[currentIndex] = new PickingData(gameObject.GameObjectID); // Fill picking data
+                        currentIndex++;
+                    }
+                }
+
+                // Send picking data to the GPU
+                _pickingBuffer
+                    .WaitBuffer(context)
+                    .Bind(context)
+                    .SendDataMappedBuffer(context, pickingDataArray, 0, 0, pickingDataArray.Length);
+
+                foreach(var materialGroup in materialGroups)
+                {
+                    materialGroup.Key.SendData(context);
+                    mesh.InstanceCount = materialGroup.Value.Count;
+
+                    int startIndex = materialStartIndices[materialGroup.Key];
+                    // Adjust instance attributes for the current material group
+                    mesh.AdjustInstanceAttributesForGroup(context, startIndex);
+                    AdjustInstanceAttributesForGroup(context, startIndex, mesh.VAO);
+                    mesh.Render(context);
+                }
             }
         }
 
@@ -93,9 +107,12 @@ namespace RockEngine.Rendering.Renderers
             _pickingBuffer.Bind(context);
             SetInstancedAttributes(context, mesh.Mesh.VAO);
 
-            PickingData[] pickingDataArray = [new PickingData(1, item.GameObjectID)];
+            PickingData[] pickingDataArray = [new PickingData(item.GameObjectID)];
 
-            _pickingBuffer.SendData(context, pickingDataArray);
+            _pickingBuffer
+               .WaitBuffer(context)
+               .Bind(context)
+               .SendDataMappedBuffer(context, pickingDataArray, 0, 0, pickingDataArray.Length* sizeof(uint));
             mesh.Mesh.PrepareSendingModel(context, [item.Transform.GetModelMatrix()],0,1);
             mesh.Mesh.AdjustInstanceAttributesForGroup(context,0);
             mesh.Mesh.Render(context);
@@ -127,18 +144,41 @@ namespace RockEngine.Rendering.Renderers
             var vbo = new VBO(BufferSettings.DefaultVBOSettings with { BufferSize = size, BufferUsageHint = BufferUsageHint.StreamDraw })
                              .Setup(context)
                              .SetLabel(context)
-                             .Bind(context);
+                             .SetupBufferStorage(context, BufferStorageFlags.MapPersistentBit | BufferStorageFlags.MapWriteBit, 0)
+                             .Bind(context)
+                             .MapBuffer(context, _pickingBufferFlags, out _);
             return vbo;
         }
 
         private void SetInstancedAttributes(IRenderingContext context,VAO vao)
         {
-            for(int i = 0; i < 2; i++)
+            context.VertexArrayVertexBuffer(vao!.Handle, PICKING_BUFFER_LOCATION, _pickingBuffer.Handle, nint.Zero, PICKING_BUFFER_STRIDE);
+
+            for(int i = 0; i < 1; i++)
             {
                 context
                     .EnableVertexArrayAttrib(vao.Handle, PICKING_BUFFER_LOCATION + i)
                     .VertexAttribPointer(PICKING_BUFFER_LOCATION + i, 1, VertexAttribPointerType.UnsignedInt, false, PICKING_BUFFER_STRIDE, sizeof(uint) * i) 
                     .VertexAttribDivisor(PICKING_BUFFER_LOCATION + i, 1);
+            }
+        }
+        private void AdjustInstanceAttributesForGroup(IRenderingContext context, int startIndex, VAO vao)
+        {
+            int baseOffset = startIndex * 1 * sizeof(uint); 
+
+            // Assuming you've already bound the VAO and VBO relevant to this operation.
+            vao.Bind(context);
+            _pickingBuffer.Bind(context);
+            for(int i = 0; i < 1; i++)
+            {
+                // Enable the vertex attribute array for each row of the matrix
+                context.EnableVertexArrayAttrib(vao.Handle, PICKING_BUFFER_LOCATION + i);
+
+                // Set the vertex attribute pointer to point at the correct part of the buffer
+                context.VertexAttribPointer(PICKING_BUFFER_LOCATION + i, 1, VertexAttribPointerType.UnsignedInt, false, sizeof(uint), baseOffset + i);
+
+                // Tell OpenGL this attribute is per-instance (divisor 1) rather than per-vertex (divisor 0)
+                context.VertexAttribDivisor(PICKING_BUFFER_LOCATION + i, 1);
             }
         }
 

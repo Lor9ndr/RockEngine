@@ -160,7 +160,7 @@ namespace RockEngine.Rendering.OpenGL.Buffers
         }
         public unsafe VBO SendDataMappedBuffer<T>(IRenderingContext context, T[] data, int startIndex, int byteOffset, int size) where T :unmanaged
         {
-            if(startIndex < 0 || startIndex >= data.Length)
+            if(startIndex < 0 || startIndex > data.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(startIndex), "startIndex is out of the bounds of the data array.");
             }
